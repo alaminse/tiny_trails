@@ -1,0 +1,11 @@
+{
+    "name": "UserRolePermission",
+    "alias": "userrolepermission",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\UserRolePermission\\App\\Providers\\UserRolePermissionServiceProvider"
+    ],
+    "files": []
+}
