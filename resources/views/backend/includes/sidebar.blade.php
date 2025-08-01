@@ -31,17 +31,7 @@
                     </a>
                 </li>
 
-                {{-- <li class="nav-item {{ request()->routeIs('dashboard') ? 'menu-open' : '' }}">
-                    <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                        <i class="nav-icon bi bi-speedometer"></i>
-                        <p>
-                            Dashboard
-                            <i class="nav-arrow bi bi-chevron-right"></i>
-                        </p>
-                    </a>
-                </li> --}}
-
-                <li class="nav-item {{ request()->routeIs('admin.users.*') ? 'menu-open' : '' }}">
+                <li class="nav-item {{ request()->routeIs(['admin.users.*', 'admin.roles.*', 'admin.permissions.*']) ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-speedometer"></i>
                         <p>
@@ -61,6 +51,20 @@
                                 class="nav-link {{ request()->routeIs('admin.users.create') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Add User</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.roles.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.roles.index') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Roles</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.permissions.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.permissions.index') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Permissions</p>
                             </a>
                         </li>
                     </ul>

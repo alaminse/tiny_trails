@@ -7,6 +7,7 @@
     <title> @yield('title') </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     @include('backend.includes.css')
+    @yield('css')
 </head>
 
 <body class="layout-fixed sidebar-expand-lg sidebar-open bg-body-tertiary">
@@ -21,16 +22,7 @@
         <!--end::Sidebar-->
         <!--begin::App Main-->
         <main class="app-main">
-            <!--begin::App Content Header-->
-            @include('backend.includes.header')
-            <div class="app-content">
-                <!--begin::Container-->
-                <div class="container-fluid">
-                    @yield('content')
-                </div>
-                <!--end::Container-->
-            </div>
-            <!--end::App Content-->
+            @yield('content')
         </main>
         <!--end::App Main-->
         <!--begin::Footer-->
