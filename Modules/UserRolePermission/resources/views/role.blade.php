@@ -43,32 +43,33 @@
     </div>
 
 
-<!-- Modal -->
-<div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content border border-primary">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="roleModalLabel">Create Role</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+    <!-- Modal -->
+    <div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content border border-primary">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="roleModalLabel">Create Role</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
 
-      <form id="roleForm">
-        @csrf
-        <input type="hidden" name="id" id="role_id">
-        <div class="modal-body">
-          <div class="form-group mb-3">
-            <label for="name">Role Name</label>
-            <input type="text" name="name" id="role_name" class="form-control" required>
-          </div>
-          <div class="d-flex flex-row-reverse">
-            <button type="submit" class="btn btn-primary btn-sm p-2">Save</button>
-          </div>
+                <form id="roleForm">
+                    @csrf
+                    <input type="hidden" name="id" id="role_id">
+                    <div class="modal-body">
+                        <div class="form-group mb-3">
+                            <label for="name">Role Name</label>
+                            <input type="text" name="name" id="role_name" class="form-control" required>
+                        </div>
+                        <div class="d-flex flex-row-reverse">
+                            <button type="submit" class="btn btn-primary btn-sm p-2">Save</button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
         </div>
-      </form>
-
     </div>
-  </div>
-</div>
 
 
     @push('scripts')
@@ -76,15 +77,30 @@
         <script src="{{ asset('backend/js/dataTables.bootstrap.min.js') }}"></script>
         <script src="{{ asset('backend/js/dataTables.responsive.min.js') }}"></script>
         <script src="{{ asset('backend/js/responsive.bootstrap.js') }}"></script>
-        <script>
 
+        <script src="{{ asset('backend/js/module-crud.js') }}"></script>
+        <script>
             $(document).ready(function () {
+                initModuleCrud({
+                    moduleName: 'role',
+                    tableId: 'datatable-responsive',
+                    modalId: 'roleModal',
+                    formId: 'roleForm',
+                    createBtnId: 'addRoleBtn',
+                    trashedBtnId: 'showTrashed',
+                    baseUrl: '/roles',
+                    fields: ['name']
+                });
+            });
+        </script>
+        {{-- <script>
+            $(document).ready(function() {
                 let currentView = 'active';
                 // Load active data on initial load
                 getData('roles/get/data');
 
                 // Toggle button click
-                $('#showTrashed').on('click', function (e) {
+                $('#showTrashed').on('click', function(e) {
                     e.preventDefault();
 
                     if (currentView === 'active') {
@@ -202,7 +218,8 @@
                                     getData('roles/get/data');
                                 },
                                 error: function() {
-                                    Swal.fire('Error!', 'Failed to delete the role.', 'error');
+                                    Swal.fire('Error!', 'Failed to delete the role.',
+                                        'error');
                                 }
                             });
                         }
@@ -210,79 +227,90 @@
                 });
 
                 // Restore Role
-$(document).on('click', '.restoreRoleBtn', function() {
-    const id = $(this).data('id');
-
-    $.ajax({
-        url: '/roles/restore/' + id,
-        method: 'POST',
-        data: {
-            _token: '{{ csrf_token() }}'
-        },
-        success: function(response) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Restored!',
-                text: response.message,
-                timer: 2000,
-                showConfirmButton: false
-            });
-            getData('roles/get/data?trashed=true');
-        },
-        error: function() {
-            Swal.fire({
-                icon: 'error',
-                title: 'Failed',
-                text: 'Failed to restore role.',
-            });
-        }
-    });
-});
-
-// Force Delete Role
-$(document).on('click', '.forceDeleteRoleBtn', function() {
-    const id = $(this).data('id');
-
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "This will permanently delete the role. This action cannot be undone!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.ajax({
-                url: '/roles/force-delete/' + id,
-                method: 'DELETE',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
+                $(document).on('click', '.restoreRoleBtn', function() {
+                    const id = $(this).data('id');
                     Swal.fire({
-                        icon: 'success',
-                        title: 'Deleted!',
-                        text: response.message,
-                        timer: 2000,
-                        showConfirmButton: false
+                        title: 'Are you sure?',
+                        text: "You want to restore.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, Restore it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                url: '/roles/restore/' + id,
+                                method: 'POST',
+                                data: {
+                                    _token: '{{ csrf_token() }}'
+                                },
+                                success: function(response) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Restored!',
+                                        text: response.message,
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                    getData('roles/get/data?trashed=true');
+                                },
+                                error: function() {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Failed',
+                                        text: 'Failed to restore role.',
+                                    });
+                                }
+                            });
+                        }
                     });
-                    getData('roles/get/data?trashed=true');
-                },
-                error: function() {
+                });
+
+                // Force Delete Role
+                $(document).on('click', '.forceDeleteRoleBtn', function() {
+                    const id = $(this).data('id');
+
                     Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to delete permanently.',
+                        title: 'Are you sure?',
+                        text: "This will permanently delete the role. This action cannot be undone!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                url: '/roles/force-delete/' + id,
+                                method: 'DELETE',
+                                data: {
+                                    _token: '{{ csrf_token() }}'
+                                },
+                                success: function(response) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Deleted!',
+                                        text: response.message,
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                    getData('roles/get/data?trashed=true');
+                                },
+                                error: function() {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: 'Failed to delete permanently.',
+                                    });
+                                }
+                            });
+                        }
                     });
-                }
-            });
-        }
-    });
-});
+                });
 
 
             });
-        </script>
+        </script> --}}
     @endpush
 @endsection
