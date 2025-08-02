@@ -15,11 +15,11 @@
                         <div class="d-flex">
                             <div class="p-2 flex-grow-1 card-title">Permissions</div>
                             <div class="p-2">
-                                <a href="#" class="btn btn-warning btn-sm" id="showTrashed">Trashed</a>
+                                <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
                             </div>
 
                             <div class="p-2">
-                                <a href="#" class="btn btn-sm btn-success" id="addPermissionBtn">Add Permission</a>
+                                <a href="#" class="btn btn-sm btn-gradient-success" id="addPermissionBtn">Add Permission</a>
                             </div>
                         </div>
                         <div class="table-responsive pt-3">
@@ -62,7 +62,7 @@
                             <input type="text" name="name" id="permission_name" class="form-control" required>
                         </div>
                         <div class="d-flex flex-row-reverse">
-                            <button type="submit" class="btn btn-primary btn-sm p-2">Save</button>
+                            <button type="submit" class="btn btn-gradient-primary btn-sm p-2">Save</button>
                         </div>
                     </div>
                 </form>

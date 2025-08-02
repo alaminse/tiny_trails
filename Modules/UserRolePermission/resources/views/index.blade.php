@@ -15,11 +15,11 @@
                         <div class="d-flex">
                             <div class="p-2 flex-grow-1 card-title">User</div>
                             <div class="p-2">
-                                <a href="#" class="btn btn-warning btn-sm" id="showTrashed">Trashed</a>
+                                <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
                             </div>
 
                             <div class="p-2">
-                                <a href="#" class="btn btn-sm btn-success" id="addUserBtn">Add User</a>
+                                <a href="#" class="btn btn-sm btn-gradient-success" id="addUserBtn">Add User</a>
                             </div>
                         </div>
                         <div class="table-responsive pt-3">
@@ -85,7 +85,7 @@
                         </div>
 
                         <div class="d-flex flex-row-reverse">
-                            <button type="submit" class="btn btn-primary btn-sm p-2">Save</button>
+                            <button type="submit" class="btn btn-gradient-primary btn-sm p-2">Save</button>
                         </div>
                     </div>
 

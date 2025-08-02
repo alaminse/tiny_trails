@@ -11,17 +11,17 @@
 
     <td>
         @if ($user->trashed())
-            <button class="btn btn-info btn-sm restoreBtn" data-id="{{ $user->id }}">
+            <button class="btn btn-gradient-info btn-sm restoreBtn" data-id="{{ $user->id }}">
                 <i class="fas fa-undo"></i>
             </button>
-            <button class="btn btn-danger btn-sm forceDeleteBtn" data-id="{{ $user->id }}">
+            <button class="btn btn-gradient-danger btn-sm forceDeleteBtn" data-id="{{ $user->id }}">
                 <i class="fas fa-trash-alt"></i>
             </button>
         @else
-            <a href="#" class="btn btn-purple-blue btn-sm editBtn" data-id="{{ $user->id }}">
+            <a href="#" class="btn btn-gradient-primary btn-sm editBtn" data-id="{{ $user->id }}">
                 <i class="fas fa-edit"></i>
             </a>
-            <a href="#" class="btn btn-danger btn-sm deleteBtn" data-id="{{ $user->id }}">
+            <a href="#" class="btn btn-gradient-danger btn-sm deleteBtn" data-id="{{ $user->id }}">
                 <i class="fas fa-trash"></i>
             </a>
         @endif

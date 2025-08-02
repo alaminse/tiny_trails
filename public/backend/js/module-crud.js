@@ -24,6 +24,8 @@ function initModuleCrud(config) {
             url,
             method: "GET",
             success: function (response) {
+                console.log(response);
+
                 if ($.fn.DataTable.isDataTable(`#${tableId}`)) {
                     $table.DataTable().destroy();
                 }

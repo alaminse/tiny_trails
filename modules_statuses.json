@@ -1,3 +1,4 @@
 {
-    "UserRolePermission": true
+    "UserRolePermission": true,
+    "PickUpType": true
 }

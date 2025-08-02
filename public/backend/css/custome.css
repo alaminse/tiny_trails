@@ -83,6 +83,11 @@ div.dataTables_paginate {
     color: #fff;
 }
 
+
+.sidebar-wrapper {
+    background: linear-gradient(180deg, #6a11cb 0%, #2575fc 100%);
+}
+
 .btn-gradient {
     color: #fff !important;
     border: none;
@@ -98,6 +103,7 @@ div.dataTables_paginate {
 
 /* Primary - Purple to Blue */
 .btn-gradient-primary {
+    color:white;
     background: linear-gradient(135deg, #6a11cb, #2575fc);
 }
 .btn-gradient-primary:hover {
@@ -106,6 +112,7 @@ div.dataTables_paginate {
 
 /* Success - Green to Lime */
 .btn-gradient-success {
+    color:white;
     background: linear-gradient(135deg, #00b09b, #96c93d);
 }
 .btn-gradient-success:hover {
@@ -114,7 +121,8 @@ div.dataTables_paginate {
 
 /* Danger - Red to Orange */
 .btn-gradient-danger {
-    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    color:white;
+    background: linear-gradient(135deg, #ff4141, #d52bff);
 }
 .btn-gradient-danger:hover {
     background: linear-gradient(135deg, #e83e63, #e2451f);
@@ -123,7 +131,7 @@ div.dataTables_paginate {
 /* Warning - Orange to Yellow */
 .btn-gradient-warning {
     background: linear-gradient(135deg, #f7971e, #ffd200);
-    color: #212529 !important;
+    color:white;
 }
 .btn-gradient-warning:hover {
     background: linear-gradient(135deg, #f68c0c, #f7c600);
@@ -131,6 +139,7 @@ div.dataTables_paginate {
 
 /* Info - Sky Blue to Blue */
 .btn-gradient-info {
+    color:white;
     background: linear-gradient(135deg, #00c6ff, #0072ff);
 }
 .btn-gradient-info:hover {

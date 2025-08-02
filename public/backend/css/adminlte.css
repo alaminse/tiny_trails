@@ -13035,7 +13035,10 @@ textarea.form-control-lg {
   background-color: inherit;
 }
 .sidebar-wrapper a {
-  color: var(--lte-sidebar-color);
+  color: #f1f1f1;
+}
+.sidebar-wrapper a:hover {
+  color: #ffeb3b;
 }
 .sidebar-wrapper .nav-treeview > .nav-item > .nav-link {
   color: var(--lte-sidebar-submenu-color);

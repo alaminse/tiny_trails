@@ -40,7 +40,7 @@
                             <!--end::Body-->
                             <!--begin::Footer-->
                             <div class="card-footer">
-                                <button type="submit" class="btn btn-primary">Submit</button>
+                                <button type="submit" class="btn btn-gradient-primary">Submit</button>
                             </div>
                             <!--end::Footer-->
                         </form>

@@ -62,6 +62,15 @@
                         </li>
                     </ul>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.pickuptypes.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.pickuptypes.index') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-speedometer"></i>
+                        <p>
+                            PickUp Type
+                        </p>
+                    </a>
+                </li>
             </ul>
             <!--end::Sidebar Menu-->
         </nav>

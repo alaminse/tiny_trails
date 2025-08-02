@@ -1,0 +1,11 @@
+{
+    "name": "PickUpType",
+    "alias": "pickuptype",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\PickUpType\\App\\Providers\\PickUpTypeServiceProvider"
+    ],
+    "files": []
+}
