@@ -5,8 +5,8 @@ use Modules\LocationManagement\App\Http\Controllers\CityController;
 use Modules\LocationManagement\App\Http\Controllers\CountryController;
 use Modules\LocationManagement\App\Http\Controllers\StateController;
 
-// middleware(['auth', 'verified'])->
-Route::as('admin.')->group(function () {
+//
+Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
     Route::controller(CountryController::class)
         ->prefix('countries')
         ->as('countries.')
@@ -21,7 +21,7 @@ Route::as('admin.')->group(function () {
                 Route::delete('/force-delete/{country}','forceDelete')->name('forceDelete');
                 Route::get('/get/data', 'getData')->name('data');
             });
-    
+
     Route::controller(StateController::class)
         ->prefix('states')
         ->as('states.')

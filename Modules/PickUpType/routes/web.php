@@ -3,8 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Modules\PickUpType\App\Http\Controllers\PickUpTypeController;
 
-// middleware(['auth', 'verified'])->
-Route::as('admin.')->group(function () {
+// 
+Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
     Route::controller(PickUpTypeController::class)
         ->prefix('pickuptypes')
         ->as('pickuptypes.')

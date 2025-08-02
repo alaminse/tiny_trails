@@ -5,8 +5,7 @@ use Modules\UserRolePermission\App\Http\Controllers\UserController;
 use Modules\UserRolePermission\App\Http\Controllers\RoleController;
 use Modules\UserRolePermission\App\Http\Controllers\PermissionController;
 
-// middleware(['auth', 'verified'])->
-Route::as('admin.')->group(function () {
+Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
     Route::controller(UserController::class)
         ->prefix('users')
         ->as('users.')

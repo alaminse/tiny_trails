@@ -140,7 +140,7 @@
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                     <img src="{{ asset('backend/img/user-128x128.jpg') }}" class="user-image rounded-circle shadow"
                         alt="User Image" />
-                    <span class="d-none d-md-inline">Alexander Pierce</span>
+                    <span class="d-none d-md-inline">{{ auth()->user()->name }}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
                     <!--begin::User Image-->
@@ -148,26 +148,28 @@
                         <img src="{{ asset('backend/img/user-128x128.jpg') }}" class="rounded-circle shadow"
                             alt="User Image" />
                         <p>
-                            Alexander Pierce - Web Developer
-                            <small>Member since Nov. 2023</small>
+                            {{ auth()->user()->name }} -
+                            @foreach ( auth()->user()->roles as $role)
+                                <span class="bg-purple-blue">{{ $role->name }}</span>
+                            @endforeach
+                            @auth
+                                <small>
+                                    Member since {{ optional(auth()->user()->created_at)
+                                        ->timezone('Asia/Dhaka')
+                                        //   ->timezone('Europe/Vienna')
+                                        ->format('j M Y') }}
+                                </small>
+                            @endauth
+
                         </p>
                     </li>
-                    <!--end::User Image-->
-                    <!--begin::Menu Body-->
-                    <li class="user-body">
-                        <!--begin::Row-->
-                        <div class="row">
-                            <div class="col-4 text-center"><a href="#">Followers</a></div>
-                            <div class="col-4 text-center"><a href="#">Sales</a></div>
-                            <div class="col-4 text-center"><a href="#">Friends</a></div>
-                        </div>
-                        <!--end::Row-->
-                    </li>
-                    <!--end::Menu Body-->
-                    <!--begin::Menu Footer-->
                     <li class="user-footer">
                         <a href="#" class="btn bg-purple-blue btn-flat">Profile</a>
-                        <a href="#" class="btn bg-purple-blue btn-flat float-end">Sign out</a>
+                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                            @csrf
+                            <button class="btn bg-purple-blue btn-sm float-end" type="submit">Sign out</button>
+                        </form>
+
                     </li>
                     <!--end::Menu Footer-->
                 </ul>
