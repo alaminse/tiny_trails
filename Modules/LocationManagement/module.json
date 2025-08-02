@@ -5,7 +5,7 @@
     "keywords": [],
     "priority": 0,
     "providers": [
-        "Modules\\LocationManagement\\App\\Providers\\LocationManagementServiceProvider"
+        "Modules\\LocationManagement\\Providers\\LocationManagementServiceProvider"
     ],
     "files": []
 }

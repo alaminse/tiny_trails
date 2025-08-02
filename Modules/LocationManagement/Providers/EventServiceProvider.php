@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\LocationManagement\App\Providers;
+namespace Modules\LocationManagement\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 

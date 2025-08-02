@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\LocationManagement\App\Providers;
+namespace Modules\UserRolePermission\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
@@ -8,13 +8,13 @@ use Nwidart\Modules\Traits\PathNamespace;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
-class LocationManagementServiceProvider extends ServiceProvider
+class UserRolePermissionServiceProvider extends ServiceProvider
 {
     use PathNamespace;
 
-    protected string $name = 'LocationManagement';
+    protected string $name = 'UserRolePermission';
 
-    protected string $nameLower = 'locationmanagement';
+    protected string $nameLower = 'userrolepermission';
 
     /**
      * Boot the application events.

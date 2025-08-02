@@ -1,13 +1,13 @@
 <?php
 
-namespace Modules\LocationManagement\App\Providers;
+namespace Modules\PickUpType\Providers;
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    protected string $name = 'LocationManagement';
+    protected string $name = 'PickUpType';
 
     /**
      * Called before routes are registered.

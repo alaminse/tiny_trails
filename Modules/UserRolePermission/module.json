@@ -5,7 +5,7 @@
     "keywords": [],
     "priority": 0,
     "providers": [
-        "Modules\\UserRolePermission\\App\\Providers\\UserRolePermissionServiceProvider"
+        "Modules\\UserRolePermission\\Providers\\UserRolePermissionServiceProvider"
     ],
     "files": []
 }

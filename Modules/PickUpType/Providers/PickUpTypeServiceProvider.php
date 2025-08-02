@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\PickUpType\App\Providers;
+namespace Modules\PickUpType\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;

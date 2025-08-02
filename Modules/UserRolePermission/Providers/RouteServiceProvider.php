@@ -1,13 +1,13 @@
 <?php
 
-namespace Modules\PickUpType\App\Providers;
+namespace Modules\UserRolePermission\Providers;
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    protected string $name = 'PickUpType';
+    protected string $name = 'UserRolePermission';
 
     /**
      * Called before routes are registered.

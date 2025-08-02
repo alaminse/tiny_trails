@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\PickUpType\App\Providers;
+namespace Modules\UserRolePermission\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
