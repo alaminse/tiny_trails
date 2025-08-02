@@ -103,11 +103,11 @@ class RoleController extends Controller
 
     public function getData(Request $request)
     {
-        $roles = ($request->has('trashed') && $request->trashed == 'true')
+        $data = ($request->has('trashed') && $request->trashed == 'true')
             ? Role::onlyTrashed()->orderBy('id', 'DESC')->get()
             : Role::orderBy('id', 'DESC')->get();
 
-        $html = view('userrolepermission::components.role_row', compact('roles'))->render();
+        $html = view('userrolepermission::components.role_row', compact('data'))->render();
 
         return response()->json(['html' => $html]);
     }

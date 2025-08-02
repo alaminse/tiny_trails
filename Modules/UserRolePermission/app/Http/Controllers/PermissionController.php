@@ -4,99 +4,111 @@ namespace Modules\UserRolePermission\App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Modules\UserRolePermission\App\Http\Requests\PermissionRequest;
+use Spatie\Permission\Models\Permission;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class PermissionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         return view('userrolepermission::permission');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(PermissionRequest $request)
     {
-        return view('userrolepermission::create');
+        try {
+            $permission = Permission::create([
+                'name' => $request->name,
+            ]);
+
+            return response()->json([
+                'message' => 'Permission created successfully',
+                'permission' => $permission
+            ], 201);
+
+        } catch (Exception $e) {
+            Log::error('Role creation failed: '.$e->getMessage());
+
+            return response()->json([
+                'message' => 'Failed to create role',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request) {}
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
+    public function edit(Permission $permission)
     {
-        return view('userrolepermission::show');
+        return response()->json($permission);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
+    public function update(PermissionRequest $request, Permission $permission)
     {
-        return view('userrolepermission::edit');
+        try {
+            $permission->update([
+                'name' => $request->name,
+            ]);
+
+            return response()->json([
+                'message' => 'Permission Update successfully',
+                'permission' => $permission
+            ], 201);
+
+        } catch (Exception $e) {
+            Log::error('Permission creation failed: '.$e->getMessage());
+
+            return response()->json([
+                'message' => 'Failed to update permission',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id) {}
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id) {}
-
-
-    public function get(Request $request)
+    // Soft delete a permission
+    public function destroy(Permission $permission)
     {
-        $patient_id = $request->input('id');
-
-        $feedbacks = Feedback::query();
-        if($patient_id != null) {
-            $feedbacks = $feedbacks->where('patient_id', $patient_id);
-        } else {
-            $feedbacks = $feedbacks->where('add_by', Auth::user()->id);
+        try {
+            $permission->delete();  // Soft delete
+            return response()->json(['message' => 'Permission deleted successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to delete permission.', 'error' => $e->getMessage()], 500);
         }
-        $feedbacks = $feedbacks->latest()->paginate(500);
-        $total = $feedbacks->total();
-        $tableRows = '';
+    }
 
-        foreach ($feedbacks as $key => $feedback) {
-            $tableRows .= '
-                <tr>
-                    <td>' .  ++$key . '</td>
-                    <td>' . $feedback->patient?->user?->name . '</td>
-                    <td>' . $feedback->user?->name . '</td>
-                    <td>' . Carbon::parse($feedback->date)->format('Y-m-d') . '</td>
-                    <td class="text-center">
-                        <a href="' . route('feedbacks.show', $feedback->slug) . '" class="btn btn-sm btn-info mb-1 me-1" style="cursor: pointer" title="Show"><i class="bi bi-eye"></i></a>
-                    </td>
-                </tr>';
+    // Restore a soft deleted permission
+    public function restore($id)
+    {
+        try {
+            $permission = Permission::withTrashed()->findOrFail($id);
+            $permission->restore();
+            return response()->json(['message' => 'Permission restored successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to restore permission.', 'error' => $e->getMessage()], 500);
         }
+    }
 
-        $pagination = '<nav aria-label="Page navigation"><ul class="pagination">';
-        $pagination .= '<li class="page-item"><a class="page-link btn btn-sm button-yellow" href="' . $feedbacks->previousPageUrl() . '">Previous</a></li>';
-        foreach (range(1, $feedbacks->lastPage()) as $page) {
-            $pagination .= '<li class="page-item ' . ($feedbacks->currentPage() == $page ? 'active' : '') . '"><a class="page-link btn btn-sm button-yellow" href="' . $feedbacks->url($page) . '">' . $page . '</a></li>';
+    // Permanently delete a permission
+    public function forceDelete($id)
+    {
+        try {
+            $permission = Permission::withTrashed()->findOrFail($id);
+            $permission->forceDelete();
+            return response()->json(['message' => 'Permission permanently deleted.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to permanently delete permission.', 'error' => $e->getMessage()], 500);
         }
+    }
 
-        $pagination .= '<li class="page-item"><a class="page-link btn btn-sm button-yellow" href="' . $feedbacks->nextPageUrl() . '">Next</a></li>';
-        $pagination .= '</ul></nav>';
+    public function getData(Request $request)
+    {
+        $data = ($request->has('trashed') && $request->trashed == 'true')
+            ? Permission::onlyTrashed()->orderBy('id', 'DESC')->get()
+            : Permission::orderBy('id', 'DESC')->get();
 
-        return response()->json([
-            'tableRows' => $tableRows,
-            'pagination' => $pagination,
-            'total' => $total,
-        ]);
+        $html = view('userrolepermission::components.role_row', compact('data'))->render();
 
+        return response()->json(['html' => $html]);
     }
 
 }

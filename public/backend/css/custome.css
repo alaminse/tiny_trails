@@ -59,3 +59,80 @@ div.dataTables_paginate {
         0 9px 18px rgba(181, 85, 247, 0.2) !important;
     border-color: #a555f7 !important; /* Optional: match border color */
 }
+
+.bg-purple-blue {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: #fff !important;
+    border: none;
+    padding: 0.15em 0.35em;
+    font-size: 0.65rem;
+    border-radius: 0.35rem;
+    display: inline-block;
+}
+
+.btn-purple-blue {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: #fff;
+    border: none;
+    border-radius: 0.35rem;
+    transition: 0.3s;
+}
+
+.btn-purple-blue:hover {
+    background: linear-gradient(135deg, #5b0dcc, #1f65ec);
+    color: #fff;
+}
+
+.btn-gradient {
+    color: #fff !important;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    display: inline-block;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out, box-shadow 0.3s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Primary - Purple to Blue */
+.btn-gradient-primary {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+}
+.btn-gradient-primary:hover {
+    background: linear-gradient(135deg, #5b0ecb, #1f65fc);
+}
+
+/* Success - Green to Lime */
+.btn-gradient-success {
+    background: linear-gradient(135deg, #00b09b, #96c93d);
+}
+.btn-gradient-success:hover {
+    background: linear-gradient(135deg, #00a18d, #88b935);
+}
+
+/* Danger - Red to Orange */
+.btn-gradient-danger {
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+}
+.btn-gradient-danger:hover {
+    background: linear-gradient(135deg, #e83e63, #e2451f);
+}
+
+/* Warning - Orange to Yellow */
+.btn-gradient-warning {
+    background: linear-gradient(135deg, #f7971e, #ffd200);
+    color: #212529 !important;
+}
+.btn-gradient-warning:hover {
+    background: linear-gradient(135deg, #f68c0c, #f7c600);
+}
+
+/* Info - Sky Blue to Blue */
+.btn-gradient-info {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+}
+.btn-gradient-info:hover {
+    background: linear-gradient(135deg, #00b5ef, #0064e6);
+}

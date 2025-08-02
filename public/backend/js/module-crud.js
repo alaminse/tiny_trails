@@ -61,7 +61,7 @@ function initModuleCrud(config) {
     });
 
     // Edit Data
-    $(document).on("click", `.edit${capitalize(moduleName)}Btn`, function (e) {
+    $(document).on("click", `.editBtn`, function (e) {
         e.preventDefault();
         const id = $(this).data("id");
 
@@ -69,6 +69,7 @@ function initModuleCrud(config) {
             url: `${baseUrl}/edit/${id}`,
             method: "GET",
             success: function (data) {
+                console.log(data);
 
                 $modal
                     .find(".modal-title")
@@ -78,8 +79,6 @@ function initModuleCrud(config) {
                 // Dynamically set field values
                 fields.forEach((field) => {
                     $form.find(`[name="${field}"]`).val(data[field]);
-                    console.log(field);
-
                 });
 
                 $modal.modal("show");
@@ -103,6 +102,8 @@ function initModuleCrud(config) {
             type: method,
             data: $form.serialize(),
             success: function (response) {
+                console.log(response);
+
                 $modal.modal("hide");
                 toastr.success(response.message);
                 getData(
@@ -111,8 +112,28 @@ function initModuleCrud(config) {
                         : `${baseUrl}/get/data`
                 );
             },
-            error: function () {
-                toastr.error(`Error saving ${moduleName}`);
+            error: function (xhr) {
+                console.log(xhr);
+
+                if (xhr.status === 422) {
+                    const errors = xhr.responseJSON.errors;
+
+                    // Clear previous error messages
+                    $form.find(".text-danger").remove();
+
+                    // Loop through each error and show under the input
+                    for (let field in errors) {
+                        const input = $form.find(`[name="${field}"]`);
+
+                        // Append each error message for this field
+                        errors[field].forEach((msg) => {
+                            const errorMsg = `<small class="text-danger d-block">${msg}</small>`;
+                            input.after(errorMsg);
+                        });
+                    }
+                } else {
+                    toastr.error(`Error saving ${moduleName}`);
+                }
             },
         });
     });
@@ -121,7 +142,7 @@ function initModuleCrud(config) {
     // Use `.delete{ModuleName}Btn`, `.restore{ModuleName}Btn`, etc.
 
     // Delete Role
-    $(document).on("click", ".deleteRoleBtn", function (e) {
+    $(document).on("click", ".deleteBtn", function (e) {
         e.preventDefault();
         const id = $(this).data("id");
 
@@ -158,7 +179,7 @@ function initModuleCrud(config) {
     });
 
     // Restore Role
-    $(document).on("click", ".restoreRoleBtn", function () {
+    $(document).on("click", ".restoreBtn", function () {
         const id = $(this).data("id");
 
         Swal.fire({
@@ -197,7 +218,7 @@ function initModuleCrud(config) {
     });
 
     // Force Delete Role
-    $(document).on("click", ".forceDeleteRoleBtn", function () {
+    $(document).on("click", ".forceDeleteBtn", function () {
         const id = $(this).data("id");
 
         Swal.fire({
