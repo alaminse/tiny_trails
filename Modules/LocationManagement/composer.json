@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/locationmanagement",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\LocationManagement\\": "app/",
+            "Modules\\LocationManagement\\Database\\Factories\\": "database/factories/",
+            "Modules\\LocationManagement\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\LocationManagement\\Tests\\": "tests/"
+        }
+    }
+}

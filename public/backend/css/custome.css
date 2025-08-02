@@ -83,9 +83,12 @@ div.dataTables_paginate {
     color: #fff;
 }
 
+.sidebar-brand {
+  background-color: #333D79FF;
+}
 
 .sidebar-wrapper {
-    background: linear-gradient(180deg, #6a11cb 0%, #2575fc 100%);
+    background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
 }
 
 .btn-gradient {

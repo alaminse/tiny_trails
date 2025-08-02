@@ -15,7 +15,7 @@
         @if ($pickup->status === 'active')
             <span class="badge btn-gradient-success">Active</span>
         @else
-            <span class="badge bg-warning text-dark">Inactive</span>
+            <span class="badge btn-gradient-warning text-dark">Inactive</span>
         @endif
     </td>
     <td>

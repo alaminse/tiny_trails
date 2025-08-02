@@ -62,6 +62,7 @@
                         </li>
                     </ul>
                 </li>
+
                 <li class="nav-item">
                     <a href="{{ route('admin.pickuptypes.index') }}"
                         class="nav-link {{ request()->routeIs('admin.pickuptypes.index') ? 'active' : '' }}">
@@ -70,6 +71,38 @@
                             PickUp Type
                         </p>
                     </a>
+                </li>
+
+                <li class="nav-item {{ request()->routeIs(['admin.countries.*', 'admin.states.*', 'admin.cities.*']) ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs(['admin.countries.*', 'admin.states.*', 'admin.cities.*']) ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-speedometer"></i>
+                        <p>
+                            Location Management
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.countries.index') }}" class="nav-link {{ request()->routeIs('admin.countries.index') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Country Lists</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.states.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.states.index') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>State</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.cities.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.cities.index') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>City</p>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
             </ul>
             <!--end::Sidebar Menu-->

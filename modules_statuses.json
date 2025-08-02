@@ -1,4 +1,5 @@
 {
     "UserRolePermission": true,
-    "PickUpType": true
+    "PickUpType": true,
+    "LocationManagement": true
 }

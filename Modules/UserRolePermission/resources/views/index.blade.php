@@ -49,7 +49,7 @@
     <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content border border-primary">
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header btn-gradient-primary">
                     <h5 class="modal-title" id="userModalLabel">Create User</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Close"></button>

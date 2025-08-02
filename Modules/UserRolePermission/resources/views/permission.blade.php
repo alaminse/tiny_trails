@@ -47,7 +47,7 @@
     <div class="modal fade" id="permissionModal" tabindex="-1" aria-labelledby="permissionModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content border border-primary">
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header btn-gradient-primary">
                     <h5 class="modal-title" id="permissionModalLabel">Create Permission</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Close"></button>
