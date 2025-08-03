@@ -148,3 +148,17 @@ div.dataTables_paginate {
 .btn-gradient-info:hover {
     background: linear-gradient(135deg, #00b5ef, #0064e6);
 }
+
+.btn-gradient-primary {
+    color: white;
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* deep purple to deep blue */
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.btn-gradient-primary:hover {
+    color: white;
+    background: linear-gradient(135deg, #580fa8, #1f63d4); /* even deeper on hover */
+}
+

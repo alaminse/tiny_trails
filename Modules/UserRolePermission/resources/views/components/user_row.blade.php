@@ -1,14 +1,20 @@
 @foreach ($data as $index => $user)
 <tr>
     <td>{{ $index + 1 }}</td>
-    <td>{{ $user->name }}</td>
+    <td>{{ $user->first_name }} {{ $user->last_name }}</td>
     <td>{{ $user->email }}</td>
     <td>
         @foreach ($user->roles as $role)
             <span class="bg-purple-blue">{{ $role->name }}</span>
         @endforeach
     </td>
-
+    <td>
+        @if ($user->status === 'active')
+            <span class="badge btn-gradient-success">Active</span>
+        @else
+            <span class="badge btn-gradient-warning text-dark">Inactive</span>
+        @endif
+    </td>
     <td>
         @if ($user->trashed())
             <button class="btn btn-gradient-info btn-sm restoreBtn" data-id="{{ $user->id }}">

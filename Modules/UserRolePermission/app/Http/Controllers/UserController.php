@@ -19,6 +19,8 @@ class UserController extends Controller
 
     public function store(UserRequest $request)
     {
+        return $request;
+
         try {
             DB::beginTransaction();
 
@@ -136,8 +138,8 @@ class UserController extends Controller
     public function getData(Request $request)
     {
         $data = ($request->has('trashed') && $request->trashed == 'true')
-            ? User::onlyTrashed()->orderBy('id', 'DESC')->get()
-            : User::orderBy('id', 'DESC')->get();
+            ? User::excludeAuth()->onlyTrashed()->orderBy('id', 'DESC')->get()
+            : User::excludeAuth()->orderBy('id', 'DESC')->get();
 
         $html = view('userrolepermission::components.user_row', compact('data'))->render();
 

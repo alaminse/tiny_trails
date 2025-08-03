@@ -1,42 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login - Admin Panel</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    {{-- Bootstrap 5 CDN --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        body {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        .login-box {
-            background: #fff;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            width: 100%;
-            max-width: 400px;
-        }
-        .form-control:focus {
-            box-shadow: none;
-            border-color: #2575fc;
-        }
-        .btn-primary {
-            background-color: #2575fc;
-            border-color: #2575fc;
-        }
-    </style>
-</head>
-<body>
-    <div class="login-box">
+@extends('backend.app')
+@section('title', 'Login')
+@section('css')
+<link rel="stylesheet" href="{{ asset('backend/css/auth.css') }}" />
+@endsection
+@section('authentication')
+<div class="login-box">
         <h3 class="text-center mb-4">Admin Login</h3>
 
         @if ($errors->any())
@@ -69,10 +37,8 @@
             </div>
 
             <div class="d-grid">
-                <button type="submit" class="btn btn-primary">Login</button>
+                <button type="submit" class="btn btn-gradient-primary">Login</button>
             </div>
         </form>
     </div>
-</body>
-</html>
- 
+@endsection
