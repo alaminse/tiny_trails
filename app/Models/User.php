@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
+use Modules\UserRolePermission\App\Models\Driver;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -20,10 +21,8 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
+    protected $guarded = [
+        'id'
     ];
 
     /**
@@ -54,5 +53,8 @@ class User extends Authenticatable
         return $query->where('id', '!=', Auth::id());
     }
 
-
+    public function driver()
+    {
+        return $this->hasOne(Driver::class);
+    }
 }

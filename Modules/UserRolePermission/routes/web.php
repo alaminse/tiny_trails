@@ -19,6 +19,8 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
                 Route::post('/restore/{user}','restore')->name('restore');
                 Route::delete('/force-delete/{user}','forceDelete')->name('forceDelete');
                 Route::get('/get/data', 'getData')->name('data');
+                Route::get('states/by-country/{country}', 'stateGet');
+                Route::get('cities/by-state/{state}', 'cityGet');
             });
 
         Route::controller(RoleController::class)

@@ -9,35 +9,86 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Modules\UserRolePermission\App\Http\Requests\UserRequest;
+use App\Traits\Upload;
+use Modules\LocationManagement\App\Models\City;
+use Modules\LocationManagement\App\Models\Country;
+use Modules\LocationManagement\App\Models\State;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    use Upload;
     public function index()
     {
-        return view('userrolepermission::index');
+        $countries = Country::where('status', 'active')->get();
+        $roles = Role::get();
+        return view('userrolepermission::index', compact('countries', 'roles'));
     }
 
     public function store(UserRequest $request)
     {
-        return $request;
-
         try {
             DB::beginTransaction();
 
+            $data = $request->validated(); // ✅ safer than manually pulling fields
+
+            if($request->file('photo'))
+            {
+                $data['photo'] = $this->uploadFile($request->file('photo'), 'user');
+            }
+
             // Create user
             $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => bcrypt($request->password),
+                'first_name'        => $data['first_name'],
+                'last_name'         => $data['last_name'],
+                'email'             => $data['email'],
+                'password'          => bcrypt($data['password']),
+                'phone'             => $data['phone'] ?? null,
+                'dob'               => $data['dob'] ?? null,
+                'gender'            => $data['gender'] ?? null,
+                'height_cm'         => $data['height_cm'] ?? null,
+                'weight_kg'         => $data['weight_kg'] ?? null,
+                'address'           => $data['address'] ?? null,
+                'photo'             => $data['photo'],
+                'country_id'        => $data['country_id'] ?? null,
+                'state_id'          => $data['state_id'] ?? null,
+                'city_id'           => $data['city_id'] ?? null,
+                'status'            => $data['status'],
             ]);
 
-            $user->assignRole($request->role);
+            $user->assignRole($data['role']);
+
+            // If driver, store extra fields
+            if ($data['role'] === 'driver') {
+
+                // Store uploaded images
+                if($request->file('driving_license_image'))
+                {
+                    $data['driving_license_image'] = $this->uploadFile($request->file('driving_license_image'), 'driver/'. $user->id);
+                }
+                if($request->file('car_image'))
+                {
+                    $data['car_image'] = $this->uploadFile($request->file('car_image'), 'driver/'. $user->id);
+                }
+
+                $user->driver()->create([
+                    'driving_license_number' => $data['driving_license_number'],
+                    'driving_license_expiry' => $data['driving_license_expiry'],
+                    'driving_license_image'  => $data['driving_license_image'] ?? '',
+                    'car_model'              => $data['car_model'],
+                    'car_make'               => $data['car_make'],
+                    'car_year'               => $data['car_year'],
+                    'car_color'              => $data['car_color'],
+                    'car_plate_number'       => $data['car_plate_number'],
+                    'car_image'              => $data['car_image'] ?? '',
+                ]);
+            }
 
             DB::commit();
 
             return response()->json([
                 'message' => 'User created and role assigned successfully',
-                'user' => $user
+                'user' => $user->load('driver') // if applicable
             ], 201);
 
         } catch (Exception $e) {
@@ -53,15 +104,49 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $roles = $user->getRoleNames();
+        $role = $user->getRoleNames()->first();
 
-        return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $roles->first(),
-        ]);
+        $data = [
+            'id'         => $user->id,
+            'first_name' => $user->first_name,
+            'last_name'  => $user->last_name,
+            'email'      => $user->email,
+            'phone'      => $user->phone,
+            'dob'        => $user->dob,
+            'gender'     => $user->gender,
+            'height_cm'  => $user->height_cm,
+            'weight_kg'  => $user->weight_kg,
+            'photo'      => $user->photo ? asset($user->photo) : null,
+            'address'    => $user->address,
+            'status'     => $user->status,
+            'role'       => $role,
+            'country_id' => $user->country_id,
+            'state_id'   => $user->state_id,
+            'city_id'    => $user->city_id,
+        ];
+
+        // If role is driver, add driver-specific fields
+        if ($role === 'driver') {
+            $data = array_merge($data, [
+                'user_id'                  => $user->user_id,
+                'driving_license_number'  => $user->driving_license_number,
+                'driving_license_expiry'  => $user->driving_license_expiry,
+                'driving_license_image'   => $user->driving_license_image ? asset($user->driving_license_image) : null,
+                'car_model'               => $user->car_model,
+                'car_make'                => $user->car_make,
+                'car_year'                => $user->car_year,
+                'car_color'               => $user->car_color,
+                'car_plate_number'        => $user->car_plate_number,
+                'car_image'               => $user->car_image ? asset($user->car_image) : null,
+                'face_embedding'          => $user->face_embedding,
+                'is_verified'             => $user->is_verified,
+                'device_token'            => $user->device_token,
+            ]);
+        }
+
+        return response()->json($data);
     }
+
 
     public function update(UserRequest $request, User $user)
     {
@@ -146,4 +231,13 @@ class UserController extends Controller
         return response()->json(['html' => $html]);
     }
 
+    public function stateGet(Country $country)
+    {
+        return State::where('country_id', $country->id)->get();
+    }
+
+    public function cityGet(State $state)
+    {
+        return City::where('state_id', $state->id)->get();
+    }
 }

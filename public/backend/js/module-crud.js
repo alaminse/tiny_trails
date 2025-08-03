@@ -79,9 +79,34 @@ function initModuleCrud(config) {
                 $form.find('[name="id"]').val(data.id);
 
                 // Dynamically set field values
+                const loadDelay = {
+                    state_id: 500,
+                    city_id: 1000,
+                };
+
                 fields.forEach((field) => {
-                    $form.find(`[name="${field}"]`).val(data[field]);
+                    const value = data[field];
+
+                    // Handle image previews if any matching image preview exists
+                    if ($form.find(`.image-upload-preview[data-target-input="${field}"] img`).length > 0) {
+                        const imageUrl = value || '/backend/img/default.jpg';
+                        $form.find(`.image-upload-preview[data-target-input="${field}"] img`).attr('src', imageUrl);
+                        return;
+                    }
+
+                    // Handle delayed setting for dependent selects
+                    if (field in loadDelay) {
+                        setTimeout(() => {
+                            $form.find(`[name="${field}"]`).val(value).trigger('change');
+                        }, loadDelay[field]);
+                        return;
+                    }
+
+                    // Default case for input, select, textarea, etc.
+                    $form.find(`[name="${field}"]`).val(value).trigger('change');
                 });
+
+
 
                 $modal.modal("show");
             },
@@ -99,14 +124,26 @@ function initModuleCrud(config) {
         const url = id ? `${baseUrl}/update/${id}` : `${baseUrl}/store`;
         const method = id ? "PUT" : "POST";
 
+
+        let form = $form[0]; // get plain DOM element
+        let formData = new FormData(form);
+
+
+        // Debug: log all form fields
+        for (let [key, value] of formData.entries()) {
+            console.log(key, value);
+        }
+
         $.ajax({
-            url,
-            type: method,
-            data: $form.serialize(),
+            url: url,           // same as before
+            type: method,       // 'POST', 'PUT', etc.
+            data: formData,     // send form data including files
+            processData: false, // prevent automatic transformation
+            contentType: false, // allow multipart/form-data headers
             success: function (response) {
                 console.log(response);
 
-                $modal.modal("hide");
+                // $modal.modal("hide");
                 toastr.success(response.message);
                 getData(
                     currentView === "trashed"

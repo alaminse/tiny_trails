@@ -48,225 +48,7 @@
 
 
     <!-- Modal -->
-    <div class="modal fade" id="userModal"data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        aria-labelledby="userModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content border border-primary">
-                <div class="modal-header btn-gradient-primary">
-                    <h5 class="modal-title" id="userModalLabel">Create / Edit User</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-
-                <form id="userForm" enctype="multipart/form-data">
-                    @csrf
-                    <input type="hidden" name="id" id="user_id">
-
-                    <div class="modal-body">
-
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="first_name">First Name</label>
-                                <input type="text" name="first_name" id="first_name" class="form-control" required>
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="last_name">Last Name</label>
-                                <input type="text" name="last_name" id="last_name" class="form-control" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="email">Email</label>
-                                <input type="email" name="email" id="email" class="form-control" required>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="password">Password (<small class="form-text text-muted">Leave blank to keep
-                                        current password</small>)</label>
-                                <input type="password" name="password" id="password" class="form-control">
-
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="phone">Phone</label>
-                                <input type="text" name="phone" id="phone" class="form-control">
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="dob">Date of Birth</label>
-                                <input type="date" name="dob" id="dob" class="form-control">
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="gender">Gender</label>
-                                <select name="gender" id="gender" class="form-control">
-                                    <option value="">Select Gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="height_cm">Height (cm)</label>
-                                <input type="number" name="height_cm" id="height_cm" class="form-control" min="0"
-                                    step="0.1">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="weight_kg">Weight (kg)</label>
-                                <input type="number" name="weight_kg" id="weight_kg" class="form-control"
-                                    min="0" step="0.1">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="country_id">Country</label>
-                                <select name="country_id" id="country_id" class="form-control">
-                                    <option value="">Select Country</option>
-                                    {{-- Populate countries here --}}
-                                </select>
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="state_id">State</label>
-                                <select name="state_id" id="state_id" class="form-control">
-                                    <option value="">Select State</option>
-                                    {{-- Populate states here --}}
-                                </select>
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="city_id">City</label>
-                                <select name="city_id" id="city_id" class="form-control">
-                                    <option value="">Select City</option>
-                                    {{-- Populate cities here --}}
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="address">Address</label>
-                                <textarea name="address" id="address" rows="4" class="form-control"></textarea>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="status">Status</label>
-                                    <select name="status" id="status" class="form-control">
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
-                                    </select>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="role">Role</label>
-                                    <select name="role" id="role" class="form-control select2 select2-danger"
-                                        data-dropdown-css-class="select2-danger" style="width: 100%;" required>
-                                        @foreach (\Spatie\Permission\Models\Role::all() as $role)
-                                            <option value="{{ $role->name }}">{{ ucfirst($role->name) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            {{-- <div class="col-md-4">
-                                <label for="photo">Photo</label>
-                                <div id="photoPreviewContainer"
-                                    style="border: 2px dashed #ccc; width: 117px; height: 117px; cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
-                                    <img id="photoPreview" src="{{ asset('backend/img/avatar.jpg') }}"
-                                        alt="Photo Preview" style="width: 100%; height: 100%; object-fit: cover;" />
-                                    <div id="dragDropOverlay"
-                                        style="position: absolute; top:0; left:0; right:0; bottom:0; display: none; background: rgba(0,0,0,0.2); color: white; font-weight: bold; font-size: 18px; align-items: center; justify-content: center; display: flex; text-align: center;">
-                                        Drop image here
-                                    </div>
-                                </div>
-                                <input type="file" name="photo" id="photo" class="form-control"
-                                    accept="image/*" style="display: none;">
-                            </div> --}}
-                            <div class="col-md-4">
-                                <label for="photo">Photo</label>
-                                <div class="image-upload-preview" data-target-input="photo"
-                                    style="width: 117px; height: 117px;">
-                                    <img src="{{ asset('backend/img/default.jpg') }}" alt="Photo Preview"
-                                        class="preview-img" />
-                                    <div class="drag-drop-overlay">Drop image here</div>
-                                </div>
-                                <input type="file" name="photo" id="photo" class="image-upload-input"
-                                    accept="image/*" style="display:none;">
-                            </div>
-                        </div>
-
-                        <!-- Driver Fields (hidden initially) -->
-                        <div id="driverFields"
-                            style="display: none; border: 1px solid #ddd; padding: 10px; margin-top: 20px; border-radius: 5px;">
-                            <h4 style="border-bottom: 2px solid blue">Driver Details</h4>
-
-                            <div class="row">
-                                <div class="col-md-8 row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="driving_license_number">Driving License Number</label>
-                                        <input type="text" name="driving_license_number" id="driving_license_number"
-                                            class="form-control">
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label for="driving_license_expiry">Driving License Expiry</label>
-                                        <input type="date" name="driving_license_expiry" id="driving_license_expiry"
-                                            class="form-control">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="car_model">Car Model</label>
-                                        <input type="text" name="car_model" id="car_model" class="form-control">
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label for="car_make">Car Make</label>
-                                        <input type="text" name="car_make" id="car_make" class="form-control">
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label for="car_year">Car Year</label>
-                                        <input type="number" name="car_year" id="car_year" class="form-control"
-                                            min="1900" max="2100">
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label for="car_color">Car Color</label>
-                                        <input type="text" name="car_color" id="car_color" class="form-control">
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label for="car_plate_number">Car Plate Number</label>
-                                        <input type="text" name="car_plate_number" id="car_plate_number"
-                                            class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="driving_license_image">Driving License Image</label>
-                                    <div class="image-upload-preview" data-target-input="driving_license_image"
-                                        style="width: 117px; height: 117px;">
-                                        <img src="{{ asset('backend/img/default.jpg') }}" alt="License Preview"
-                                            class="preview-img" />
-                                        <div class="drag-drop-overlay">Drop image here</div>
-                                    </div>
-                                    <input type="file" name="driving_license_image" id="driving_license_image"
-                                        class="image-upload-input" accept="image/*" style="display:none;">
-
-                                    <label for="car_image">Car Image</label>
-                                    <div class="image-upload-preview" data-target-input="car_image"
-                                        style="width: 117px; height: 117px;">
-                                        <img src="{{ asset('backend/img/default.jpg') }}" alt="Car Preview"
-                                            class="preview-img" />
-                                        <div class="drag-drop-overlay">Drop image here</div>
-                                    </div>
-                                    <input type="file" name="car_image" id="car_image" class="image-upload-input"
-                                        accept="image/*" style="display:none;">
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="modal-footer d-flex justify-content-end">
-                        <button type="submit" class="btn btn-gradient-primary btn-sm p-2">Save</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-
+    @include('userrolepermission::components.user_modal')
 
     @push('scripts')
         <script src="{{ asset('backend/js/jquery.dataTables.min.js') }}"></script>
@@ -328,6 +110,89 @@
                     ],
                 });
             });
-        </script>
+
+$(document).ready(function () {
+    // If you're editing an existing record, set these values via data attributes or JS variables
+    const selectedCountryId = $('#country_id').data('selected'); // example: data-selected="1"
+    const selectedStateId = $('#state_id').data('selected');     // same here
+    const selectedCityId = $('#city_id').data('selected');       // and here
+
+
+    function loadStates(countryId, callback = null) {
+        $('#state_id').html('<option value="">Loading...</option>');
+        $('#city_id').html('<option value="">Select City</option>');
+
+        $.ajax({
+            url: `/users/states/by-country/${countryId}`,
+            type: 'GET',
+            success: function(states) {
+                let options = '<option value="">Select State</option>';
+                states.forEach(state => {
+                    options += `<option value="${state.id}">${state.name}</option>`;
+                });
+                $('#state_id').html(options);
+
+                if (callback) callback();
+            }
+        });
+    }
+
+
+
+    function loadCities(stateId, callback = null) {
+        $('#city_id').html('<option value="">Loading...</option>');
+
+        $.ajax({
+            url: `/users/cities/by-state/${stateId}`,
+            type: 'GET',
+            success: function(cities) {
+                let options = '<option value="">Select City</option>';
+                cities.forEach(city => {
+                    options += `<option value="${city.id}">${city.name}</option>`;
+                });
+                $('#city_id').html(options);
+
+                if (callback) callback();
+            }
+        });
+    }
+
+    // Handle change
+    $('#country_id').on('change', function () {
+        const countryId = $(this).val();
+        if (countryId) {
+            loadStates(countryId);
+        } else {
+            $('#state_id').html('<option value="">Select State</option>');
+            $('#city_id').html('<option value="">Select City</option>');
+        }
+    });
+
+    $('#state_id').on('change', function () {
+        const stateId = $(this).val();
+        if (stateId) {
+            loadCities(stateId);
+        } else {
+            $('#city_id').html('<option value="">Select City</option>');
+        }
+    });
+
+    // Auto-select for edit mode
+    if (selectedCountryId) {
+        $('#country_id').val(selectedCountryId);
+        loadStates(selectedCountryId, function () {
+            if (selectedStateId) {
+                $('#state_id').val(selectedStateId);
+                loadCities(selectedStateId, function () {
+                    if (selectedCityId) {
+                        $('#city_id').val(selectedCityId);
+                    }
+                });
+            }
+        });
+    }
+});
+</script>
+
     @endpush
 @endsection
