@@ -66,7 +66,7 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="country_id">Country</label>
-                            <select name="country_id" id="country_id" class="form-control" data-selected="{{ $user->country_id ?? '' }}">
+                            <select name="country_id" id="country_id" class="form-control select_option" data-selected="">
                                 <option value="">Select Country</option>
                                 @foreach ($countries as $country)
                                         <option value="{{ $country->id }}">{{ ucfirst($country->name) }}</option>
@@ -76,7 +76,7 @@
 
                         <div class="col-md-4 mb-3">
                             <label for="state_id">State</label>
-                            <select name="state_id" id="state_id" class="form-control" data-selected="{{ $user->state_id ?? '' }}">
+                            <select name="state_id" id="state_id" class="form-control select_option" data-selected="">
                                 <option value="">Select State</option>
                                 {{-- Populate states here --}}
                             </select>
@@ -84,7 +84,7 @@
 
                         <div class="col-md-4 mb-3">
                             <label for="city_id">City</label>
-                            <select name="city_id" id="city_id" class="form-control" data-selected="{{ $user->city_id ?? '' }}">
+                            <select name="city_id" id="city_id" class="form-control select_option" data-selected="">
                                 <option value="">Select City</option>
                                 {{-- Populate cities here --}}
                             </select>
@@ -179,7 +179,7 @@
                                             class="preview-img" />
                                         <div class="drag-drop-overlay">Drop image here</div>
                                     </div>
-                                    <input type="file" name="" id="driving_license_image"
+                                    <input type="file" name="driving_license_image" id="driving_license_image"
                                         class="image-upload-input" accept="image/*" style="display:none;">
                                 </div>
                                 <div class="mb-3">

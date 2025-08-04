@@ -18,8 +18,8 @@ trait Upload
     }
     public function deleteFile($path)
     {
-        if(File::exists(public_path('uploads/'.$path))) {
-            File::delete(public_path('uploads/'.$path));
+        if(File::exists(public_path($path))) {
+            File::delete(public_path($path));
         }
         return true;
     }

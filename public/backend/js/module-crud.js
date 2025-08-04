@@ -3,6 +3,7 @@ function initModuleCrud(config) {
         moduleName, // e.g. 'role', 'permission'
         tableId,
         modalId,
+        userShowModal,
         formId,
         createBtnId,
         trashedBtnId,
@@ -14,6 +15,7 @@ function initModuleCrud(config) {
 
     const $table = $(`#${tableId}`);
     const $modal = $(`#${modalId}`);
+    const $showModal = $(`#${userShowModal}`);
     const $form = $(`#${formId}`);
     const $createBtn = $(`#${createBtnId}`);
     const $trashedBtn = $(`#${trashedBtnId}`);
@@ -63,52 +65,155 @@ function initModuleCrud(config) {
     });
 
     // Edit Data
+    // $(document).on("click", `.editBtn`, function (e) {
+    //     e.preventDefault();
+    //     const id = $(this).data("id");
+
+    //     $.ajax({
+    //         url: `${baseUrl}/edit/${id}`,
+    //         method: "GET",
+    //         success: function (data) {
+
+    //             $modal
+    //                 .find(".modal-title")
+    //                 .text(`Edit ${capitalize(moduleName)}`);
+    //             $form.find('[name="id"]').val(data.id);
+
+    //             fields.forEach((field) => {
+    //                 const value = data[field];
+
+    //                 // Handle image previews if any matching image preview exists
+    //                 if ($form.find(`.image-upload-preview[data-target-input="${field}"] img`).length > 0)
+    //                 {
+    //                     const imageUrl = value || "/backend/img/default.jpg";
+    //                     $form.find(`.image-upload-preview[data-target-input="${field}"] img`).attr("src", imageUrl);
+    //                     return;
+    //                 }
+    //                 // Default case for input, select, textarea, etc.
+    //                 $form.find(`[name="${field}"]`).val(value).trigger("change");
+
+    //                 $form.find(`.select_option[name="${field}"]`).each(function () {
+    //                     // Set data-selected attribute dynamically
+    //                     // $(this).attr("data-selected", value);
+    //                     $(this).attr("data-selected", value).val(value).trigger('change');
+
+    //                     // Optional: Save to global if needed for cascading dropdowns
+    //                     const capitalizedField = field.charAt(0).toUpperCase() + field.slice(1);
+    //                     window[`selected${capitalizedField}`] = value;
+    //                 });
+
+
+
+
+    //             });
+    //             if (window.selectedCountry_id) {
+    //                     window.loadStates(window.selectedCountry_id, function () {
+    //                         $('#state_id').val(window.selectedState_id).trigger('change');
+    //                         if (window.selectedState_id) {
+    //                         window.loadCities(window.selectedState_id, function () {
+    //                             $('#city_id').val(window.selectedCity_id).trigger('change');
+    //                         });
+    //                         }
+    //                     });
+    //                     }
+    //             $modal.modal("show");
+    //         },
+    //         error: function () {
+    //             toastr.error(`Failed to load ${moduleName} data`);
+    //         },
+    //     });
+    // });
+
     $(document).on("click", `.editBtn`, function (e) {
+    e.preventDefault();
+    const id = $(this).data("id");
+
+    $.ajax({
+        url: `${baseUrl}/edit/${id}`,
+        method: "GET",
+        success: function (data) {
+            $modal.find(".modal-title").text(`Edit ${capitalize(moduleName)}`);
+            $form.find('[name="id"]').val(data.id);
+
+            fields.forEach((field) => {
+                const value = data[field];
+
+                // Handle image previews if any matching image preview exists
+                if ($form.find(`.image-upload-preview[data-target-input="${field}"] img`).length > 0) {
+                    const imageUrl = value || "/backend/img/default.jpg";
+                    $form.find(`.image-upload-preview[data-target-input="${field}"] img`).attr("src", imageUrl);
+                    return;
+                }
+
+                // Default case for input, select, textarea, etc.
+                $form.find(`[name="${field}"]`).val(value).trigger("change");
+
+                $form.find(`.select_option[name="${field}"]`).each(function () {
+                    $(this).attr("data-selected", value).val(value).trigger('change');
+
+                    // Save selected values globally for cascading dropdowns
+                    const capitalizedField = field.charAt(0).toUpperCase() + field.slice(1);
+                    window[`selected${capitalizedField}`] = value;
+                });
+            });
+
+            // Now run the cascading loads using the globals you set above
+            if (window.selectedCountry_id) {
+                window.loadStates(window.selectedCountry_id, function () {
+                    $('#state_id').val(window.selectedState_id).trigger('change');
+                    if (window.selectedState_id) {
+                        window.loadCities(window.selectedState_id, function () {
+                            $('#city_id').val(window.selectedCity_id).trigger('change');
+                        });
+                    }
+                });
+            }
+
+            $modal.modal("show");
+        },
+        error: function () {
+            toastr.error(`Failed to load ${moduleName} data`);
+        },
+    });
+});
+
+    $(document).on("click", `.showBtn`, function (e) {
         e.preventDefault();
         const id = $(this).data("id");
 
         $.ajax({
-            url: `${baseUrl}/edit/${id}`,
+            url: `${baseUrl}/show/${id}`,
             method: "GET",
             success: function (data) {
-                console.log(data);
-
-                $modal
-                    .find(".modal-title")
-                    .text(`Edit ${capitalize(moduleName)}`);
-                $form.find('[name="id"]').val(data.id);
-
-                // Dynamically set field values
-                const loadDelay = {
-                    state_id: 500,
-                    city_id: 1000,
-                };
-
                 fields.forEach((field) => {
-                    const value = data[field];
+                    const value = data[field] ?? "";
 
-                    // Handle image previews if any matching image preview exists
-                    if ($form.find(`.image-upload-preview[data-target-input="${field}"] img`).length > 0) {
-                        const imageUrl = value || '/backend/img/default.jpg';
-                        $form.find(`.image-upload-preview[data-target-input="${field}"] img`).attr('src', imageUrl);
+                    if (
+                        $showModal.find(
+                            `.image-upload-preview[data-target-input="${field}"] img`
+                        ).length > 0
+                    ) {
+                        const imageUrl = value || "/backend/img/default.jpg";
+                        $showModal
+                            .find(
+                                `.image-upload-preview[data-target-input="${field}"] img`
+                            )
+                            .attr("src", imageUrl);
                         return;
                     }
 
-                    // Handle delayed setting for dependent selects
-                    if (field in loadDelay) {
-                        setTimeout(() => {
-                            $form.find(`[name="${field}"]`).val(value).trigger('change');
-                        }, loadDelay[field]);
-                        return;
-                    }
-
-                    // Default case for input, select, textarea, etc.
-                    $form.find(`[name="${field}"]`).val(value).trigger('change');
+                    // Regular text display
+                    $showModal.find(`#${field}`).text(value);
                 });
 
+                // Show driverFields only if role is 'driver'
+                if ((data.role || "").trim().toLowerCase() === "driver") {
+                    $showModal.find("#driverFields").css("display", "block");
+                } else {
+                    $showModal.find("#driverFields").slideDown();
+                }
 
-
-                $modal.modal("show");
+                $showModal.modal("show");
             },
             error: function () {
                 toastr.error(`Failed to load ${moduleName} data`);
@@ -116,33 +221,29 @@ function initModuleCrud(config) {
         });
     });
 
-    // Submit Form (Create/Update)
     $form.on("submit", function (e) {
         e.preventDefault();
 
         const id = $form.find('[name="id"]').val();
-        const url = id ? `${baseUrl}/update/${id}` : `${baseUrl}/store`;
-        const method = id ? "PUT" : "POST";
+        const isEdit = !!id;
+        const url = isEdit ? `${baseUrl}/update/${id}` : `${baseUrl}/store`;
+        const method = isEdit ? "PUT" : "POST";
 
+        const form = $form[0];
+        const formData = new FormData(form);
 
-        let form = $form[0]; // get plain DOM element
-        let formData = new FormData(form);
-
-
-        // Debug: log all form fields
-        for (let [key, value] of formData.entries()) {
-            console.log(key, value);
+        // Force Laravel to recognize PUT via hidden field
+        if (isEdit) {
+            formData.append("_method", "PUT");
         }
 
         $.ajax({
-            url: url,           // same as before
-            type: method,       // 'POST', 'PUT', etc.
-            data: formData,     // send form data including files
+            url: url, // same as before
+            type: "POST", // 'POST', 'PUT', etc.
+            data: formData, // send form data including files
             processData: false, // prevent automatic transformation
             contentType: false, // allow multipart/form-data headers
             success: function (response) {
-                console.log(response);
-
                 // $modal.modal("hide");
                 toastr.success(response.message);
                 getData(

@@ -27,6 +27,9 @@
             <a href="#" class="btn btn-gradient-primary btn-sm editBtn" data-id="{{ $user->id }}">
                 <i class="fas fa-edit"></i>
             </a>
+            <a href="#" class="btn btn-gradient-primary btn-sm showBtn" data-id="{{ $user->id }}">
+                <i class="fas fa-eye"></i>
+            </a>
             <a href="#" class="btn btn-gradient-danger btn-sm deleteBtn" data-id="{{ $user->id }}">
                 <i class="fas fa-trash"></i>
             </a>

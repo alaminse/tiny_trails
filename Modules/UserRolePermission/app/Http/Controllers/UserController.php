@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Modules\UserRolePermission\App\Http\Requests\UserRequest;
 use App\Traits\Upload;
-use Modules\LocationManagement\App\Models\City;
-use Modules\LocationManagement\App\Models\Country;
+use Modules\LocationManagement\app\Models\City;
+use Modules\LocationManagement\app\Models\Country;
 use Modules\LocationManagement\App\Models\State;
 use Spatie\Permission\Models\Role;
 
@@ -127,50 +127,136 @@ class UserController extends Controller
 
         // If role is driver, add driver-specific fields
         if ($role === 'driver') {
+            $driver = $user->driver;
             $data = array_merge($data, [
-                'user_id'                  => $user->user_id,
-                'driving_license_number'  => $user->driving_license_number,
-                'driving_license_expiry'  => $user->driving_license_expiry,
-                'driving_license_image'   => $user->driving_license_image ? asset($user->driving_license_image) : null,
-                'car_model'               => $user->car_model,
-                'car_make'                => $user->car_make,
-                'car_year'                => $user->car_year,
-                'car_color'               => $user->car_color,
-                'car_plate_number'        => $user->car_plate_number,
-                'car_image'               => $user->car_image ? asset($user->car_image) : null,
-                'face_embedding'          => $user->face_embedding,
-                'is_verified'             => $user->is_verified,
-                'device_token'            => $user->device_token,
+                'driving_license_number'  => $driver->driving_license_number,
+                'driving_license_expiry'  => $driver->driving_license_expiry,
+                'driving_license_image'   => $driver->driving_license_image ? asset($driver->driving_license_image) : null,
+                'car_model'               => $driver->car_model,
+                'car_make'                => $driver->car_make,
+                'car_year'                => $driver->car_year,
+                'car_color'               => $driver->car_color,
+                'car_plate_number'        => $driver->car_plate_number,
+                'car_image'               => $driver->car_image ? asset($driver->car_image) : null,
             ]);
         }
 
         return response()->json($data);
     }
 
+    public function show(User $user)
+    {
+        $role = $user->getRoleNames()->first();
+
+        $data = [
+            'id'         => $user->id,
+            'first_name' => $user->first_name,
+            'last_name'  => $user->last_name,
+            'email'      => $user->email,
+            'phone'      => $user->phone,
+            'dob'        => $user->dob,
+            'gender'     => $user->gender,
+            'height_cm'  => $user->height_cm,
+            'weight_kg'  => $user->weight_kg,
+            'photo'      => $user->photo ? asset($user->photo) : null,
+            'address'    => $user->address,
+            'status'     => $user->status,
+            'role'       => $role,
+            'country_id' => $user->country_name,
+            'state_id'   => $user->state_name,
+            'city_id'    => $user->city_name,
+        ];
+
+        // If role is driver, add driver-specific fields
+        if ($role === 'driver') {
+            $driver = $user->driver;
+            $data = array_merge($data, [
+                'driving_license_number'  => $driver->driving_license_number,
+                'driving_license_expiry'  => $driver->driving_license_expiry,
+                'driving_license_image'   => $driver->driving_license_image ? asset($driver->driving_license_image) : null,
+                'car_model'               => $driver->car_model,
+                'car_make'                => $driver->car_make,
+                'car_year'                => $driver->car_year,
+                'car_color'               => $driver->car_color,
+                'car_plate_number'        => $driver->car_plate_number,
+                'car_image'               => $driver->car_image ? asset($driver->car_image) : null,
+            ]);
+        }
+
+        return response()->json($data);
+    }
 
     public function update(UserRequest $request, User $user)
     {
+        // return $request;
+
         try {
             DB::beginTransaction();
 
+            $data = $request->validated();
+
+            // Upload new profile photo if provided
+            if ($request->file('photo')) {
+                $data['photo'] = $this->uploadFile($request->file('photo'), 'user');
+                if($user->photo) $this->deleteFile($user->photo);
+            }
+
             // Update user fields
             $user->update([
-                'name' => $request->name,
-                'email' => $request->email,
+                'first_name' => $data['first_name'],
+                'last_name'  => $data['last_name'],
+                'email'      => $data['email'],
+                'phone'      => $data['phone'] ?? null,
+                'dob'        => $data['dob'] ?? null,
+                'gender'     => $data['gender'] ?? null,
+                'height_cm'  => $data['height_cm'] ?? null,
+                'weight_kg'  => $data['weight_kg'] ?? null,
+                'address'    => $data['address'] ?? null,
+                'photo'      => $data['photo'] ?? $user->photo,
+                'country_id' => $data['country_id'] ?? null,
+                'state_id'   => $data['state_id'] ?? null,
+                'city_id'    => $data['city_id'] ?? null,
+                'status'     => $data['status'],
             ]);
 
-            // Update password only if provided
+            // Update password if provided
             if ($request->filled('password')) {
-                $user->password = bcrypt($request->password);
+                $user->password = bcrypt($data['password']);
                 $user->save();
             }
 
-            $user->syncRoles($request->role);
+            // Sync role
+            $user->syncRoles($data['role']);
+
+            // If driver, update or create driver info
+            if ($data['role'] === 'driver') {
+                if ($request->file('driving_license_image')) {
+                    $data['driving_license_image'] = $this->uploadFile($request->file('driving_license_image'), 'driver/' . $user->id);
+                    if($user->driver?->driving_license_image) $this->deleteFile($user->driver?->driving_license_image);
+                }
+                if ($request->file('car_image')) {
+                    $data['car_image'] = $this->uploadFile($request->file('car_image'), 'driver/' . $user->id);
+                    if($user->driver?->car_image) $this->deleteFile($user->driver?->car_image);
+                }
+
+                $user->driver()->updateOrCreate([], [
+                    'driving_license_number' => $data['driving_license_number'],
+                    'driving_license_expiry' => $data['driving_license_expiry'],
+                    'driving_license_image'  => $data['driving_license_image'] ?? $user->driver->driving_license_image ?? '',
+                    'car_model'              => $data['car_model'],
+                    'car_make'               => $data['car_make'],
+                    'car_year'               => $data['car_year'],
+                    'car_color'              => $data['car_color'],
+                    'car_plate_number'       => $data['car_plate_number'],
+                    'car_image'              => $data['car_image'] ?? $user->driver->car_image ?? '',
+                ]);
+            }
+
             DB::commit();
 
             return response()->json([
                 'message' => 'User updated and role assigned successfully',
-                'user' => $user,
+                'user' => $user->load('driver')
             ], 200);
 
         } catch (Exception $e) {
@@ -182,7 +268,6 @@ class UserController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
-
     }
 
     // Soft delete a user
