@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Modules\LocationManagement\App\Http\Requests\CountryRequest;
-use Modules\LocationManagement\App\Models\Country;
+use Modules\LocationManagement\app\Http\Requests\CountryRequest;
+use Modules\LocationManagement\app\Models\Country;
 
 class CountryController extends Controller
 {

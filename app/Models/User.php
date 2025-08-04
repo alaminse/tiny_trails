@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
-use Modules\LocationManagement\App\Models\City;
-use Modules\LocationManagement\App\Models\State;
-use Modules\UserRolePermission\App\Models\Driver;
+use Modules\LocationManagement\app\Models\City;
+use Modules\LocationManagement\app\Models\State;
+use Modules\UserRolePermission\app\Models\Driver;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable

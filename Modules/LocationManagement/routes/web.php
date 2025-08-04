@@ -1,9 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\LocationManagement\App\Http\Controllers\CityController;
-use Modules\LocationManagement\App\Http\Controllers\CountryController;
-use Modules\LocationManagement\App\Http\Controllers\StateController;
+use Modules\LocationManagement\app\Http\Controllers\CityController;
+use Modules\LocationManagement\app\Http\Controllers\CountryController;
+use Modules\LocationManagement\app\Http\Controllers\StateController;
 
 //
 Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {

@@ -244,7 +244,7 @@ function initModuleCrud(config) {
             processData: false, // prevent automatic transformation
             contentType: false, // allow multipart/form-data headers
             success: function (response) {
-                // $modal.modal("hide");
+                $modal.modal("hide");
                 toastr.success(response.message);
                 getData(
                     currentView === "trashed"

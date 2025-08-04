@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Modules\LocationManagement\App\Http\Requests\StateRequest;
-use Modules\LocationManagement\App\Models\Country;
-use Modules\LocationManagement\App\Models\State;
+use Modules\LocationManagement\app\Http\Requests\StateRequest;
+use Modules\LocationManagement\app\Models\Country;
+use Modules\LocationManagement\app\Models\State;
 
 class StateController extends Controller
 {

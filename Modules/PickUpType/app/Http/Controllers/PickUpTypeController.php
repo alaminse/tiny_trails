@@ -7,8 +7,8 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Modules\PickUpType\App\Http\Requests\PickupRequest;
-use Modules\PickUpType\App\Models\PickupType;
+use Modules\PickUpType\app\Http\Requests\PickupRequest;
+use Modules\PickUpType\app\Models\PickupType;
 
 class PickUpTypeController extends Controller
 {

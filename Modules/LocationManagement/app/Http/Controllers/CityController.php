@@ -6,10 +6,9 @@ use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Modules\LocationManagement\App\Http\Requests\CityRequest;
-use Modules\LocationManagement\App\Http\Requests\StateRequest;
-use Modules\LocationManagement\App\Models\City;
-use Modules\LocationManagement\App\Models\State;
+use Modules\LocationManagement\app\Http\Requests\CityRequest;
+use Modules\LocationManagement\app\Models\City;
+use Modules\LocationManagement\app\Models\State;
 
 class CityController extends Controller
 {

@@ -1,9 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\PickUpType\App\Http\Controllers\PickUpTypeController;
+use Modules\PickUpType\app\Http\Controllers\PickUpTypeController;
 
-// 
+//
 Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
     Route::controller(PickUpTypeController::class)
         ->prefix('pickuptypes')

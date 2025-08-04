@@ -4,7 +4,7 @@ namespace Modules\UserRolePermission\App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Modules\UserRolePermission\App\Http\Requests\PermissionRequest;
+use Modules\UserRolePermission\app\Http\Requests\PermissionRequest;
 use Spatie\Permission\Models\Permission;
 use Exception;
 use Illuminate\Support\Facades\Log;

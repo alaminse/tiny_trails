@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Modules\UserRolePermission\App\Http\Requests\RoleRequest;
+use Modules\UserRolePermission\app\Http\Requests\RoleRequest;
 use Spatie\Permission\Models\Role;
 
 

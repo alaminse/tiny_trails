@@ -7,13 +7,13 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
 use Illuminate\Support\Facades\Hash;
-use Modules\LocationManagement\App\Models\City;
-use Modules\LocationManagement\App\Models\Country;
-use Modules\LocationManagement\App\Models\State;
+use Modules\LocationManagement\app\Models\City;
+use Modules\LocationManagement\app\Models\Country;
+use Modules\LocationManagement\app\Models\State;
 use Illuminate\Support\Str;
-use Modules\PickUpType\App\Models\PickupType;
-use Modules\UserRolePermission\App\Models\Driver;
-use Modules\UserRolePermission\App\Models\Kid;
+use Modules\PickUpType\app\Models\PickupType;
+use Modules\UserRolePermission\app\Models\Driver;
+use Modules\UserRolePermission\app\Models\Kid;
 use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder

@@ -8,11 +8,11 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Modules\UserRolePermission\App\Http\Requests\UserRequest;
+use Modules\UserRolePermission\app\Http\Requests\UserRequest;
 use App\Traits\Upload;
 use Modules\LocationManagement\app\Models\City;
 use Modules\LocationManagement\app\Models\Country;
-use Modules\LocationManagement\App\Models\State;
+use Modules\LocationManagement\app\Models\State;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller

@@ -1,9 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\UserRolePermission\App\Http\Controllers\UserController;
-use Modules\UserRolePermission\App\Http\Controllers\RoleController;
-use Modules\UserRolePermission\App\Http\Controllers\PermissionController;
+use Modules\UserRolePermission\app\Http\Controllers\UserController;
+use Modules\UserRolePermission\app\Http\Controllers\RoleController;
+use Modules\UserRolePermission\app\Http\Controllers\PermissionController;
 
 Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
     Route::controller(UserController::class)
