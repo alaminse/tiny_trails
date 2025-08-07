@@ -119,6 +119,7 @@ div.dataTables_paginate {
     background: linear-gradient(135deg, #00b09b, #96c93d);
 }
 .btn-gradient-success:hover {
+    color:white;
     background: linear-gradient(135deg, #00a18d, #88b935);
 }
 
@@ -128,6 +129,7 @@ div.dataTables_paginate {
     background: linear-gradient(135deg, #ff4141, #d52bff);
 }
 .btn-gradient-danger:hover {
+    color:white;
     background: linear-gradient(135deg, #e83e63, #e2451f);
 }
 

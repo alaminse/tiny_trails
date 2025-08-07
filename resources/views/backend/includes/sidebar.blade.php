@@ -64,6 +64,35 @@
                 </li>
 
                 <li class="nav-item">
+                    <a href="{{ route('admin.kids.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.kids.index') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-speedometer"></i>
+                        <p>
+                            Kids Management
+                        </p>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{{ route('admin.drivers.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.drivers.index') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-speedometer"></i>
+                        <p>
+                            Driver Management
+                        </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.parents.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.parents.index') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-speedometer"></i>
+                        <p>
+                            Parent Management
+                        </p>
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a href="{{ route('admin.pickuptypes.index') }}"
                         class="nav-link {{ request()->routeIs('admin.pickuptypes.index') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-speedometer"></i>

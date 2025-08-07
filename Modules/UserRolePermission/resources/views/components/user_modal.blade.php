@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content border border-primary">
             <div class="modal-header btn-gradient-primary">
-                <h5 class="modal-title" id="userModalLabel">Create / Edit User</h5>
+                <h5 class="modal-title" id="userModalLabel">Create / Edit {{ $roleName ??  'User' }}</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
             </div>
@@ -57,12 +57,12 @@
                         <div class="col-md-4 mb-3">
                             <label for="height_cm">Height (cm)</label>
                             <input type="number" name="height_cm" id="height_cm" class="form-control" min="0"
-                                step="0.1">
+                                step="any">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="weight_kg">Weight (kg)</label>
                             <input type="number" name="weight_kg" id="weight_kg" class="form-control" min="0"
-                                step="0.1">
+                                step="any">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="country_id">Country</label>

@@ -91,7 +91,7 @@
 
                 <!-- Driver Fields (shown if needed) -->
                 <div id="driverFields"
-                    style="display: none; border: 1px solid #ddd; padding: 10px; margin-top: 20px; border-radius: 5px;">
+                    style="border: 1px solid #ddd; padding: 10px; margin-top: 20px; border-radius: 5px;">
                     <h4 style="border-bottom: 2px solid blue">Driver Details</h4>
 
                     <div class="row">
@@ -147,6 +147,13 @@
                         </div>
                     </div>
                 </div>
+                <div id="parentFields"
+                    style="border: 1px solid #ddd; padding: 10px; margin-top: 20px; border-radius: 5px; display: none;">
+                    <h4 style="border-bottom: 2px solid blue">Kids Details</h4>
+                    <div id="kidsContent"></div>   <!-- Dynamic insert -->
+                </div>
+
+
             </div>
 
 

@@ -19,7 +19,7 @@
                             </div>
 
                             <div class="p-2">
-                                <a href="#" class="btn btn-gradient-sm btn-success" id="addRoleBtn">Add Role</a>
+                                <a href="#" class="btn btn-gradient-success btn-sm" id="addRoleBtn">Add Role</a>
                             </div>
                         </div>
                         <div class="table-responsive pt-3">

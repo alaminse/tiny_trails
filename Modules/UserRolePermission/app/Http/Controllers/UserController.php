@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\UserRolePermission\App\Http\Controllers;
+namespace Modules\UserRolePermission\app\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -18,11 +18,25 @@ use Spatie\Permission\Models\Role;
 class UserController extends Controller
 {
     use Upload;
+
+    protected $roleName = null;
     public function index()
     {
+        if (request()->routeIs('admin.drivers.index')) {
+            $this->roleName = 'driver';
+        } elseif (request()->routeIs('admin.parents.index')) {
+            $this->roleName = 'parent';
+        }
+
         $countries = Country::where('status', 'active')->get();
         $roles = Role::get();
-        return view('userrolepermission::index', compact('countries', 'roles'));
+
+        return view('userrolepermission::index', [
+                    'countries' => $countries,
+                    'roles' => $roles,
+                    'roleName' => $this->roleName,
+                ]);
+
     }
 
     public function store(UserRequest $request)
@@ -183,6 +197,27 @@ class UserController extends Controller
             ]);
         }
 
+        if ($role === 'parent') {
+            $kids = $user->kids;  // Collection of all kids
+
+            $data['kids'] = $kids->map(function ($kid) {
+                return [
+                    'kid_id'           => $kid->id,
+                    'first_name'       => $kid->first_name,
+                    'last_name'        => $kid->last_name,
+                    'dob'              => $kid->dob,
+                    'gender'           => $kid->gender,
+                    'height_cm'        => $kid->height_cm,
+                    'weight_kg'        => $kid->weight_kg,
+                    'photo'            => $kid->photo ? asset($kid->photo) : null,
+                    'school_name'      => $kid->school_name,
+                    'school_address'   => $kid->school_address,
+                    'emergency_contact'=> $kid->emergency_contact,
+                ];
+            })->toArray();
+        }
+
+
         return response()->json($data);
     }
 
@@ -307,14 +342,29 @@ class UserController extends Controller
 
     public function getData(Request $request)
     {
-        $data = ($request->has('trashed') && $request->trashed == 'true')
-            ? User::excludeAuth()->onlyTrashed()->orderBy('id', 'DESC')->get()
-            : User::excludeAuth()->orderBy('id', 'DESC')->get();
+        $query = User::excludeAuth()->orderBy('id', 'DESC');
+
+        // Check if trashed is requested
+        if ($request->filled('trashed') && $request->trashed == 'true') {
+            $query = $query->onlyTrashed();
+        }
+
+        // Check if role filter is applied
+        if (!empty($request->role) && $request->role !== 'null') {
+            $role = $request->role;
+
+            $query = $query->whereHas('roles', function ($q) use ($role) {
+                $q->where('name', $role);
+            });
+        }
+
+        $data = $query->get();
 
         $html = view('userrolepermission::components.user_row', compact('data'))->render();
 
         return response()->json(['html' => $html]);
     }
+
 
     public function stateGet(Country $country)
     {
