@@ -265,7 +265,7 @@ function initModuleCrud(config) {
             success: function (response) {
                 console.log(response);
 
-                // $modal.modal("hide");
+                $modal.modal("hide");
                 toastr.success(response.message);
                 getData(
                     currentView === "trashed"
