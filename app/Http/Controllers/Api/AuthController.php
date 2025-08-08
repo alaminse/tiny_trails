@@ -13,8 +13,8 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required',
+            'email'     => 'required|email',
+            'password'  => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -23,7 +23,7 @@ class AuthController extends Controller
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             /** @var \App\Models\User $user */
-            $user = Auth::user()->load('roles'); // eager load roles
+            $user = Auth::user()->load('roles');
 
             $token = $user->createToken('api_token')->plainTextToken;
 
