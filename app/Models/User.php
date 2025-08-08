@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Sanctum\HasApiTokens;
 use Modules\LocationManagement\app\Models\City;
 use Modules\LocationManagement\app\Models\State;
 use Modules\UserRolePermission\app\Models\Driver;
@@ -19,7 +20,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -77,7 +78,7 @@ class User extends Authenticatable
     {
         return $this->country ? $this->country->name : null;
     }
-    
+
     public function state(): BelongsTo
     {
         return $this->belongsTo(State::class);
