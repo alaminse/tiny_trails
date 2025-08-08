@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
-
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -14,8 +13,8 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email'     => 'required|email',
-            'password'  => 'required',
+            'email' => 'required|email',
+            'password' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -23,21 +22,19 @@ class AuthController extends Controller
         }
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            $user = Auth::user()->load('roles');
-
+            $user = Auth::user();
             $token = $user->createToken('api_token')->plainTextToken;
 
             return response()->json([
                 'token' => $token,
-                'user'  => [
-                    'id'    => $user->id,
-                    'first_name'  => $user->first_name,
-                    'last_name'  => $user->last_name,
+                'user' => [
+                    'id' => $user->id,
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
                     'email' => $user->email,
-                    'role'  => $user->getRoleNames() // returns ['admin', 'editor']
+                    'role' => $user->getRoleNames() // returns ['admin', 'editor']
                 ]
             ], 200);
-
         } else {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
@@ -45,16 +42,15 @@ class AuthController extends Controller
 
     public function profile()
     {
-        /** @var \app\Models\User $user */
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if($user) {
+        if ($user) {
             $userData = $user->toArray();
 
             // Check if user role has parent then load parent data
             $roles = $user->getRoleNames();
-            if ($roles && is_array($roles) && count($roles) > 0)
-            {
+            if ($roles && is_array($roles) && count($roles) > 0) {
                 $role = $roles[0]; // Assuming user has only one role
                 $roleModel = \Spatie\Permission\Models\Role::findByName($role);
                 if ($roleModel && $roleModel->parent_id) {
@@ -72,11 +68,17 @@ class AuthController extends Controller
             $userData['image_path'] = asset('uploads/images/' . $user->image); // Assuming image is stored in uploads/images
 
             return response()->json([
-                'user'  => $userData
+                'user' => $userData
             ], 200);
-
         } else {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['message' => 'Logged out successfully']);
     }
 }
