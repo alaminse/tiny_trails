@@ -12,15 +12,16 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
 use Modules\LocationManagement\app\Models\City;
+use Modules\LocationManagement\app\Models\Country;
 use Modules\LocationManagement\app\Models\State;
 use Modules\UserRolePermission\app\Models\Driver;
-use Modules\UserRolePermission\App\Models\Kid;
+use Modules\UserRolePermission\app\Models\Kid;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -59,6 +60,11 @@ class User extends Authenticatable
         return $query->where('id', '!=', Auth::id());
     }
 
+    public function parent()
+    {
+        return $this->hasOne(Parent::class);
+    }
+
     public function driver()
     {
         return $this->hasOne(Driver::class);
@@ -71,7 +77,7 @@ class User extends Authenticatable
 
     public function country(): BelongsTo
     {
-        return $this->belongsTo(State::class);
+        return $this->belongsTo(Country::class);
     }
 
     public function getCountryNameAttribute()

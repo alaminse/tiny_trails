@@ -4,17 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Modules\UserRolePermission\app\Http\Resources\UserResource;
 
 class AuthController extends Controller
 {
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required',
+            'email'     => 'required|email',
+            'password'  => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -27,12 +27,12 @@ class AuthController extends Controller
 
             return response()->json([
                 'token' => $token,
-                'user' => [
-                    'id' => $user->id,
-                    'first_name' => $user->first_name,
-                    'last_name' => $user->last_name,
-                    'email' => $user->email,
-                    'role' => $user->getRoleNames() // returns ['admin', 'editor']
+                'user'  => [
+                    'id'            => $user->id,
+                    'first_name'    => $user->first_name,
+                    'last_name'     => $user->last_name,
+                    'email'         => $user->email,
+                    'role'          => $user->getRoleNames() // returns ['admin', 'editor']
                 ]
             ], 200);
         } else {
@@ -46,27 +46,7 @@ class AuthController extends Controller
         $user = Auth::user();
 
         if ($user) {
-            $userData = $user->toArray();
-
-            // Check if user role has parent then load parent data
-            $roles = $user->getRoleNames();
-            if ($roles && is_array($roles) && count($roles) > 0) {
-                $role = $roles[0]; // Assuming user has only one role
-                $roleModel = \Spatie\Permission\Models\Role::findByName($role);
-                if ($roleModel && $roleModel->parent_id) {
-                    $parentRole = \Spatie\Permission\Models\Role::find($roleModel->parent_id);
-                    $userData['parent_role'] = $parentRole ? $parentRole->name : null;
-                }
-            }
-
-            // If role is driver then load driver data
-            if ($user->driver) {
-                $userData['driver'] = $user->driver->toArray();
-            }
-
-            // Make a resource for image path and return
-            $userData['image_path'] = asset('uploads/images/' . $user->image); // Assuming image is stored in uploads/images
-
+            $userData = new UserResource($user);
             return response()->json([
                 'user' => $userData
             ], 200);

@@ -1,9 +1,8 @@
 <?php
 
-namespace Modules\UserRolePermission\app\Http\Controllers;
+namespace Modules\UserRolePermission\app\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -27,21 +26,26 @@ class KidController extends Controller
 
     public function index(Request $request)
     {
-        $parentId = $request->query('parent');
-        return view('userrolepermission::kids.index', compact('parentId'));
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $user->load('kids');
+
+        // Return collection of kids
+        return response()->json(
+            KidResource::collection($user->kids),
+            200
+        );
     }
 
     public function store(KidRequest $request)
     {
+
         try {
             $data = $request->validated();
 
             $kid = $this->kidRepository->create($data);
 
-            return response()->json([
-                'message' => 'Kid created successfully',
-                'kid' => new KidResource($kid)
-            ], 201);
+            return response()->json(new KidResource($kid), 201);
 
         } catch (Exception $e) {
             Log::error('Kid creation failed: '.$e->getMessage());
@@ -55,6 +59,7 @@ class KidController extends Controller
 
     public function edit(Kid $kid)
     {
+        $kid->load('parent');
         return response()->json(new KidResource($kid));
     }
 
@@ -65,10 +70,7 @@ class KidController extends Controller
 
             $kid = $this->kidRepository->update($kid->id, $data);
 
-            return response()->json([
-                'message' => 'Kid updated successfully',
-                'kid' => new KidResource($kid)
-            ], 200);
+            return response()->json(new KidResource($kid), 200);
 
         } catch (Exception $e) {
             Log::error('Kid update failed: ' . $e->getMessage());
@@ -82,8 +84,6 @@ class KidController extends Controller
 
     public function show(Kid $kid)
     {
-        // Eager load parent to avoid extra queries
-        $kid->load('parent');
         return response()->json(new KidResource($kid));
     }
 
@@ -96,44 +96,5 @@ class KidController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'Failed to delete kid.', 'error' => $e->getMessage()], 500);
         }
-    }
-
-    // Restore a soft deleted role
-    public function restore($id)
-    {
-        try {
-            $kid = Kid::withTrashed()->findOrFail($id);
-            $kid->restore();
-            return response()->json(['message' => 'Kid restored successfully.']);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Failed to restore kid.', 'error' => $e->getMessage()], 500);
-        }
-    }
-
-    // Permanently delete a kid
-    public function forceDelete($id)
-    {
-        try {
-            $this->kidRepository->forceDelete($id);
-            return response()->json(['message' => 'Kid permanently deleted.']);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Failed to permanently delete kid.', 'error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function getData(Request $request)
-    {
-        $parentId = $request->query('parent');
-        $data = $this->kidRepository->getData($request, $parentId);
-        $html = view('userrolepermission::kids.kid_row', compact('data'))->render();
-
-        return response()->json(['html' => $html]);
-    }
-
-    public function parents()
-    {
-        $parents = $this->kidRepository->getParents();
-
-        return response()->json(['parents' => $parents]);
     }
 }
