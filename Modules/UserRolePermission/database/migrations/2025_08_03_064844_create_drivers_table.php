@@ -21,15 +21,16 @@ return new class extends Migration
             $table->string('driving_license_image')->nullable();
 
             $table->string('car_model')->nullable();
-            $table->string('car_make')->nullable(); // added for completeness
-            $table->year('car_year')->nullable();   // added for data integrity
+            $table->string('car_make')->nullable();
+            $table->year('car_year')->nullable();
             $table->string('car_color')->nullable();
             $table->string('car_plate_number')->nullable();
             $table->string('car_image')->nullable();
 
-            $table->text('face_embedding')->nullable(); // encrypted face vector
+            $table->text('face_embedding')->nullable();
+            $table->string('faceImage')->nullable();
             $table->boolean('is_verified')->default(false);
-            $table->string('device_token')->nullable(); // for MFA or notifications
+            $table->string('device_token')->nullable();
 
             $table->enum('status', ['active', 'inactive'])->default('active');
 

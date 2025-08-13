@@ -8,7 +8,12 @@ class UserResource extends JsonResource
 {
     public function toArray($request)
     {
-        $data = [
+        // If user has the 'driver' role, ensure relation is present
+        if ($this->resource->hasRole('driver')) {
+            $this->resource->loadMissing('driver');
+        }
+
+        return [
             'id'                => $this->id,
             'first_name'        => $this->first_name,
             'last_name'         => $this->last_name,
@@ -20,17 +25,15 @@ class UserResource extends JsonResource
             'weight_kg'         => $this->weight_kg,
             'photo'             => getImageUrl($this->photo),
             'address'           => $this->address,
-            'country_id'        => $this->country_name,
-            'state_id'          => $this->state_name,
-            'city_id'           => $this->city_name,
+            'country'           => $this->country_name,
+            'state'             => $this->state_name,
+            'city'              => $this->city_name,
             'status'            => $this->status,
+            // Include only if the user is a driver and relation exists
+            'driver'     => $this->when(
+                $this->resource->hasRole('driver') && $this->driver,
+                fn () => new DriverResource($this->driver)
+            ),
         ];
-
-        // Check if the user has the 'driver' role
-        if ($this->roles->contains('name', 'driver')) {
-            $data['driver'] = new DriverResource($this->whenLoaded('driver'));
-        }
-
-        return $data;
     }
 }
