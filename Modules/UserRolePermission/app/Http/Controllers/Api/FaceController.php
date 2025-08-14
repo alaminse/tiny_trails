@@ -37,41 +37,35 @@ class FaceController extends Controller
             $driver->update([
                 'face_embedding' => json_encode($data['embedding']),
                 'faceImage'      => $data['faceImage'],
+                'is_verified'    => 1
             ]);
 
             return response()->json([
                 'message' => 'Face verified successfully',
-                'driver' => $driver->fresh() // refresh to get latest data
+                'driver' => $driver->fresh()
             ], 200);
         }
 
         return response()->json(['message' => 'Driver not found for this user'], 404);
     }
 
-    public function verification(FaceRequest $request)
+    public function verification()
     {
-        $data = $request->validated();
-
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
         // Get the related driver
         $driver = $user->driver;
+        $data = [
+            'face_embedding'    => $driver->face_embedding,
+            'faceImage'         => getImageUrl($driver->faceImage),
+            'is_verified'       => $driver->is_verified,
+        ];
 
         if ($driver) {
-            if (isset($data['faceImage']) && $data['faceImage']) {
-                $data['faceImage'] = $this->uploadFile($data['faceImage'], 'driver/'.$user->id);
-            }
-
-            // Update the driver record
-            $driver->update([
-                'face_embedding' => json_encode($data['embedding']),
-                'faceImage'      => $data['faceImage'],
-            ]);
-
             return response()->json([
-                'message' => 'Face verified successfully',
-                'driver' => $driver->fresh() // refresh to get latest data
+                'message' => 'Face Details.',
+                'driver' => $data // refresh to get latest data
             ], 200);
         }
 

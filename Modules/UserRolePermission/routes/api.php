@@ -10,7 +10,7 @@ Route::middleware(['auth:sanctum'])->prefix('users')->group(function () {
         ->group(function () {
             Route::get('/verify/{driver}', 'verify');
             Route::post('/store', 'store');
-            Route::post('/verification', 'verification');
+            Route::get('/verification', 'verification');
         });
     Route::controller(KidController::class)
         ->prefix('kids')
