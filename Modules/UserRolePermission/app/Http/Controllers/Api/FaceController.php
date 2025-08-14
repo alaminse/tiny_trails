@@ -40,10 +40,22 @@ class FaceController extends Controller
                 'is_verified'    => 1
             ]);
 
+            $driver = $driver->fresh();
+            $driverData = null;
+            if ($driver) {
+                $driverData = [
+                    'name'           => $user->first_name,
+                    'face_embedding' => $driver->face_embedding,
+                    'faceImage'      => getImageUrl($driver->faceImage),
+                    'is_verified'    => $driver->is_verified,
+                ];
+            }
+
             return response()->json([
                 'message' => 'Face verified successfully',
-                'driver' => $driver->fresh()
+                'driver'  => $driverData
             ], 200);
+
         }
 
         return response()->json(['message' => 'Driver not found for this user'], 404);

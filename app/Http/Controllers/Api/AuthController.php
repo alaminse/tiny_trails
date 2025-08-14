@@ -25,16 +25,29 @@ class AuthController extends Controller
             $user = Auth::user();
             $token = $user->createToken('api_token')->plainTextToken;
 
+            $driverData = null;
+            if ($user->driver) {
+                $driver = $user->driver; // make sure $driver is defined
+                $driverData = [
+                    'name'              => $user->first_name,
+                    'face_embedding'    => $driver->face_embedding,
+                    'faceImage'         => getImageUrl($driver->faceImage),
+                    'is_verified'       => $driver->is_verified,
+                ];
+            }
+
             return response()->json([
-                'token' => $token,
-                'user'  => [
-                    'id'            => $user->id,
-                    'first_name'    => $user->first_name,
-                    'last_name'     => $user->last_name,
-                    'email'         => $user->email,
-                    'role'          => $user->getRoleNames() // returns ['admin', 'editor']
+                'token'  => $token,
+                'user'   => [
+                    'id'         => $user->id,
+                    'first_name' => $user->first_name,
+                    'last_name'  => $user->last_name,
+                    'email'      => $user->email,
+                    'role'       => $user->getRoleNames(),
+                    'driver'     => $driverData // null if no driver
                 ]
             ], 200);
+
         } else {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
