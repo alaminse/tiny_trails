@@ -17,7 +17,7 @@ class SubscriptionRepository
      */
     public function getData(Request $request)
     {
-        $query = Subscription::query()->with(['user', 'plan']);
+        $query = Subscription::query();
 
         // Filter by user ID if provided
         if ($request->filled('user_id')) {
@@ -34,7 +34,7 @@ class SubscriptionRepository
              $query->where('stripe_status', $request->status);
         }
 
-        return $query->paginate(15);
+        return $query->get();
     }
 
     /**
@@ -81,5 +81,15 @@ class SubscriptionRepository
     {
         $subscription = Subscription::onlyTrashed()->find($id);
         return $subscription ? $subscription->restore() : false;
+    }
+
+
+    public function findActiveByUserAndPlan($user_id, $plan_id)
+    {
+        return Subscription::where('user_id', $user_id)
+                            ->where('plan_id', $plan_id)
+                            ->where('stripe_status', 'active')
+                            ->where('trial_ends_at', '>', now())
+                            ->first();
     }
 }

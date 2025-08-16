@@ -39,10 +39,13 @@ class KidController extends Controller
 
     public function store(KidRequest $request)
     {
-
+        // return $request;
         try {
             $data = $request->validated();
-
+            
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            $data['user_id'] = $user->id;
             $kid = $this->kidRepository->create($data);
 
             return response()->json(new KidResource($kid), 201);
@@ -67,7 +70,10 @@ class KidController extends Controller
     {
         try {
             $data = $request->validated();
-
+            
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            $data['user_id'] = $user->id;
             $kid = $this->kidRepository->update($kid->id, $data);
 
             return response()->json(new KidResource($kid), 200);

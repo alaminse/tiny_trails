@@ -7,9 +7,10 @@ Route::middleware(['auth:sanctum'])->prefix('users')->group(function () {
     Route::controller(SubscriptionController::class)
         ->prefix('subscriptions')
         ->group(function () {
+            Route::post('/buynow', 'buynow');
             Route::get('/', 'index');
-            Route::post('/store', 'store');
+            Route::get('/details/{subscription}', 'details');
             Route::get('/plans', 'plans');
-            Route::get('/show/{subscription}', 'show');
+            Route::get('/plan/details/{plan}', 'planDetails');
         });
 });

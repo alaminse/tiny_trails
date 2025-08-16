@@ -18,13 +18,13 @@ class KidRequest extends FormRequest
             'first_name'       => ['required', 'string', 'max:255'],
             'last_name'        => ['required', 'string', 'max:255'],
             'dob'              => ['required', 'date'],
-            'gender'           => ['required', 'in:male,female,other'],
+            'gender'           => ['required', 'in:Male,Female,other'],
             'height_cm'        => ['nullable', 'string', 'min:0'],
             'weight_kg'        => ['nullable', 'numeric', 'min:0'],
             'school_name'      => ['nullable', 'string', 'max:255'],
             'school_address'   => ['nullable', 'string', 'max:500'],
             'emergency_contact'=> ['nullable', 'string', 'max:255'],
-            'user_id'          => ['required', 'exists:users,id'],
+            'user_id'          => ['nullable', 'exists:users,id'],
             'photo'            => ['nullable', 'image', 'max:2048'],
         ];
     }

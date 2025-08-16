@@ -33,12 +33,22 @@ class SubscriptionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(SubscriptionRequest $request)
+    public function buynow(SubscriptionRequest $request)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         // The authorization check is now handled in the SubscriptionRequest.
         $plan = Plan::find($request->plan_id);
+
+        $existingSubscription = $this->subscriptionRepository->findActiveByUserAndPlan($user->id, $plan->id);
+
+        if ($existingSubscription) {
+            return response()->json([
+                'message' => 'You already have an active subscription until ' 
+                    . $existingSubscription->trial_ends_at->format('Y-m-d H:i:s'),
+            ], 422);
+        }
 
         $subscription = $this->subscriptionRepository->store([
             'user_id'       => $user->id,
@@ -56,10 +66,14 @@ class SubscriptionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Subscription $subscription)
+    public function details(Subscription $subscription)
     {
         $subscription->load(['user', 'plan']);
         return response()->json(new SubscriptionResource($subscription));
+    }
+    public function planDetails(Plan $plan)
+    {
+        return response()->json(new PlanResource($plan));
     }
 
     /**

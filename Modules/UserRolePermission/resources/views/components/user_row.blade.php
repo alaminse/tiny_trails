@@ -30,14 +30,15 @@
             <a href="#" class="btn btn-gradient-primary btn-sm showBtn" data-id="{{ $user->id }}" title="Show">
                 <i class="fas fa-eye"></i>
             </a>
+        
+            <a href="#" class="btn btn-gradient-danger btn-sm deleteBtn" data-id="{{ $user->id }}" title="Trash">
+                <i class="fas fa-trash"></i>
+            </a>
             @if ($user->roles->contains('name', 'parent'))
                 <a href="{{ route('admin.kids.index', ['parent' => $user->id]) }}" class="btn btn-gradient-success btn-sm" title="Kids">
                     <i class="fas fa-user-friends"></i>
                 </a>
             @endif
-            <a href="#" class="btn btn-gradient-danger btn-sm deleteBtn" data-id="{{ $user->id }}" title="Trash">
-                <i class="fas fa-trash"></i>
-            </a>
         @endif
     </td>
 </tr>
