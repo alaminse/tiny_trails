@@ -14,10 +14,11 @@
 
                 <div class="modal-body">
                     <div class="row">
-                        <select id="user_id" name="user_id" class="form-control">
-                            <option value="">Select Parent</option>
-
-                        </select>
+                        <div class="col-md-12 mb-3">
+                            <select id="user_id" name="user_id" class="form-control">
+                                <option value="">Select Parent</option>
+                            </select>
+                        </div>
                         <div class="col-md-4 mb-3">
                             <label for="first_name">First Name</label>
                             <input type="text" name="first_name" id="first_name" class="form-control" required>

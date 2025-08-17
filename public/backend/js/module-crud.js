@@ -1,3 +1,4 @@
+// module-crud.js
 function initModuleCrud(config) {
     const {
         moduleName, // e.g. 'role', 'permission'
@@ -33,6 +34,8 @@ function initModuleCrud(config) {
             finalUrl += `?parent=${parentId}`;
         }
 
+        console.log('finalUrl', finalUrl);
+        
         $.ajax({
             url: finalUrl,
             method: "GET",
@@ -422,4 +425,10 @@ function initModuleCrud(config) {
     function capitalize(str) {
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
+
+    // Return the getData function so it can be called externally
+    return {
+        getData: getData,
+        currentView: currentView
+    };
 }

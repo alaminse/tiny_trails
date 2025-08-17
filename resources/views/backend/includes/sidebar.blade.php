@@ -13,9 +13,6 @@
         </a>
         <!--end::Brand Link-->
     </div>
-    <!--end::Sidebar Brand-->
-    <!--begin::Sidebar Wrapper-->
-    <!--end::Sidebar Wrapper-->
     <div class="sidebar-wrapper">
         <nav class="mt-2">
             <!--begin::Sidebar Menu-->
@@ -133,8 +130,31 @@
                         </li>
                     </ul>
                 </li>
+                <li class="nav-item {{ request()->routeIs(['admin.plans.*', 'admin.subscriptions.*']) ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs(['admin.plans.*', 'admin.subscriptions.*']) ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-speedometer"></i>
+                        <p>
+                            Subscription Management
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.plans.index') }}" class="nav-link {{ request()->routeIs('admin.plans.index') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Plan Lists</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.subscriptions.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.subscriptions.index') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Subscription </p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
-            <!--end::Sidebar Menu-->
         </nav>
     </div>
 </aside>

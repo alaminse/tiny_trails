@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('school_name')->nullable();
             $table->string('school_address')->nullable();
             $table->string('emergency_contact')->nullable();
+            $table->string('kitImei')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

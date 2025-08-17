@@ -3,27 +3,26 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Modules\PickUpType\App\Models\PickupType;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         // The main plans table with billing and feature attributes.
         Schema::create('plans', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('pickup_type_id')->constrained((new PickupType())->getTable());
             $table->string('name')->unique();
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->unsignedBigInteger('price'); // Store as cents to avoid floating-point issues
-            $table->string('currency', 3)->default('USD');
+            $table->double('price')->default(0); // Store as cents to avoid floating-point issues
+            $table->double('sell_price')->default(0); // Store as cents to avoid floating-point issues
+            $table->string('currency', 3)->default('AUD');
             $table->string('interval'); // e.g., 'month', 'year'
             $table->unsignedSmallInteger('interval_count')->default(1);
-            $table->string('stripe_plan')->nullable(); // ID from the payment gateway
             $table->json('features')->nullable(); // A JSON column for a list of features
-            $table->boolean('is_active')->default(true);
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
              $table->softDeletes();
@@ -44,6 +43,7 @@ return new class extends Migration
             $table->timestamp('ends_at')->nullable(); // The end of the current billing period
             $table->timestamp('canceled_at')->nullable(); // When the user canceled the subscription
             $table->text('cancellation_reason')->nullable(); // Reason for cancellation
+            $table->enum('status', ['active', 'inactive'])->default('active');
 
             // Card details (optional, but useful for user-facing info)
             $table->string('card_brand')->nullable();

@@ -11,19 +11,36 @@ class PlanResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+
         return [
-            'id'             => $this->id,
-            'name'           => $this->name,
-            'slug'           => $this->slug,
-            'description'    => $this->description,
-            'price'          => $this->price, // Stored in cents, e.g., 1000 for $10.00
-            'currency'       => $this->currency,
-            'interval'       => $this->interval,
+            'id' => $this->id,
+            'pickup_type_id' => $this->pickup_type_id,
+            'pickup_type' => $this->whenLoaded('pickupType', function () {
+                return [
+                    'id' => $this->pickupType->id,
+                    'name' => $this->pickupType->name,
+                ];
+            }),
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'description' => $this->description,
+            'price' => $this->price,
+            'sell_price' => $this->sell_price,
+            'formatted_price' => $this->formatted_price,
+            'formatted_sell_price' => $this->formatted_sell_price,
+            'currency' => $this->currency,
+            'interval' => $this->interval,
             'interval_count' => $this->interval_count,
-            'stripe_plan'    => $this->stripe_plan,
-            'features'       => json_decode($this->features), // Decode the JSON string into an array
-            'is_active'      => $this->is_active,
-            'sort_order'     => $this->sort_order,
+            'interval_display' => $this->interval_display,
+            'features' => $this->features,
+            'features_string' => $this->features_string,
+            'status' => $this->status,
+            'sort_order' => $this->sort_order,
+            'subscriptions_count' => $this->whenCounted('subscriptions'),
+            'active_subscriptions_count' => $this->when(
+                isset($this->active_subscriptions_count),
+                $this->active_subscriptions_count
+            ),
         ];
     }
 }

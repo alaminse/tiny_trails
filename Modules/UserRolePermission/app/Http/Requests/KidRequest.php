@@ -26,6 +26,7 @@ class KidRequest extends FormRequest
             'emergency_contact'=> ['nullable', 'string', 'max:255'],
             'user_id'          => ['nullable', 'exists:users,id'],
             'photo'            => ['nullable', 'image', 'max:2048'],
+            'kitImei'           => ['nullable', 'string', 'max:500'],
         ];
     }
 

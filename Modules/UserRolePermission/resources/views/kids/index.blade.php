@@ -48,8 +48,8 @@
 
 
     <!-- Modal -->
-    @include('userrolepermission::kids.kid_modal')
-    @include('userrolepermission::kids.kid_show_modal')
+    @include('userrolepermission::kids.modal')
+    @include('userrolepermission::kids.show_modal')
 
     @push('scripts')
         <script src="{{ asset('backend/js/jquery.dataTables.min.js') }}"></script>
