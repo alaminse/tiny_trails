@@ -381,6 +381,8 @@ public function getStats(): JsonResponse
             ]
         ]);
 
+        
+
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,

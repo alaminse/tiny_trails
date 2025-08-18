@@ -60,9 +60,9 @@ class User extends Authenticatable
         return $query->where('id', '!=', Auth::id());
     }
 
-    public function parent()
+    public function scopeParents($query)
     {
-        return $this->hasOne(Parent::class);
+        return $query->role('parent'); // uses Spatie role()
     }
 
     public function driver()
@@ -103,5 +103,10 @@ class User extends Authenticatable
     public function getCityNameAttribute()
     {
         return $this->city ? $this->city->name : null;
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active')->whereNull('deleted_at');
     }
 }

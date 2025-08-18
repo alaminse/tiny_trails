@@ -50,7 +50,7 @@ class SubscriptionController extends Controller
             ], 422);
         }
 
-        $subscription = $this->subscriptionRepository->store([
+        $subscription = $this->subscriptionRepository->create([
             'user_id'       => $user->id,
             'plan_id'       => $request->plan_id,
             'name'          => $plan->name,
@@ -97,7 +97,7 @@ class SubscriptionController extends Controller
 
     public function plans()
     {
-        $plan = Plan::where('is_active', 1)->get();
+        $plan = Plan::where('status', 'active')->get();
         return response()->json(PlanResource::collection($plan));
     }
 }

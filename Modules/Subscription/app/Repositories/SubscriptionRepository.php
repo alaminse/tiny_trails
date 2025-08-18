@@ -5,6 +5,7 @@ namespace Modules\Subscription\app\Repositories;
 use Modules\Subscription\app\Models\Subscription;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Request;
 
 class SubscriptionRepository
 {
@@ -275,5 +276,36 @@ class SubscriptionRepository
             'yearly_revenue' => $yearlyRevenue,
             'total_active_value' => $monthlyRevenue + $yearlyRevenue,
         ];
+    }
+
+    public function getData(Request $request)
+    {
+        $query = Subscription::query();
+
+        // Filter by user ID if provided
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        // Include soft-deleted records if requested
+        if ($request->boolean('trashed')) {
+            $query->onlyTrashed();
+        }
+
+        // You can add more filters here, such as by status or plan
+        if ($request->filled('status')) {
+             $query->where('stripe_status', $request->status);
+        }
+
+        return $query->get();
+    }
+    
+    public function findActiveByUserAndPlan($user_id, $plan_id)
+    {
+        return Subscription::where('user_id', $user_id)
+                            ->where('plan_id', $plan_id)
+                            ->where('stripe_status', 'active')
+                            ->where('trial_ends_at', '>', now())
+                            ->first();
     }
 }

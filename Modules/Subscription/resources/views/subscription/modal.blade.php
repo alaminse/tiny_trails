@@ -62,10 +62,10 @@
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="is_active">Status <span class="text-danger">*</span></label>
-                            <select name="is_active" id="is_active" class="form-control" required>
-                                <option value="1">Active</option>
-                                <option value="0">Inactive</option>
+                            <label for="status">Status <span class="text-danger">*</span></label>
+                            <select name="status" id="status" class="form-control" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
                             </select>
                         </div>
 

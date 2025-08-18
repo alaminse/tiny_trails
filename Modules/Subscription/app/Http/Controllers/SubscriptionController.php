@@ -3,8 +3,6 @@
 namespace Modules\Subscription\app\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\Subscription\app\Http\Requests\StoreSubscriptionRequest;
-use Modules\Subscription\app\Http\Requests\UpdateSubscriptionRequest;
 use Modules\Subscription\app\Http\Resources\SubscriptionResource;
 use Modules\Subscription\app\Http\Resources\SubscriptionCollection;
 use Modules\Subscription\app\Repositories\SubscriptionRepository;
@@ -30,23 +28,17 @@ class SubscriptionController extends Controller
         $this->planRepository = $planRepository;
     }
 
-    public function index(): View
+    public function index()
     {
         $stats = $this->subscriptionRepository->getStats();
         $revenueStats = $this->subscriptionRepository->getRevenueStats();
         
-        return view('subscription::subscription.index', compact('stats', 'revenueStats'));
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create(): View
-    {
-        $users = User::active()->get();
+        $users = User::role('parent')
+                            ->active()
+                            ->get();
         $plans = $this->planRepository->active();
-        
-        return view('subscription::subscription.create', compact('users', 'plans'));
+
+        return view('subscription::subscription.index', compact('stats', 'revenueStats', 'users', 'plans'));
     }
 
     /**
@@ -56,10 +48,6 @@ class SubscriptionController extends Controller
     {
         try {
             $data = $request->validated();
-            
-            // Convert is_active to status
-            $data['status'] = $data['is_active'] ? 'active' : 'inactive';
-            unset($data['is_active']);
 
             $subscription = $this->subscriptionRepository->create($data);
 
@@ -140,10 +128,6 @@ class SubscriptionController extends Controller
     {
         try {
             $data = $request->validated();
-            
-            // Convert is_active to status
-            $data['status'] = $data['is_active'] ? 'active' : 'inactive';
-            unset($data['is_active']);
 
             $updated = $this->subscriptionRepository->update($id, $data);
 
@@ -267,7 +251,7 @@ class SubscriptionController extends Controller
             $trashed = $request->boolean('trashed', false);
             $subscriptions = $this->subscriptionRepository->getDataTableData($trashed);
 
-            $html = view('subscription::subscription.table-rows', compact('data'))->with('data', $subscriptions)->render();
+            $html = view('subscription::subscription.table-rows', compact('subscriptions'))->render();
 
             return response()->json([
                 'success' => true,

@@ -162,7 +162,6 @@
 
     <!-- Modals -->
     @include('subscription::subscription.modal')
-    @include('subscription::subscription.show_modal')
 
     @push('scripts')
         <script src="{{ asset('backend/js/jquery.dataTables.min.js') }}"></script>
@@ -178,7 +177,6 @@
                     moduleName: 'subscription',
                     tableId: 'datatable-responsive',
                     modalId: 'subscriptionModal',
-                    userShowModal: 'subscriptionShowModal',
                     formId: 'subscriptionForm',
                     createBtnId: 'addSubscriptionBtn',
                     trashedBtnId: 'showTrashed',
@@ -200,6 +198,100 @@
                         'card_last_four',
                         'card_expiration'
                     ]
+                });
+
+                // $(document).on('click', '#subscriptionShowModal', function(e) {
+                $(document).on('click', '.showBtn1', function(e) {
+                    e.preventDefault();
+                    const id = $(this).data('id');
+                    console.log('click');
+                    
+                    
+                    $.ajax({
+                        url: `/subscriptions/show/${id}`,
+                        method: 'GET',
+                        success: function(response) {
+                            console.log(response);
+                            
+                            if (response.success) {
+                                const subscription = response.data;
+                                
+                                // Populate User Information
+                                $('#subscriptionShowModal #user_name').text(subscription.user?.name || 'N/A');
+                                $('#subscriptionShowModal #user_email').text(subscription.user?.email || 'N/A');
+                                
+                                // Populate Plan Information
+                                $('#subscriptionShowModal #plan_name').text(subscription.plan?.name || 'Plan Deleted');
+                                $('#subscriptionShowModal #plan_price').text(subscription.plan?.formatted_price || 'N/A');
+                                $('#subscriptionShowModal #plan_interval').text(subscription.plan?.interval_display || 'N/A');
+                                
+                                // Populate Subscription Details
+                                $('#subscriptionShowModal #subscription_name').text(subscription.name || '-');
+                                $('#subscriptionShowModal #stripe_subscription_id').text(subscription.stripe_id || 'N/A');
+                                $('#subscriptionShowModal #created_at').text(subscription.created_at || '-');
+                                
+                                // Status badges
+                                const statusBadge = subscription.status === 'active' 
+                                    ? '<span class="badge bg-success">Active</span>'
+                                    : '<span class="badge bg-secondary">Inactive</span>';
+                                $('#subscriptionShowModal #subscription_status_badge').html(statusBadge);
+                                
+                                // Stripe status badge
+                                let stripeStatusBadge = '';
+                                switch(subscription.stripe_status) {
+                                    case 'active':
+                                        stripeStatusBadge = '<span class="badge bg-success">Active</span>';
+                                        break;
+                                    case 'canceled':
+                                        stripeStatusBadge = '<span class="badge bg-danger">Canceled</span>';
+                                        break;
+                                    case 'incomplete':
+                                        stripeStatusBadge = '<span class="badge bg-warning">Incomplete</span>';
+                                        break;
+                                    case 'past_due':
+                                        stripeStatusBadge = '<span class="badge bg-warning">Past Due</span>';
+                                        break;
+                                    case 'trialing':
+                                        stripeStatusBadge = '<span class="badge bg-info">Trialing</span>';
+                                        break;
+                                    default:
+                                        stripeStatusBadge = `<span class="badge bg-secondary">${subscription.stripe_status}</span>`;
+                                }
+                                $('#subscriptionShowModal #stripe_status_badge').html(stripeStatusBadge);
+                                
+                                // Payment Information
+                                if (subscription.card_brand && subscription.card_last_four) {
+                                    $('#subscriptionShowModal #payment_card_brand').text(subscription.card_brand.toUpperCase());
+                                    $('#subscriptionShowModal #card_last_four_display').text('••••' + subscription.card_last_four);
+                                } else {
+                                    $('#subscriptionShowModal #payment_card_brand').text('N/A');
+                                    $('#subscriptionShowModal #card_last_four_display').text('N/A');
+                                }
+                                $('#subscriptionShowModal #card_expiration_display').text(subscription.card_expiration || 'N/A');
+                                
+                                // Important Dates
+                                $('#subscriptionShowModal #trial_ends_at_display').text(subscription.trial_ends_at_formatted || 'No Trial');
+                                $('#subscriptionShowModal #ends_at_display').text(subscription.ends_at_formatted || 'No End Date');
+                                $('#subscriptionShowModal #canceled_at_display').text(subscription.canceled_at_formatted || 'Not Canceled');
+                                
+                                // Cancellation reason
+                                if (subscription.cancellation_reason) {
+                                    $('#subscriptionShowModal #cancellation_reason_display').text(subscription.cancellation_reason);
+                                    $('#subscriptionShowModal #cancellation_reason_section').show();
+                                } else {
+                                    $('#subscriptionShowModal #cancellation_reason_section').hide();
+                                }
+                                
+                                // Show the modal
+                                $('#subscriptionShowModal').modal('show');
+                            } else {
+                                toastr.error(response.message || 'Failed to load subscription details');
+                            }
+                        },
+                        error: function() {
+                            toastr.error('Failed to load subscription details');
+                        }
+                    });
                 });
 
                 // Handle cancel subscription
@@ -280,117 +372,3 @@
     @endpush
 @endsection
 
-{{-- subscription/table-rows.blade.php --}}
-@foreach ($data as $index => $subscription)
-<tr>
-    <td>{{ $index + 1 }}</td>
-    <td>
-        <div>
-            <strong>{{ $subscription->user->name ?? 'N/A' }}</strong><br>
-            <small class="text-muted">{{ $subscription->user->email ?? 'N/A' }}</small>
-        </div>
-    </td>
-    <td>
-        @if($subscription->plan)
-            <div>
-                <strong>{{ $subscription->plan->name }}</strong><br>
-                <small class="text-muted">{{ $subscription->plan->formatted_sell_price }}/{{ $subscription->plan->interval_display }}</small>
-            </div>
-        @else
-            <span class="text-muted">Plan Deleted</span>
-        @endif
-    </td>
-    <td>
-        @if ($subscription->status == 'active')
-            <span class="badge bg-success">Active</span>
-        @else
-            <span class="badge bg-secondary">Inactive</span>
-        @endif
-    </td>
-    <td>
-        @switch($subscription->stripe_status)
-            @case('active')
-                <span class="badge bg-success">Active</span>
-                @break
-            @case('canceled')
-                <span class="badge bg-danger">Canceled</span>
-                @break
-            @case('incomplete')
-                <span class="badge bg-warning">Incomplete</span>
-                @break
-            @case('past_due')
-                <span class="badge bg-warning">Past Due</span>
-                @break
-            @case('trialing')
-                <span class="badge bg-info">Trialing</span>
-                @break
-            @default
-                <span class="badge bg-secondary">{{ ucfirst($subscription->stripe_status) }}</span>
-        @endswitch
-    </td>
-    <td>
-        @if($subscription->trial_ends_at)
-            {{ $subscription->trial_ends_at->format('M d, Y') }}
-            @if($subscription->isOnTrial())
-                <br><small class="text-success">Active Trial</small>
-            @endif
-        @else
-            <span class="text-muted">No Trial</span>
-        @endif
-    </td>
-    <td>
-        @if($subscription->ends_at)
-            {{ $subscription->ends_at->format('M d, Y') }}
-            @if($subscription->hasExpired())
-                <br><small class="text-danger">Expired</small>
-            @endif
-        @else
-            <span class="text-muted">No End Date</span>
-        @endif
-    </td>
-    <td>
-        @if($subscription->card_brand && $subscription->card_last_four)
-            <div>
-                <i class="fab fa-cc-{{ strtolower($subscription->card_brand) }}"></i>
-                ••••{{ $subscription->card_last_four }}
-            </div>
-            @if($subscription->card_expiration)
-                <small class="text-muted">{{ $subscription->card_expiration }}</small>
-            @endif
-        @else
-            <span class="text-muted">No Card</span>
-        @endif
-    </td>
-    <td>
-        @if ($subscription->trashed())
-            <button class="btn btn-gradient-info btn-sm restoreBtn" data-id="{{ $subscription->id }}" title="Restore">
-                <i class="fas fa-undo"></i>
-            </button>
-            <button class="btn btn-gradient-danger btn-sm forceDeleteBtn" data-id="{{ $subscription->id }}" title="Delete Permanently">
-                <i class="fas fa-trash-alt"></i>
-            </button>
-        @else
-            <div class="btn-group" role="group">
-                <button class="btn btn-gradient-primary btn-sm editBtn" data-id="{{ $subscription->id }}" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-gradient-info btn-sm showBtn" data-id="{{ $subscription->id }}" title="View Details">
-                    <i class="fas fa-eye"></i>
-                </button>
-                @if($subscription->isCanceled())
-                    <button class="btn btn-gradient-success btn-sm reactivateBtn" data-id="{{ $subscription->id }}" title="Reactivate">
-                        <i class="fas fa-play"></i>
-                    </button>
-                @else
-                    <button class="btn btn-gradient-warning btn-sm cancelBtn" data-id="{{ $subscription->id }}" title="Cancel">
-                        <i class="fas fa-pause"></i>
-                    </button>
-                @endif
-                <button class="btn btn-gradient-danger btn-sm deleteBtn" data-id="{{ $subscription->id }}" title="Move to Trash">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        @endif
-    </td>
-</tr>
-@endforeach

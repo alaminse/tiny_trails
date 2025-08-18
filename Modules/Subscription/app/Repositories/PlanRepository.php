@@ -263,6 +263,4 @@ class PlanRepository
             'total_active_subscriptions_across_plans' => $plans->sum('active_subscriptions_count'),
         ];
     }
-
-    
 }
