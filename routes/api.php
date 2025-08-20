@@ -17,15 +17,11 @@ use App\Http\Controllers\Api\ParentApiController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->get('/profile', [AuthController::class, 'profile']);
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 
-Route::prefix('api')->middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     
     // Driver Mobile API Routes
     Route::prefix('driver')->group(function () {
