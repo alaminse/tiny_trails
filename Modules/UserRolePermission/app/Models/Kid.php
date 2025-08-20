@@ -3,6 +3,7 @@
 namespace Modules\UserRolePermission\App\Models;
 
 use App\Models\User;
+use Database\Factories\KidFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,5 +28,10 @@ class Kid extends Model
     public function getParentNameAttribute()
     {
         return $this->parent ? $this->parent->first_name. ' ' .$this->parent->last_name  : null;
+    }
+
+    protected static function newFactory()
+    {
+        return KidFactory::new();
     }
 }

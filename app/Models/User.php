@@ -11,6 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
+use Modules\DriverCommission\app\Models\DriverCommission;
 use Modules\LocationManagement\app\Models\City;
 use Modules\LocationManagement\app\Models\Country;
 use Modules\LocationManagement\app\Models\State;
@@ -65,15 +66,6 @@ class User extends Authenticatable
         return $query->role('parent'); // uses Spatie role()
     }
 
-    public function driver()
-    {
-        return $this->hasOne(Driver::class);
-    }
-
-    public function kids(): HasMany
-    {
-        return $this->hasMany(Kid::class, 'user_id');
-    }
 
     public function country(): BelongsTo
     {
@@ -105,8 +97,115 @@ class User extends Authenticatable
         return $this->city ? $this->city->name : null;
     }
 
+    /**
+     * Scope to get users with driver role
+     */
+    public function scopeDrivers($query)
+    {
+        return $query->role('driver');
+    }
+
+
+    /**
+     * Scope to get users with admin role
+     */
+    public function scopeAdmins($query)
+    {
+        return $query->role('admin');
+    }
+
+    /**
+     * Scope to get active users
+     */
     public function scopeActive($query)
     {
-        return $query->where('status', 'active')->whereNull('deleted_at');
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope to get inactive users
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('is_active', false);
+    }
+
+    /**
+     * Scope to get verified users
+     */
+    public function scopeVerified($query)
+    {
+        return $query->whereNotNull('email_verified_at');
+    }
+
+    /**
+     * Driver relationship
+     */
+    public function driver()
+    {
+        return $this->hasOne(Driver::class);
+    }
+
+    /**
+     * Parent relationship (if you have a parents table)
+     */
+    public function parent()
+    {
+        return $this->hasOne(Parent::class);
+    }
+
+    /**
+     * Kids relationship (if parent has kids)
+     */
+    public function kids()
+    {
+        return $this->hasMany(Kid::class, 'parent_id');
+    }
+
+    /**
+     * Check if user has driver role
+     */
+    public function isDriver(): bool
+    {
+        return $this->hasRole('driver');
+    }
+
+    /**
+     * Check if user has parent role
+     */
+    public function isParent(): bool
+    {
+        return $this->hasRole('parent');
+    }
+
+    /**
+     * Check if user has admin role
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
+     * Get user's display name with role
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        $roles = $this->getRoleNames()->implode(', ');
+        return "{$this->name} ({$roles})";
+    }
+
+    /**
+     * Get user's primary role
+     */
+    public function getPrimaryRoleAttribute(): string
+    {
+        return $this->getRoleNames()->first() ?? 'user';
+    }
+
+    // App\Models\User.php
+    public function driverCommissions()
+    {
+        return $this->hasMany(DriverCommission::class, 'driver_id');
     }
 }

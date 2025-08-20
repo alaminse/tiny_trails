@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\User;
+use Database\Factories\SubscriptionFactory;
 
 class Subscription extends Model
 {
@@ -127,5 +128,10 @@ class Subscription extends Model
     public function isCanceled()
     {
         return !is_null($this->canceled_at);
+    }
+    
+    protected static function newFactory()
+    {
+        return SubscriptionFactory::new();
     }
 }

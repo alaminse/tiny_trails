@@ -1,0 +1,11 @@
+{
+    "name": "RideAssignment",
+    "alias": "rideassignment",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\RideAssignment\\app\\Providers\\RideAssignmentServiceProvider"
+    ],
+    "files": []
+}

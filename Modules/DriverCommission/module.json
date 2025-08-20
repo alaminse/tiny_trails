@@ -1,0 +1,11 @@
+{
+    "name": "DriverCommission",
+    "alias": "drivercommission",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\DriverCommission\\app\\Providers\\DriverCommissionServiceProvider"
+    ],
+    "files": []
+}

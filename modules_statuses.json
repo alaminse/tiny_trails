@@ -2,5 +2,7 @@
     "UserRolePermission": true,
     "PickUpType": true,
     "LocationManagement": true,
-    "Subscription": true
+    "Subscription": true,
+    "RideAssignment": true,
+    "DriverCommission": true
 }
