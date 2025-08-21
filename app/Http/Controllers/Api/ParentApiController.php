@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RideResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -190,30 +191,40 @@ class ParentApiController extends Controller
                 'total' => $rides->total(),
                 'current_page' => $rides->currentPage(),
                 'last_page' => $rides->lastPage(),
-                'rides' => $rides->items()->map(function ($ride) {
-                    return [
-                        'id' => $ride->id,
-                        'title' => $ride->ride_title,
-                        'date' => $ride->ride_date,
-                        'pickup_time' => $ride->pickup_time,
-                        'pickup_location' => $ride->pickup_location,
-                        'dropoff_location' => $ride->dropoff_location,
-                        'fare' => $ride->ride_fare,
-                        'status' => $ride->status,
-                        'completed_at' => $ride->completed_at,
-                        'cancelled_at' => $ride->cancelled_at,
-                        'cancellation_reason' => $ride->cancellation_reason,
-                        'driver' => $ride->driver ? [
-                            'name' => $ride->driver->first_name . ' ' . $ride->driver->last_name,
-                            'phone' => $ride->driver->phone,
-                        ] : null,
-                        'kid' => $ride->kid ? [
-                            'name' => $ride->kid->first_name . ' ' . $ride->kid->last_name,
-                        ] : null,
-                    ];
-                })
+                'rides' => RideResource::collection($rides)
             ]
         ]);
+        // return response()->json([
+        //     'success' => true,
+        //     'data' => [
+        //         'status_filter' => $status,
+        //         'total' => $rides->total(),
+        //         'current_page' => $rides->currentPage(),
+        //         'last_page' => $rides->lastPage(),
+        //         'rides' => $rides->items()->map(function ($ride) {
+        //             return [
+        //                 'id' => $ride->id,
+        //                 'title' => $ride->ride_title,
+        //                 'date' => $ride->ride_date,
+        //                 'pickup_time' => $ride->pickup_time,
+        //                 'pickup_location' => $ride->pickup_location,
+        //                 'dropoff_location' => $ride->dropoff_location,
+        //                 'fare' => $ride->ride_fare,
+        //                 'status' => $ride->status,
+        //                 'completed_at' => $ride->completed_at,
+        //                 'cancelled_at' => $ride->cancelled_at,
+        //                 'cancellation_reason' => $ride->cancellation_reason,
+        //                 'driver' => $ride->driver ? [
+        //                     'name' => $ride->driver->first_name . ' ' . $ride->driver->last_name,
+        //                     'phone' => $ride->driver->phone,
+        //                 ] : null,
+        //                 'kid' => $ride->kid ? [
+        //                     'name' => $ride->kid->first_name . ' ' . $ride->kid->last_name,
+        //                 ] : null,
+        //             ];
+        //         })
+        //     ]
+        // ]);
     }
 
     /**
