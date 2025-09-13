@@ -19,3 +19,22 @@ if (!function_exists('checkslug')) {
         return $slug;
     }
 }
+
+
+
+function jimiSign(array $params, string $secret): string
+{
+    unset($params['sign']);
+    ksort($params);
+
+    $query = $secret;
+    foreach ($params as $key => $value) {
+        if ($value !== null && $value !== '') {
+            $query .= $key . $value;
+        }
+    }
+    $query .= $secret;
+
+    return strtoupper(md5($query));
+}
+

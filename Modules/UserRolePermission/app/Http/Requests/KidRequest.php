@@ -19,7 +19,7 @@ class KidRequest extends FormRequest
             'last_name'        => ['required', 'string', 'max:255'],
             'dob'              => ['required', 'date'],
             'gender'           => ['required', 'in:Male,Female,other'],
-            'height_cm'        => ['nullable', 'string', 'min:0'],
+            'height_cm'        => ['nullable', 'numeric', 'min:0'],
             'weight_kg'        => ['nullable', 'numeric', 'min:0'],
             'school_name'      => ['nullable', 'string', 'max:255'],
             'school_address'   => ['nullable', 'string', 'max:500'],

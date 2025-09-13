@@ -11,20 +11,20 @@ class UserSeeder extends Seeder
     {
         $this->command->info('👤 Creating users...');
 
-        
-        // Create Manager User
-        $manager = User::firstOrCreate(
-            ['email' => 'manager@example.com'],
+
+        // Create admin User
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
             [
                 'first_name' => 'Rahim',
-                'last_name' => 'Manager',
+                'last_name' => 'Admin',
                 'phone' => '01700000001',
                 'status' => 'active',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
             ]
         );
-        $manager->assignRole('manager');
+        $admin->assignRole('admin');
 
         // Create sample drivers
         $drivers = [

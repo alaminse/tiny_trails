@@ -21,6 +21,17 @@ class SubscriptionController extends Controller
         $this->subscriptionRepository = $subscriptionRepository;
     }
 
+    public function plans()
+    {
+        $plan = Plan::where('status', 'active')->get();
+        return response()->json(PlanResource::collection($plan));
+    }
+
+    public function planDetails(Plan $plan)
+    {
+        return response()->json(new PlanResource($plan));
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -45,7 +56,7 @@ class SubscriptionController extends Controller
 
         if ($existingSubscription) {
             return response()->json([
-                'message' => 'You already have an active subscription until ' 
+                'message' => 'You already have an active subscription until '
                     . $existingSubscription->trial_ends_at->format('Y-m-d H:i:s'),
             ], 422);
         }
@@ -71,10 +82,6 @@ class SubscriptionController extends Controller
         $subscription->load(['user', 'plan']);
         return response()->json(new SubscriptionResource($subscription));
     }
-    public function planDetails(Plan $plan)
-    {
-        return response()->json(new PlanResource($plan));
-    }
 
     /**
      * Soft delete a subscription.
@@ -94,10 +101,4 @@ class SubscriptionController extends Controller
         return response()->json(['message' => 'Subscription restored successfully.']);
     }
 
-
-    public function plans()
-    {
-        $plan = Plan::where('status', 'active')->get();
-        return response()->json(PlanResource::collection($plan));
-    }
 }

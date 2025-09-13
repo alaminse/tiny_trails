@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+
+    'tracksolid' => [
+        'base_url' => env('TRACKSOLID_BASE_URL'),
+        'app_key' => env('TRACKSOLID_APP_KEY'),
+        'app_secret' => env('TRACKSOLID_APP_SECRET'),
+        'user_id' => env('TRACKSOLID_USER_ID'),
+        'user_password' => env('TRACKSOLID_USER_PASSWORD'),
+        'timeout' => env('TRACKSOLID_TIMEOUT', 30),
+    ],
+
 ];

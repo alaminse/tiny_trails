@@ -1,12 +1,10 @@
 <?php
 
-namespace Modules\PickUpType\App\Models;
+namespace Modules\PickUpType\app\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
-// use Modules\PickUpType\Database\Factories\PickupTypeFactory;
 
 class PickupType extends Model
 {
@@ -25,7 +23,7 @@ class PickupType extends Model
     {
         return $query->where('status', 'inactive');
     }
-    
+
     public function getIsActiveAttribute()
     {
         return $this->status === 'active' ? 1 : 0;

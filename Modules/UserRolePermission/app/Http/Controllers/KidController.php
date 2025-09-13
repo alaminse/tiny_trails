@@ -41,7 +41,7 @@ class KidController extends Controller
             return response()->json([
                 'message' => 'Kid created successfully',
                 'kid' => new KidResource($kid)
-            ], 201);
+            ], 200);
 
         } catch (Exception $e) {
             Log::error('Kid creation failed: '.$e->getMessage());

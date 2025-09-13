@@ -2,15 +2,15 @@
 
 namespace Modules\Subscription\app\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\User;
-use Database\Factories\SubscriptionFactory;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Subscription extends Model
 {
-    use HasFactory, SoftDeletes;
+    use SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -34,104 +34,68 @@ class Subscription extends Model
         'canceled_at' => 'datetime',
     ];
 
-    protected $dates = ['deleted_at'];
-
-    // Relationships
-    public function user()
+    /**
+     * Subscription এর সাথে User এর relation
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function plan()
+    /**
+     * Subscription এর সাথে Plan এর relation
+     */
+    public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
     }
 
-    // Scopes
+    /**
+     * শুধুমাত্র active subscriptions get করার জন্য scope
+     */
     public function scopeActive($query)
     {
-        return $query->where('status', 'active');
+        return $query->where('status', 'active')
+                    ->where(function ($query) {
+                        $query->whereNull('ends_at')
+                              ->orWhere('ends_at', '>', now());
+                    });
     }
 
-    public function scopeInactive($query)
-    {
-        return $query->where('status', 'inactive');
-    }
-
-    public function scopeOnTrial($query)
-    {
-        return $query->whereNotNull('trial_ends_at')
-                    ->where('trial_ends_at', '>', now());
-    }
-
-    public function scopeExpired($query)
-    {
-        return $query->whereNotNull('ends_at')
-                    ->where('ends_at', '<', now());
-    }
-
-    // Accessors
-    public function getIsActiveAttribute()
-    {
-        return $this->status === 'active' ? 1 : 0;
-    }
-
-    public function setIsActiveAttribute($value)
-    {
-        $this->attributes['status'] = $value == 1 ? 'active' : 'inactive';
-    }
-
-    public function getStatusBadgeAttribute()
-    {
-        switch ($this->status) {
-            case 'active':
-                return '<span class="badge bg-success">Active</span>';
-            case 'inactive':
-                return '<span class="badge bg-secondary">Inactive</span>';
-            default:
-                return '<span class="badge bg-warning">Unknown</span>';
-        }
-    }
-
-    public function getStripeStatusBadgeAttribute()
-    {
-        switch ($this->stripe_status) {
-            case 'active':
-                return '<span class="badge bg-success">Active</span>';
-            case 'canceled':
-                return '<span class="badge bg-danger">Canceled</span>';
-            case 'incomplete':
-                return '<span class="badge bg-warning">Incomplete</span>';
-            case 'incomplete_expired':
-                return '<span class="badge bg-danger">Incomplete Expired</span>';
-            case 'past_due':
-                return '<span class="badge bg-warning">Past Due</span>';
-            case 'trialing':
-                return '<span class="badge bg-info">Trialing</span>';
-            case 'unpaid':
-                return '<span class="badge bg-danger">Unpaid</span>';
-            default:
-                return '<span class="badge bg-secondary">' . ucfirst($this->stripe_status) . '</span>';
-        }
-    }
-
-    public function isOnTrial()
+    /**
+     * Trial period active আছে কিনা check করার জন্য
+     */
+    public function onTrial(): bool
     {
         return $this->trial_ends_at && $this->trial_ends_at->isFuture();
     }
 
-    public function hasExpired()
-    {
-        return $this->ends_at && $this->ends_at->isPast();
-    }
-
-    public function isCanceled()
+    /**
+     * Subscription canceled আছে কিনা check করার জন্য
+     */
+    public function canceled(): bool
     {
         return !is_null($this->canceled_at);
     }
-    
-    protected static function newFactory()
+
+    /**
+     * Subscription active আছে কিনা check করার জন্য
+     */
+    public function active(): bool
     {
-        return SubscriptionFactory::new();
+        return $this->status === 'active' &&
+               (!$this->ends_at || $this->ends_at->isFuture());
+    }
+
+    /**
+     * Subscription এর বাকি দিন count করার জন্য
+     */
+    public function daysUntilExpires(): int
+    {
+        if (!$this->ends_at) {
+            return PHP_INT_MAX; // Unlimited
+        }
+
+        return now()->diffInDays($this->ends_at, false);
     }
 }

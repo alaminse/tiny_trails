@@ -8,7 +8,7 @@ use Modules\Subscription\app\Http\Resources\PlanResource;
 use Modules\Subscription\app\Http\Resources\PlanCollection;
 use Modules\Subscription\app\Http\Resources\PlanSelectResource;
 use Modules\Subscription\app\Repositories\PlanRepository;
-use Modules\PickUpType\App\Models\PickupType;
+use Modules\PickUpType\app\Models\PickupType;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -28,7 +28,7 @@ class PlanController extends Controller
      */
     public function index(): View
     {
-        
+
         $stats = $this->planRepository->getStats();
         $revenueStats = $this->planRepository->getRevenueStats();
         $pickupTypes = PickupType::active()->get();
@@ -76,7 +76,7 @@ class PlanController extends Controller
     {
         try {
             $plan = $this->planRepository->findById($id, ['pickupType', 'subscriptions']);
-            
+
             if (!$plan) {
                 return response()->json([
                     'success' => false,
@@ -105,7 +105,7 @@ class PlanController extends Controller
     {
         try {
             $plan = $this->planRepository->findById($id, ['pickupType']);
-            
+
             if (!$plan) {
                 return response()->json([
                     'success' => false,
@@ -277,7 +277,7 @@ class PlanController extends Controller
     {
         try {
             $pickupTypeId = $request->get('pickup_type_id');
-            
+
             if ($pickupTypeId) {
                 $plans = $this->planRepository->getByPickupType($pickupTypeId);
             } else {
@@ -356,12 +356,12 @@ class PlanController extends Controller
         }
     }
 
-    
+
 
     /**
      * Get subscription statistics
      */
-    
+
 /**
  * Get plan statistics
  */
@@ -381,7 +381,7 @@ public function getStats(): JsonResponse
             ]
         ]);
 
-        
+
 
     } catch (\Exception $e) {
         return response()->json([
