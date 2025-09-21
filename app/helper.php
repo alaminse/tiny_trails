@@ -2,11 +2,13 @@
 
 use Illuminate\Support\Facades\DB;
 
- function getImageUrl(string $path = null): string
-{
-    if($path == null) return asset('backend/img/default.jpg');
+if (!function_exists('getImageUrl')) {
+    function getImageUrl(string $path = null): string
+    {
+        if($path == null) return asset('backend/img/default.jpg');
 
-    return asset($path);
+        return asset($path);
+    }
 }
 
 if (!function_exists('checkslug')) {
@@ -19,8 +21,6 @@ if (!function_exists('checkslug')) {
         return $slug;
     }
 }
-
-
 
 function jimiSign(array $params, string $secret): string
 {
@@ -37,4 +37,9 @@ function jimiSign(array $params, string $secret): string
 
     return strtoupper(md5($query));
 }
+
+
+
+// Payment Method
+
 

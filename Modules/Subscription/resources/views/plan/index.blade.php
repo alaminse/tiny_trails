@@ -36,10 +36,10 @@
 
 @section('content')
     @include('backend.includes.header', ['mainTitle' => 'Plans', 'subTitle' => 'Subscription Plans Management'])
-    
+
     <div class="app-content">
         <div class="container-fluid">
-            
+
             <!-- Statistics Cards -->
             <div class="row mb-4">
                 <div class="col-md-3">
@@ -114,7 +114,7 @@
                                 </button>
                             </div>
                         </div>
-                        
+
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap"
@@ -180,7 +180,6 @@
                         'interval_count',
                         'features',
                         'status',
-                        'is_active',
                         'sort_order'
                     ]
                 });
@@ -199,31 +198,31 @@
                 // Handle show modal data population
                 $(document).on('click', '.showBtn', function() {
                     const id = $(this).data('id');
-                    
+
                     $.ajax({
                         url: `admin/plans/show/${id}`,
                         method: 'GET',
                         success: function(response) {
                             const plan = response.data;
-                            
+
                             // Populate basic info
                             $('#planShowModal #name').text(plan.name || '-');
                             $('#planShowModal #slug').text(plan.slug || '-');
                             $('#planShowModal #description').text(plan.description || 'No description provided');
                             $('#planShowModal #pickup_type_name').text(plan.pickup_type?.name || 'N/A');
-                            
+
                             // Populate pricing info
                             $('#planShowModal #price').text(plan.formatted_price || '-');
                             $('#planShowModal #sell_price').text(plan.formatted_sell_price || '-');
                             $('#planShowModal #currency').text(plan.currency || '-');
                             $('#planShowModal #interval_display').text(plan.interval_display || '-');
-                            
+
                             // Status badge
-                            const statusBadge = plan.status === 'active' 
+                            const statusBadge = plan.status === 'active'
                                 ? '<span class="badge bg-success">Active</span>'
                                 : '<span class="badge bg-secondary">Inactive</span>';
                             $('#planShowModal #status_badge').html(statusBadge);
-                            
+
                             // Features
                             let featuresHtml = '';
                             if (plan.features && plan.features.length > 0) {
@@ -236,12 +235,12 @@
                                 featuresHtml = '<p class="text-muted">No features listed</p>';
                             }
                             $('#planShowModal #features_list').html(featuresHtml);
-                            
+
                             // Statistics
                             $('#planShowModal #total_subscriptions').text(plan.subscriptions_count || '0');
                             $('#planShowModal #active_subscriptions').text(plan.active_subscriptions_count || '0');
                             $('#planShowModal #sort_order').text(plan.sort_order || '0');
-                            
+
                             $('#planShowModal').modal('show');
                         },
                         error: function() {
@@ -253,7 +252,7 @@
                 // Handle duplicate button
                 $(document).on('click', '.duplicateBtn', function() {
                     const id = $(this).data('id');
-                    
+
                     Swal.fire({
                         title: 'Duplicate Plan?',
                         text: 'This will create a copy of this plan.',
@@ -298,7 +297,7 @@
 
                 // Update stats every 30 seconds
                 setInterval(updateStats, 30000);
-                
+
                 // Search functionality
                 $('#searchInput').on('keyup', function() {
                     const searchTerm = $(this).val();
@@ -324,11 +323,11 @@
                 function generateTableRows(plans) {
                     let html = '';
                     plans.forEach((plan, index) => {
-                        const statusBadge = plan.status === 'active' 
+                        const statusBadge = plan.status === 'active'
                             ? '<span class="badge bg-success">Active</span>'
                             : '<span class="badge bg-secondary">Inactive</span>';
-                        
-                        const pickupTypeBadge = plan.pickup_type 
+
+                        const pickupTypeBadge = plan.pickup_type
                             ? `<span class="badge bg-info">${plan.pickup_type.name}</span>`
                             : '<span class="text-muted">N/A</span>';
 
@@ -342,7 +341,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    ${plan.price !== plan.sell_price ? 
+                                    ${plan.price !== plan.sell_price ?
                                         `<span class="text-muted text-decoration-line-through">${plan.formatted_price}</span><br>` : ''}
                                     <strong class="text-primary">${plan.formatted_sell_price}</strong>
                                 </td>

@@ -14,6 +14,7 @@ class SubscriptionResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+
             'id' => $this->id,
             'user_id' => $this->user_id,
             'user' => $this->whenLoaded('user', function () {
@@ -38,7 +39,7 @@ class SubscriptionResource extends JsonResource
             'stripe_id' => $this->stripe_id,
             'stripe_status' => $this->stripe_status,
             'stripe_status_badge' => $this->stripe_status_badge,
-            'trial_ends_at' => $this->trial_ends_at?->format('Y-m-d H:i:s'),
+            'trial_ends_at' => $this->trial_ends_at,
             'trial_ends_at_formatted' => $this->trial_ends_at?->format('M d, Y'),
             'ends_at' => $this->ends_at?->format('Y-m-d H:i:s'),
             'ends_at_formatted' => $this->ends_at?->format('M d, Y'),
@@ -54,16 +55,17 @@ class SubscriptionResource extends JsonResource
                 $this->card_brand && $this->card_last_four,
                 ucfirst($this->card_brand) . ' ending in ' . $this->card_last_four
             ),
-            'is_on_trial' => $this->isOnTrial(),
-            'has_expired' => $this->hasExpired(),
-            'is_canceled' => $this->isCanceled(),
+
+            'is_on_trial' => $this->trial_ends_at && $this->trial_ends_at > now(),
+            'has_expired' => $this->ends_at && $this->ends_at < now(),
+            'is_canceled' => !is_null($this->canceled_at),
             'days_until_trial_ends' => $this->when(
-                $this->isOnTrial(),
-                $this->trial_ends_at->diffInDays(now())
+                $this->isOnTrial() && $this->trial_ends_at,
+                fn() => $this->trial_ends_at->diffInDays(now())
             ),
             'days_until_expires' => $this->when(
                 $this->ends_at && !$this->hasExpired(),
-                $this->ends_at->diffInDays(now())
+                fn() => $this->ends_at->diffInDays(now())
             ),
         ];
     }

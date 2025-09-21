@@ -137,21 +137,21 @@ class DatabaseSeeder extends Seeder
 
 
         $this->command->info('🚀 Starting Complete Database Seeding...');
-        
+
         $this->call([
             // 1. Basic Setup
             // DriverCommissionPermissionSeeder::class,
-            
+
             // 2. Users and Relationships
             UserSeeder::class,
             KidSeeder::class,
-            SubscriptionSeeder::class,
-            
+            // SubscriptionSeeder::class,
+
             // 3. Commission System
-            DriverCommissionSeeder::class,
-            DriverEarningsSummarySeeder::class,
+            // DriverCommissionSeeder::class,
+            // DriverEarningsSummarySeeder::class,
         ]);
-        
+
         $this->command->info('🎉 Database seeding completed successfully!');
     }
 }

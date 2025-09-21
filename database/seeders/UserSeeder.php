@@ -4,6 +4,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
 {
@@ -12,9 +13,14 @@ class UserSeeder extends Seeder
         $this->command->info('👤 Creating users...');
 
 
+        // Create roles
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $driverRole = Role::firstOrCreate(['name' => 'driver']);
+        $parentRole = Role::firstOrCreate(['name' => 'parent']);
+
         // Create admin User
         $admin = User::firstOrCreate(
-            ['email' => 'admin@example.com'],
+            ['email' => 'admin@gmail.com'],
             [
                 'first_name' => 'Rahim',
                 'last_name' => 'Admin',
@@ -73,9 +79,9 @@ class UserSeeder extends Seeder
             $parent->assignRole('parent');
         }
 
-        // Create additional random users
-        User::factory()->driver()->count(15)->create();
-        User::factory()->parent()->count(10)->create();
+        // // Create additional random users
+        // User::factory()->driver()->count(15)->create();
+        // User::factory()->parent()->count(10)->create();
 
         $totalUsers = User::count();
         $this->command->info("✅ Created {$totalUsers} users successfully");

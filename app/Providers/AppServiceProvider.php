@@ -2,21 +2,14 @@
 
 namespace App\Providers;
 
-use App\Services\JimiCloudService;
-use App\Services\TrackSolidService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
+        // Add this binding to your existing AppServiceProvider
 
-        $this->app->singleton(TrackSolidService::class, function ($app) {
-            return new TrackSolidService();
-        });
     }
 
     /**

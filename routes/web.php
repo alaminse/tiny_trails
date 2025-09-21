@@ -9,8 +9,8 @@ Route::get('/', function () {
 });
 
 
+Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'verified'])->get('/dashboard', function () {
     return view('backend.dashboard');
