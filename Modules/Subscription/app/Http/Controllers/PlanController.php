@@ -28,20 +28,10 @@ class PlanController extends Controller
      */
     public function index(): View
     {
-
         $stats = $this->planRepository->getStats();
         $revenueStats = $this->planRepository->getRevenueStats();
         $pickupTypes = PickupType::active()->get();
         return view('subscription::plan.index', compact('stats', 'revenueStats', 'pickupTypes'));
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create(): View
-    {
-        $pickupTypes = PickupType::active()->get();
-        return view('subscription::plan.create', compact('pickupTypes'));
     }
 
     /**
@@ -357,84 +347,79 @@ class PlanController extends Controller
     }
 
 
+    /**
+     * Get plan statistics
+     */
+    public function getStats(): JsonResponse
+    {
+        try {
+            $stats = $this->planRepository->getStats();
+            $revenueStats = $this->planRepository->getRevenueStats();
+            $subscriptionStats = $this->planRepository->getPlanSubscriptionStats();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'plan_stats' => $stats,
+                    'revenue_stats' => $revenueStats,
+                    'subscription_stats' => $subscriptionStats
+                ]
+            ]);
+
+
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch plan statistics.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     /**
-     * Get subscription statistics
+     * Get plan revenue statistics only
      */
+    public function getRevenueStats(): JsonResponse
+    {
+        try {
+            $revenueStats = $this->planRepository->getRevenueStats();
 
-/**
- * Get plan statistics
- */
-public function getStats(): JsonResponse
-{
-    try {
-        $stats = $this->planRepository->getStats();
-        $revenueStats = $this->planRepository->getRevenueStats();
-        $subscriptionStats = $this->planRepository->getPlanSubscriptionStats();
+            return response()->json([
+                'success' => true,
+                'data' => $revenueStats
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'plan_stats' => $stats,
-                'revenue_stats' => $revenueStats,
-                'subscription_stats' => $subscriptionStats
-            ]
-        ]);
-
-
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to fetch plan statistics.',
-            'error' => $e->getMessage()
-        ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch revenue statistics.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
-}
 
-/**
- * Get plan revenue statistics only
- */
-public function getRevenueStats(): JsonResponse
-{
-    try {
-        $revenueStats = $this->planRepository->getRevenueStats();
+    /**
+     * Get plan subscription statistics only
+     */
+    public function getSubscriptionStats(): JsonResponse
+    {
+        try {
+            $subscriptionStats = $this->planRepository->getPlanSubscriptionStats();
 
-        return response()->json([
-            'success' => true,
-            'data' => $revenueStats
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $subscriptionStats
+            ]);
 
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to fetch revenue statistics.',
-            'error' => $e->getMessage()
-        ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch subscription statistics.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
-}
-
-/**
- * Get plan subscription statistics only
- */
-public function getSubscriptionStats(): JsonResponse
-{
-    try {
-        $subscriptionStats = $this->planRepository->getPlanSubscriptionStats();
-
-        return response()->json([
-            'success' => true,
-            'data' => $subscriptionStats
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to fetch subscription statistics.',
-            'error' => $e->getMessage()
-        ], 500);
-    }
-}
     /**
      * Search plans
      */

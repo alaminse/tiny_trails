@@ -100,18 +100,7 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
-
-        // return response()->json([
-        //     'token'  => $token,
-        //     'user'   => [
-        //         'id'         => $user->id,
-        //         'first_name' => $user->first_name,
-        //         'last_name'  => $user->last_name,
-        //         'email'      => $user->email,
-        //         'role'       => $user->getRoleNames(),
-        //         'driver'     => $driverData // null if no driver
-        //     ]
-        // ], 200);
+        
         return response()->json([
             'success' => true,
             'message' => 'Login successful',

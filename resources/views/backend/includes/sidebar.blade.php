@@ -155,20 +155,20 @@
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.rideassignments.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.rideassignments.index') ? 'active' : '' }}">
+                    <a href="{{ route('admin.ride.assign.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.ride.assign.index') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-speedometer"></i>
                         <p>
                             Ride Assignment
                         </p>
                     </a>
                 </li>
-                <li class="nav-item">
+                {{-- <li class="nav-item">
                     <a href="{{ route('admin.driver-commissions.index') }}" class="nav-link {{ request()->routeIs('admin.driver-commissions.index') ? 'active' : '' }}">
                         <i class="fas fa-money-bill-wave nav-icon"></i>
                         <p> Driver Commission </p>
                     </a>
-                </li>
+                </li> --}}
             </ul>
         </nav>
     </div>

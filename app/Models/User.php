@@ -2,19 +2,17 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\HasApiTokens;
-use Modules\DriverCommission\app\Models\DriverCommission;
 use Modules\LocationManagement\app\Models\City;
 use Modules\LocationManagement\app\Models\Country;
 use Modules\LocationManagement\app\Models\State;
+use Modules\RideAssignment\app\Models\DriverCommission;
 use Modules\UserRolePermission\app\Models\Driver;
 use Modules\UserRolePermission\app\Models\Kid;
 use Spatie\Permission\Traits\HasRoles;

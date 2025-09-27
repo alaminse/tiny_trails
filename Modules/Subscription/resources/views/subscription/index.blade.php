@@ -444,38 +444,6 @@
                 </div>
             </div>
 
-            <!-- PayWay Integration Status -->
-            <div class="row mt-4">
-                <div class="col-12">
-                    <div class="card border-primary">
-                        <div class="card-header bg-primary text-white">
-                            <h6 class="mb-0">
-                                <i class="fas fa-cogs me-2"></i>PayWay Integration Status
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div id="payway-status">
-                                        <div class="d-flex align-items-center">
-                                            <div class="status-indicator status-inactive" id="connection-indicator"></div>
-                                            <span id="connection-text">Checking connection...</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 text-end">
-                                    <button class="btn btn-outline-primary btn-sm me-2" id="testStepByStepBtn">
-                                        <i class="fas fa-list-ol me-1"></i>Step-by-Step Test
-                                    </button>
-                                    <button class="btn btn-outline-info btn-sm" id="debugConfigBtn">
-                                        <i class="fas fa-bug me-1"></i>Debug Config
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -503,8 +471,6 @@
                     export: '/admin/subscriptions/export',
                     payway: {
                         testConnection: '/admin/payway/test-connection',
-                        testStepByStep: '/admin/payway/test-step-by-step',
-                        debugConfig: '/admin/payway/debug-config'
                     }
                 };
 
@@ -1082,16 +1048,19 @@
                             $('#expired-subscriptions').text(data.data.expired || 0);
                             $('#canceled-subscriptions').text(data.data.canceled || 0);
 
+                            console.log('Monthly Revenue: ');
+                            console.log(data.data.monthly_revenue);
+
                             // Update revenue stats
-                            $('#monthly-revenue').text('$' + parseFloat(data.data.monthly_revenue || 0).toLocaleString('en-US', {
+                            $('#monthly-revenue').text('$' + parseFloat(data.data.monthly_revenue || 0).toLocaleString('en-AU', {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
                             }));
-                            $('#yearly-revenue').text('$' + parseFloat(data.data.yearly_revenue || 0).toLocaleString('en-US', {
+                            $('#yearly-revenue').text('$' + parseFloat(data.data.yearly_revenue || 0).toLocaleString('en-AU', {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
                             }));
-                            $('#total-active-value').text('$' + parseFloat(data.data.total_active_value || 0).toLocaleString('en-US', {
+                            $('#total-active-value').text('$' + parseFloat(data.data.total_active_value || 0).toLocaleString('en-AU', {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
                             }));

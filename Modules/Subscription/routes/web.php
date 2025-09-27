@@ -26,6 +26,8 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
                 Route::get('/stats', 'getStats')->name('stats');
             });
 
+            
+
     Route::controller(SubscriptionController::class)
         ->prefix('subscriptions')
         ->as('subscriptions.')
@@ -102,24 +104,8 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
         Route::prefix('payway')->name('payway.')->group(function () {
             // Connection and testing
             Route::get('/test-connection', [PayWayController::class, 'testConnection'])->name('test.connection');
-            Route::post('/test-payment', [PayWayController::class, 'testPayment'])->name('test.payment');
-            Route::get('/test-step-by-step', [PayWayController::class, 'testStepByStep'])->name('test.step-by-step');
-            Route::get('/test-card-scenarios', [PayWayController::class, 'testCardScenarios'])->name('test.card-scenarios');
-            Route::get('/debug-config', [PayWayController::class, 'debugConfig'])->name('debug.config');
-            Route::get('/api-status', [PayWayController::class, 'getApiStatus'])->name('api.status');
-            Route::delete('/cleanup-test-data', [PayWayController::class, 'cleanupTestData'])->name('cleanup.test');
-
             // Subscription management
             Route::post('/subscription/create', [PayWayController::class, 'storeSubscription'])->name('subscription.store');
-            Route::post('/subscription/payment', [PayWayController::class, 'processSubscriptionPayment'])->name('subscription.payment');
-            Route::patch('/subscription/cancel', [PayWayController::class, 'cancelSubscription'])->name('subscription.cancel');
-            Route::patch('/subscription/payment-method', [PayWayController::class, 'updateCustomerPaymentMethod'])->name('subscription.update.payment');
-
-            // Transaction and customer management
-            Route::get('/subscription/{id}/transactions', [PayWayController::class, 'getTransactionHistory'])->name('subscription.transactions');
-            Route::get('/customer/{customerNumber}', [PayWayController::class, 'getCustomerPaymentMethods'])->name('customer.details');
         });
-
-        Route::post('/subscriptions/create-with-payway', [PayWayController::class, 'storeSubscription'])->name('subscriptions.create.payway');
     });
 });

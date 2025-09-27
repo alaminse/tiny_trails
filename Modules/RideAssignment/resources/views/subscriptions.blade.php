@@ -1,13 +1,8 @@
 @extends('backend.app')
-@section('title', 'Ride Assign Management')
-
-@section('css')
-    <link href="{{ asset('backend/css/dataTables.bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('backend/css/responsive.bootstrap.min.css') }}" rel="stylesheet">
-@endsection
+@section('title', 'Unassigned Subscriptions')
 
 @section('content')
-    @include('backend.includes.header', ['mainTitle' => 'Ride Assign Management'])
+    @include('backend.includes.header', ['mainTitle' => 'Unassigned Subscriptions'])
 
     <div class="app-content">
         <div class="container-fluid">
@@ -15,34 +10,29 @@
                 <div class="col-12">
                     <div class="card card-primary card-outline mb-4">
                         <div class="d-flex">
-                            <div class="p-2 flex-grow-1 card-title">Ride Assign Management</div>
+                            <div class="p-2 flex-grow-1 card-title">Unassigned Subscription List</div>
                             <div class="p-2">
                                 <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
-                            </div>
-                            <div class="p-2">
-                                <a href="{{ route('admin.ride.assign.subscriptions') }}" class="btn btn-sm btn-gradient-success">
-                                    Unassigned Subscription
-                                </a>
                             </div>
                         </div>
 
                         <div class="table-responsive pt-3">
-                            <table id="rideAssignTable" class="table table-striped table-bordered dt-responsive nowrap"
+                            <table id="subscriptionTable" class="table table-striped table-bordered dt-responsive nowrap"
                                    cellspacing="0" width="100%">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
-                                        <th>Subscription</th>
-                                        <th>Service Type</th>
-                                        <th>Fare</th>
-                                        <th>Driver Commission</th>
-                                        <th>Platform Commission</th>
+                                        <th>No</th>
+                                        <th>User</th>
+                                        <th>Kid</th>
+                                        <th>Plan</th>
+                                        <th>Pickup</th>
+                                        <th>Dropoff</th>
                                         <th>Status</th>
-                                        <th>Actions</th>
+                                        <th width="15%">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {{-- AJAX loaded --}}
+                                    {{-- AJAX load --}}
                                 </tbody>
                             </table>
                         </div>
@@ -60,15 +50,14 @@
 
         <script>
             $(document).ready(function () {
-                let tableId = 'rideAssignTable';
+                let tableId = 'subscriptionTable';
                 let $table = $(`#${tableId}`);
-                let finalUrl = "{{ route('admin.ride.assign.data') }}";
+                let finalUrl = "{{ route('admin.ride.assign.get.subscriptions') }}";
 
                 $.ajax({
                     url: finalUrl,
                     method: "GET",
                     success: function (response) {
-
                         console.log(response);
 
                         if ($.fn.DataTable.isDataTable(`#${tableId}`)) {
@@ -78,18 +67,10 @@
                         $table.DataTable({ responsive: true });
                     },
                     error: function (xhr) {
-                        console.error(`Error fetching Ride Assign data`, xhr);
+                        console.error(`Error fetching subscriptions data`, xhr);
                     }
                 });
             });
-
-            @if(session('success'))
-                toastr.success("{{ session('success') }}");
-            @endif
-
-            @if(session('error'))
-                toastr.error("{{ session('error') }}");
-            @endif
         </script>
     @endpush
 @endsection

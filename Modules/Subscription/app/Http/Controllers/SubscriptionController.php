@@ -11,11 +11,14 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Modules\LocationManagement\app\Models\City;
 use Modules\LocationManagement\app\Models\State;
 use Modules\Subscription\app\Http\Requests\SubscriptionRequest;
+use Modules\Subscription\app\Http\Resources\PlanCollection;
+use Modules\Subscription\app\Models\Plan;
 use Modules\Subscription\app\Models\Subscription;
 
 class SubscriptionController extends Controller
@@ -44,6 +47,30 @@ class SubscriptionController extends Controller
         return view('subscription::subscription.index', compact('stats', 'revenueStats', 'users', 'plans'));
     }
 
+
+    public function plans()
+    {
+        try {
+            $plans = Plan::with('pickupType') // Assuming you have this relationship
+                        ->where('status', 'active')
+                        ->orderBy('sort_order')
+                        ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Active plan list retrieved successfully.',
+                'data' => new PlanCollection($plans)
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch plans.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Show the form for creating a new subscription.
      */
@@ -60,27 +87,27 @@ class SubscriptionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(SubscriptionRequest $request): JsonResponse
-    {
-        try {
-            $data = $request->validated();
+    // public function store(SubscriptionRequest $request): JsonResponse
+    // {
+    //     try {
+    //         $data = $request->validated();
 
-            $subscription = $this->subscriptionRepository->create($data);
+    //         $subscription = $this->subscriptionRepository->create($data);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Subscription created successfully.',
-                'data' => new SubscriptionResource($subscription->load(['user', 'plan']))
-            ], 201);
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Subscription created successfully.',
+    //             'data' => new SubscriptionResource($subscription->load(['user', 'plan']))
+    //         ], 201);
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create subscription.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Failed to create subscription.',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     public function show(Subscription $subscription): JsonResponse
     {
@@ -101,36 +128,6 @@ class SubscriptionController extends Controller
             ], 500);
         }
     }
-
-    // /**
-    //  * Display the specified resource.
-    //  */
-    // public function show(int $id): JsonResponse
-    // {
-    //     try {
-    //         $subscription = $this->subscriptionRepository->findById($id, ['user', 'plan']);
-
-    //         if (!$subscription) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Subscription not found.'
-    //             ], 404);
-    //         }
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'data' => new SubscriptionResource($subscription)
-    //         ]);
-
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Failed to fetch subscription.',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
     /**
      * Show the form for editing the specified resource.
      */
@@ -650,10 +647,11 @@ class SubscriptionController extends Controller
     /**
      * Get user subscriptions
      */
-    public function getUserSubscriptions(int $userId): JsonResponse
+    public function getUserSubscriptions(): JsonResponse
     {
+        $user = Auth::user();
         try {
-            $subscriptions = $this->subscriptionRepository->getByUser($userId, ['plan']);
+            $subscriptions = $this->subscriptionRepository->getByUser($user->id, ['plan']);
 
             return response()->json([
                 'success' => true,

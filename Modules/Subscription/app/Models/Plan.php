@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Modules\PickUpType\app\Models\PickupType;
 
 class Plan extends Model
 {
@@ -40,7 +41,7 @@ class Plan extends Model
     // Relationships
     public function pickupType(): BelongsTo
     {
-        return $this->belongsTo(\Modules\PickUpType\App\Models\PickupType::class);
+        return $this->belongsTo(PickupType::class);
     }
 
     public function subscriptions(): HasMany

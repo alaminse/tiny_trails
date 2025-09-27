@@ -27,4 +27,14 @@ class Driver extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function driver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function getDriverNameAttribute()
+    {
+        return $this->driver ? $this->driver->first_name. ' ' .$this->driver->last_name  : null;
+    }
 }

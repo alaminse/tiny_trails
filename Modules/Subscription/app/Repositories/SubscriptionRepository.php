@@ -197,7 +197,7 @@ class SubscriptionRepository
     public function getDataTableData(bool $trashed = false): Collection
     {
         $query = $trashed ? $this->model->onlyTrashed() : $this->model->whereNull('deleted_at');
-        
+
         return $query->with(['user', 'plan'])
             ->latest()
             ->get();
@@ -258,7 +258,7 @@ class SubscriptionRepository
     public function getRevenueStats(): array
     {
         $activeSubscriptions = $this->model->with('plan')->active()->get();
-        
+
         $monthlyRevenue = $activeSubscriptions->filter(function ($subscription) {
             return $subscription->plan && $subscription->plan->interval === 'month';
         })->sum(function ($subscription) {
@@ -299,7 +299,7 @@ class SubscriptionRepository
 
         return $query->get();
     }
-    
+
     public function findActiveByUserAndPlan($user_id, $plan_id)
     {
         return Subscription::where('user_id', $user_id)

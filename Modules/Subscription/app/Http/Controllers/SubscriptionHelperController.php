@@ -368,51 +368,6 @@ class SubscriptionHelperController extends Controller
     /**
      * Get subscription statistics for dashboard
      */
-    // public function getSubscriptionStats(): JsonResponse
-    // {
-    //     try {
-    //         $stats = [
-    //             'total' => Subscription::count(),
-    //             'active' => Subscription::where('status', 'active')->count(),
-    //             'inactive' => Subscription::where('status', 'inactive')->count(),
-    //             'on_trial' => Subscription::whereNotNull('trial_ends_at')
-    //                 ->where('trial_ends_at', '>', now())->count(),
-    //             'expired' => Subscription::where('trial_ends_at', '<', now())
-    //                 ->orWhere('ends_at', '<', now())->count(),
-    //             'canceled' => Subscription::whereNotNull('canceled_at')->count(),
-    //         ];
-
-    //         $revenueStats = [
-    //             'monthly_revenue' => PaywayTransaction::where('transaction_type', 'payment')
-    //                 ->where('status', 'approved')
-    //                 ->whereMonth('processed_at', now()->month)
-    //                 ->whereYear('processed_at', now()->year)
-    //                 ->sum('amount'),
-    //             'yearly_revenue' => PaywayTransaction::where('transaction_type', 'payment')
-    //                 ->where('status', 'approved')
-    //                 ->whereYear('processed_at', now()->year)
-    //                 ->sum('amount'),
-    //             'total_active_value' => Subscription::join('plans', 'subscriptions.plan_id', '=', 'plans.id')
-    //                 ->where('subscriptions.status', 'active')
-    //                 ->sum('plans.price'),
-    //         ];
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'data' => array_merge($stats, $revenueStats)
-    //         ]);
-
-    //     } catch (\Exception $e) {
-    //         Log::error('Failed to get subscription stats:', [
-    //             'error' => $e->getMessage()
-    //         ]);
-
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Failed to load statistics'
-    //         ], 500);
-    //     }
-    // }
 
    public function getSubscriptionStats()
     {

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
+use Modules\UserRolePermission\App\Models\Kid;
 
 class Subscription extends Model
 {
@@ -29,6 +30,7 @@ class Subscription extends Model
         'card_brand',
         'card_last_four',
         'card_expiration',
+        'assign_ride'
     ];
 
     protected $casts = [
@@ -58,11 +60,24 @@ class Subscription extends Model
     }
 
     /**
+     * Get the user that owns the subscription
+     */
+    public function kid(): BelongsTo
+    {
+        return $this->belongsTo(Kid::class);
+    }
+
+    /**
      * Get the plan that the subscription belongs to
      */
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    public function transection()
+    {
+        return $this->hasOne(PaywayTransaction::class);
     }
 
     /**
@@ -374,6 +389,17 @@ class Subscription extends Model
         return $this->paywayTransactions()
                     ->where('transaction_type', 'payment')
                     ->where('status', 'approved');
+    }
+
+
+    public function pickupLocation()
+    {
+        return $this->belongsTo(Location::class, 'pickup_location_id');
+    }
+
+    public function dropoffLocation()
+    {
+        return $this->belongsTo(Location::class, 'dropoff_location_id');
     }
 
 }

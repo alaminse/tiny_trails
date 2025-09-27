@@ -34,13 +34,13 @@ class UserRequest extends FormRequest
             $rules = array_merge($rules, [
                 'driving_license_number' => ['required', 'string', 'max:255'],
                 'driving_license_expiry' => ['required', 'date', 'after:today'],
-                'driving_license_image'  => [$this->isMethod('post') ? 'required' : 'nullable', 'image', 'max:2048'],
+                'driving_license_image'  => [$this->isMethod('post') ? 'nullable' : 'nullable', 'image', 'max:2048'],
                 'car_model'              => ['required', 'string', 'max:255'],
                 'car_make'               => ['required', 'string', 'max:255'],
                 'car_year'               => ['required', 'integer', 'digits:4', 'min:1900', 'max:' . date('Y')],
                 'car_color'              => ['required', 'string', 'max:50'],
                 'car_plate_number'       => ['required', 'string', 'max:50'],
-                'car_image'              => [$this->isMethod('post') ? 'required' : 'nullable', 'image', 'max:2048'],
+                'car_image'              => [$this->isMethod('post') ? 'nullable' : 'nullable', 'image', 'max:2048'],
             ]);
         }
 

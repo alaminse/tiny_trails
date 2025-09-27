@@ -1,0 +1,182 @@
+Modules/
+└── RideManagement/                                    # সম্পূর্ণ রাইড ব্যবস্থাপনা মডিউল
+    ├── Config/
+    │   └── config.php                                 # মডিউল কনফিগারেশন (commission rates, default settings)
+    ├── Console/
+    │   └── Commands/
+    │       ├── ProcessDailyRides.php                  # দৈনিক রাইড প্রসেস কমান্ড
+    │       ├── UpdateRideStatus.php                   # রাইড স্ট্যাটাস আপডেট কমান্ড
+    │       ├── AssignScheduledRides.php               # নির্ধারিত রাইড অ্যাসাইন কমান্ড
+    │       ├── ProcessPendingCommissions.php          # পেন্ডিং কমিশন প্রসেস কমান্ড
+    │       └── GenerateCommissionReport.php           # কমিশন রিপোর্ট জেনারেট কমান্ড
+    ├── Database/
+    │   ├── Migrations/
+    │   │   ├── 2024_12_25_000001_create_ride_assigns_table.php # রাইড অ্যাসাইন টেবিল
+    │   │   ├── 2024_12_25_000002_create_rides_table.php        # রাইড টেবিল
+    │   │   └── 2024_12_25_000003_create_commissions_table.php  # কমিশন টেবিল
+    │   ├── Seeders/
+    │   │   ├── RideManagementDatabaseSeeder.php       # মূল সিডার ফাইল
+    │   │   ├── RideAssignSeeder.php                   # রাইড অ্যাসাইন সিডার
+    │   │   ├── RideSeeder.php                         # রাইড সিডার
+    │   │   └── CommissionSeeder.php                   # কমিশন সিডার
+    │   └── Factories/
+    │       ├── RideAssignFactory.php                  # রাইড অ্যাসাইন ফ্যাক্টরি
+    │       ├── RideFactory.php                        # রাইড ফ্যাক্টরি
+    │       └── CommissionFactory.php                  # কমিশন ফ্যাক্টরি
+    ├── Entities/                                      # মডেল ফোল্ডার
+    │   ├── RideAssign.php                             # রাইড অ্যাসাইন মডেল
+    │   ├── Ride.php                                   # রাইড মডেল
+    │   └── Commission.php                             # কমিশন মডেল
+    ├── Http/
+    │   ├── Controllers/
+    │   │   ├── RideAssignController.php               # রাইড অ্যাসাইন কন্ট্রোলার (commission সহ)
+    │   │   ├── RideController.php                     # রাইড কন্ট্রোলার (status update)
+    │   │   ├── DailyRideController.php                # দৈনিক রাইড কন্ট্রোলার
+    │   │   ├── CompletedRideController.php            # সম্পূর্ণ রাইড কন্ট্রোলার
+    │   │   ├── DriverRideController.php               # ড্রাইভার রাইড কন্ট্রোলার
+    │   │   ├── CommissionController.php               # কমিশন কন্ট্রোলার
+    │   │   ├── DriverCommissionController.php         # ড্রাইভার কমিশন কন্ট্রোলার
+    │   │   └── CommissionReportController.php         # কমিশন রিপোর্ট কন্ট্রোলার
+    │   ├── Middleware/
+    │   │   ├── CheckDriverPermission.php              # ড্রাইভার অনুমতি চেক
+    │   │   └── CheckAdminPermission.php               # অ্যাডমিন অনুমতি চেক
+    │   ├── Requests/
+    │   │   ├── CreateRideAssignRequest.php            # রাইড অ্যাসাইন তৈরি (commission সহ) ভ্যালিডেশন
+    │   │   ├── UpdateRideAssignRequest.php            # রাইড অ্যাসাইন আপডেট ভ্যালিডেশন
+    │   │   ├── UpdateRideStatusRequest.php            # রাইড স্ট্যাটাস আপডেট ভ্যালিডেশন
+    │   │   ├── CompleteRideRequest.php                # রাইড সম্পূর্ণ ভ্যালিডেশন
+    │   │   ├── UploadRideImageRequest.php             # রাইড ইমেজ আপলোড ভ্যালিডেশন
+    │   │   ├── ApproveCommissionRequest.php           # কমিশন অনুমোদন ভ্যালিডেশন
+    │   │   └── PayCommissionRequest.php               # কমিশন পেমেন্ট ভ্যালিডেশন
+    │   └── Resources/
+    │       ├── RideAssignResource.php                 # রাইড অ্যাসাইন API রিসোর্স
+    │       ├── RideResource.php                       # রাইড API রিসোর্স
+    │       ├── CommissionResource.php                 # কমিশন API রিসোর্স
+    │       ├── RideCollection.php                     # রাইড কালেকশন রিসোর্স
+    │       └── CommissionReportResource.php           # কমিশন রিপোর্ট রিসোর্স
+    ├── Providers/
+    │   ├── RideManagementServiceProvider.php          # মূল সার্ভিস প্রভাইডার
+    │   └── RouteServiceProvider.php                   # রুট সার্ভিস প্রভাইডার
+    ├── Repositories/
+    │   ├── Interfaces/
+    │   │   ├── RideAssignRepositoryInterface.php      # রাইড অ্যাসাইন রেপোজিটরি ইন্টারফেস
+    │   │   ├── RideRepositoryInterface.php            # রাইড রেপোজিটরি ইন্টারফেস
+    │   │   └── CommissionRepositoryInterface.php      # কমিশন রেপোজিটরি ইন্টারফেস
+    │   └── Eloquent/
+    │       ├── RideAssignRepository.php               # রাইড অ্যাসাইন রেপোজিটরি বাস্তবায়ন
+    │       ├── RideRepository.php                     # রাইড রেপোজিটরি বাস্তবায়ন
+    │       └── CommissionRepository.php               # কমিশন রেপোজিটরি বাস্তবায়ন
+    ├── Resources/
+    │   ├── assets/
+    │   │   ├── js/
+    │   │   │   ├── app.js                            # মূল জাভাস্ক্রিপ্ট
+    │   │   │   ├── ride-assign.js                    # রাইড অ্যাসাইন JS (commission calculation সহ)
+    │   │   │   ├── commission-calculator.js          # কমিশন ক্যালকুলেটর JS
+    │   │   │   ├── ride-status.js                    # রাইড স্ট্যাটাস JS
+    │   │   │   ├── image-upload.js                   # ইমেজ আপলোড JS
+    │   │   │   ├── driver-selection.js               # ড্রাইভার নির্বাচন JS
+    │   │   │   ├── commission-approval.js            # কমিশন অনুমোদন JS
+    │   │   │   └── report-generator.js               # রিপোর্ট জেনারেটর JS
+    │   │   └── css/
+    │   │       ├── app.css                           # মূল CSS
+    │   │       ├── ride-assign.css                   # রাইড অ্যাসাইন CSS
+    │   │       ├── ride-dashboard.css                # রাইড ড্যাশবোর্ড CSS
+    │   │       ├── driver-dashboard.css              # ড্রাইভার ড্যাশবোর্ড CSS
+    │   │       └── commission-dashboard.css          # কমিশন ড্যাশবোর্ড CSS
+    │   └── views/
+    │       ├── assign/                               # রাইড অ্যাসাইন ভিউ ফোল্ডার
+    │       │   ├── index.blade.php                   # রাইড অ্যাসাইন তালিকা
+    │       │   ├── create.blade.php                  # নতুন রাইড অ্যাসাইন ফর্ম (commission input সহ)
+    │       │   ├── edit.blade.php                    # রাইড অ্যাসাইন সম্পাদনা ফর্ম (commission edit সহ)
+    │       │   ├── show.blade.php                    # রাইড অ্যাসাইন বিস্তারিত (commission info সহ)
+    │       │   └── driver-selection.blade.php       # ড্রাইভার নির্বাচন ফর্ম (commission rate সহ)
+    │       ├── ride/                                 # রাইড ভিউ ফোল্ডার
+    │       │   ├── index.blade.php                   # দৈনিক রাইড তালিকা (commission display সহ)
+    │       │   ├── completed.blade.php               # সম্পূর্ণ রাইড তালিকা (commission status সহ)
+    │       │   ├── driver.blade.php                  # ড্রাইভার রাইড তালিকা (earning সহ)
+    │       │   ├── show.blade.php                    # রাইড বিস্তারিত (commission breakdown সহ)
+    │       │   ├── status-update.blade.php           # রাইড স্ট্যাটাস আপডেট
+    │       │   └── image-upload.blade.php            # রাইড ইমেজ আপলোড
+    │       ├── commission/                           # কমিশন ভিউ ফোল্ডার
+    │       │   ├── index.blade.php                   # কমিশন তালিকা (সব ড্রাইভার)
+    │       │   ├── driver_commission.blade.php       # ড্রাইভার কমিশন বিস্তারিত
+    │       │   ├── report.blade.php                  # কমিশন রিপোর্ট
+    │       │   ├── approve.blade.php                 # কমিশন অনুমোদন ফর্ম
+    │       │   ├── payment.blade.php                 # কমিশন পেমেন্ট ফর্ম
+    │       │   └── calculator.blade.php              # কমিশন ক্যালকুলেটর
+    │       ├── dashboard/                            # ড্যাশবোর্ড ভিউ ফোল্ডার
+    │       │   ├── admin.blade.php                   # অ্যাডমিন ড্যাশবোর্ড (rides + commissions overview)
+    │       │   ├── driver.blade.php                  # ড্রাইভার ড্যাশবোর্ড (rides + earnings)
+    │       │   └── overview.blade.php                # সামগ্রিক দৃশ্যপট (rides + commissions summary)
+    │       ├── components/                           # পুনঃব্যবহারযোগ্য কম্পোনেন্ট
+    │       │   ├── ride-status-badge.blade.php       # রাইড স্ট্যাটাস ব্যাজ
+    │       │   ├── driver-card.blade.php             # ড্রাইভার কার্ড (commission rate সহ)
+    │       │   ├── location-display.blade.php        # লোকেশন প্রদর্শন
+    │       │   ├── ride-timeline.blade.php           # রাইড টাইমলাইন
+    │       │   ├── commission-badge.blade.php        # কমিশন স্ট্যাটাস ব্যাজ
+    │       │   ├── earnings-card.blade.php           # আয়ের কার্ড
+    │       │   └── commission-calculator-widget.blade.php # কমিশন ক্যালকুলেটর উইজেট
+    │       └── layouts/
+    │           ├── master.blade.php                  # মূল লেআউট
+    │           ├── app.blade.php                     # অ্যাপ লেআউট
+    │           ├── admin.blade.php                   # অ্যাডমিন লেআউট
+    │           └── driver.blade.php                  # ড্রাইভার লেআউট
+    ├── Routes/
+    │   ├── web.php                                   # ওয়েব রুট ফাইল (সব routes একসাথে)
+    │   └── api.php                                   # API রুট ফাইল (সব API একসাথে)
+    ├── Services/
+    │   ├── RideAssignService.php                     # রাইড অ্যাসাইন সার্ভিস (commission creation সহ)
+    │   ├── RideService.php                           # রাইড সার্ভিস (commission update সহ)
+    │   ├── RideStatusService.php                     # রাইড স্ট্যাটাস সার্ভিস
+    │   ├── DriverSelectionService.php                # ড্রাইভার নির্বাচন সার্ভিস
+    │   ├── CommissionCalculationService.php          # কমিশন ক্যালকুলেশন সার্ভিস
+    │   ├── CommissionService.php                     # কমিশন ব্যবসায়িক লজিক সার্ভিস
+    │   └── CommissionReportService.php               # কমিশন রিপোর্ট সার্ভিস
+    ├── Tests/
+    │   ├── Feature/
+    │   │   ├── RideAssignControllerTest.php          # রাইড অ্যাসাইন কন্ট্রোলার টেস্ট
+    │   │   ├── RideControllerTest.php                # রাইড কন্ট্রোলার টেস্ট
+    │   │   ├── CommissionControllerTest.php          # কমিশন কন্ট্রোলার টেস্ট
+    │   │   ├── RideStatusTest.php                    # রাইড স্ট্যাটাস টেস্ট
+    │   │   ├── DriverRideTest.php                    # ড্রাইভার রাইড টেস্ট
+    │   │   └── CommissionReportTest.php              # কমিশন রিপোর্ট টেস্ট
+    │   └── Unit/
+    │       ├── RideAssignRepositoryTest.php          # রাইড অ্যাসাইন রেপোজিটরি টেস্ট
+    │       ├── RideRepositoryTest.php                # রাইড রেপোজিটরি টেস্ট
+    │       ├── CommissionRepositoryTest.php          # কমিশন রেপোজিটরি টেস্ট
+    │       ├── RideAssignServiceTest.php             # রাইড অ্যাসাইন সার্ভিস টেস্ট
+    │       ├── RideServiceTest.php                   # রাইড সার্ভিস টেস্ট
+    │       ├── CommissionServiceTest.php             # কমিশন সার্ভিস টেস্ট
+    │       └── CommissionCalculationTest.php         # কমিশন ক্যালকুলেশন টেস্ট
+    ├── composer.json                                 # মডিউল কম্পোজার ফাইল
+    └── module.json
+
+
+Prompt:
+"Create three minimal Laravel modules using Repository Pattern:
+1. RideAssign Module
+   * Purpose: Assign rides based on subscriptions (Monthly, Weekly, Instant/Emergency)
+   * Features: Create, Edit, List assigned rides (create.blade.php, edit.blade.php, index.blade.php)
+   * Admin selects driver + subscription when assigning a ride.
+2. Ride Module
+   * Purpose: Manage daily rides, track statuses, and show commissions per ride.
+   * Features:
+      * Daily ride list (index.blade.php)
+      * Completed ride list (completed.blade.php)
+      * Driver ride list (driver.blade.php)
+      * Commission automatically added after ride completion
+      * Individual ride commission must be visible
+      * Ride statuses: Assigned, Ready for Pickup, Arrived with Face Verification, Ready to Ride with Setter, Completed Ride with verification and image upload
+3. Commission Module
+   * Purpose: Manage driver commissions.
+   * Features:
+      * Driver commission list (index.blade.php)
+      * Individual driver commission details (driver_commission.blade.php)
+      * Commission report view/download (report.blade.php)
+Keep the code minimal (Controller + Repository + Model + Views). Add Bangla comments in the code explaining why each function is used."
+
+make using laravel and use reposotory pattern
+
+first give me file folder structure and describe why need this and description bangla
+
+

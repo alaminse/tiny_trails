@@ -35,7 +35,7 @@ function initModuleCrud(config) {
         }
 
         console.log('finalUrl', finalUrl);
-        
+
         $.ajax({
             url: finalUrl,
             method: "GET",
@@ -142,6 +142,7 @@ function initModuleCrud(config) {
         });
     });
 
+    //show Btn
     $(document).on("click", `.showBtn`, function (e) {
         e.preventDefault();
         const id = $(this).data("id");
@@ -243,6 +244,7 @@ function initModuleCrud(config) {
         });
     });
 
+    // Submit
     $form.on("submit", function (e) {
         e.preventDefault();
 
