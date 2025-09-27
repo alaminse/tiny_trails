@@ -5,13 +5,12 @@ namespace Modules\RideAssignment\app\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Modules\RideAssignment\app\Models\DriverCommission;
 use Modules\RideAssignment\app\Models\Ride;
 use Modules\RideAssignment\app\Models\RideAssign;
 use Modules\Subscription\app\Models\Location;
 use Modules\Subscription\app\Models\Subscription;
 use Modules\UserRolePermission\app\Models\Driver;
-use Modules\UserRolePermission\App\Models\Kid;
+use Modules\UserRolePermission\app\Models\Kid;
 
 class RideAssignController extends Controller
 {

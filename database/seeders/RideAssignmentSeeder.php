@@ -3,11 +3,11 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\RideAssignment\app\Models\RideAssignment;
 use App\Models\User;
 use Modules\UserRolePermission\app\Models\Kid;
 use Modules\Subscription\app\Models\Subscription;
 use Carbon\Carbon;
+use Modules\RideAssignment\app\Models\RideAssign;
 
 class RideAssignmentSeeder extends Seeder
 {
@@ -21,7 +21,7 @@ class RideAssignmentSeeder extends Seeder
             ->where('status', 'active')
             ->with('driver') // Load driver relationship
             ->get();
-            
+
         $parents = User::role('parent')
             ->where('status', 'active')
             ->get();
@@ -95,17 +95,17 @@ class RideAssignmentSeeder extends Seeder
             $status = $statuses[array_rand($statuses)];
             $rideType = $rideTypes[array_rand($rideTypes)];
             $isRecurring = $rideType !== 'one_time' && rand(0, 1);
-            
+
             // Calculate dates
             $rideDate = Carbon::now()->addDays(rand(-30, 30));
             $pickupTime = Carbon::createFromTime(rand(6, 22), rand(0, 3) * 15);
             $estimatedDropoffTime = $pickupTime->copy()->addMinutes(rand(15, 90));
-            
+
             // Calculate financial details
             $rideFare = rand(200, 2000);
             $driverCommission = $rideFare * 0.15; // 15% commission
             $platformFee = $rideFare - $driverCommission;
-            
+
             // Set status timestamps based on status
             $acceptedAt = null;
             $startedAt = null;
@@ -175,7 +175,7 @@ class RideAssignmentSeeder extends Seeder
 
         // Insert in chunks for better performance
         collect($rideAssignments)->chunk(10)->each(function ($chunk) {
-            RideAssignment::insert($chunk->toArray());
+            RideAssign::insert($chunk->toArray());
         });
 
         $this->command->info('Successfully seeded 50 ride assignments.');
