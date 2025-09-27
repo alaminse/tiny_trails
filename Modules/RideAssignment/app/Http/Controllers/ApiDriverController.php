@@ -3,6 +3,9 @@
 namespace Modules\RideAssignment\app\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
+use App\Models\User;
+use App\Services\FirebaseNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -115,90 +118,210 @@ class ApiDriverController extends Controller
             ], 404);
         }
 
+        $oldStatus = $ride->status;
         $ride->update(['status' => $request->status]);
 
-        // Send notification to parent (you can implement this later)
-        // $this->sendNotificationToParent($ride, $request->status);
+        // Send notification to parent
+        $this->sendRideStatusNotification($ride, $request->status, $oldStatus);
 
         return response()->json([
             'success' => true,
             'message' => 'Ride status updated successfully',
             'data' => [
                 'ride_id' => $ride->id,
+                'old_status' => $oldStatus,
                 'new_status' => $request->status,
                 'updated_at' => $ride->updated_at
             ]
         ]);
     }
 
-    // Get driver dashboard stats
-    public function driverDashboard()
+    private function sendRideStatusNotification($ride, $newStatus, $oldStatus)
     {
-        $driver = Auth::user();
+        // Get parent FCM token (assuming you have parent_id in rides table)
+        $parent = User::find($ride->parent_id);
 
-        // Today's rides
-        $todayRides = Ride::where('driver_id', $driver->id)
-            ->whereDate('date', today())
-            ->get();
+        if (!$parent || !$parent->fcm_token) {
+            return;
+        }
 
-        // This week's rides
-        $thisWeekRides = Ride::where('driver_id', $driver->id)
-            ->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])
-            ->get();
+        $driver = $ride->driver;
 
-        // This month's rides
-        $thisMonthRides = Ride::where('driver_id', $driver->id)
-            ->whereBetween('date', [now()->startOfMonth(), now()->endOfMonth()])
-            ->get();
+        // Create notification messages based on status
+        $notifications = [
+            'in_progress' => [
+                'title' => 'Driver is on the way',
+                'body' => "{$driver->name} is heading to pickup location"
+            ],
+            'arrive_home' => [
+                'title' => 'Driver has arrived',
+                'body' => "{$driver->name} has arrived at pickup location"
+            ],
+            'start_ride' => [
+                'title' => 'Ride started',
+                'body' => "{$driver->name} has started the {$ride->ride_type} ride"
+            ],
+            'completed' => [
+                'title' => 'Ride completed',
+                'body' => "Your {$ride->ride_type} ride has been completed successfully"
+            ],
+            'cancelled' => [
+                'title' => 'Ride cancelled',
+                'body' => "Your {$ride->ride_type} ride has been cancelled"
+            ]
+        ];
+
+        $notification = $notifications[$newStatus] ?? [
+            'title' => 'Ride Status Updated',
+            'body' => "Your ride status has been updated to {$newStatus}"
+        ];
 
         $data = [
-            'today' => [
-                'total_rides' => $todayRides->count(),
-                'completed_rides' => $todayRides->where('status', 'completed')->count(),
-                'pending_rides' => $todayRides->whereIn('status', ['assigned', 'in_progress'])->count(),
-                'total_commission' => $todayRides->sum('commission'),
-                'rides' => $todayRides->map(function($ride) {
-                    return [
-                        'id' => $ride->id,
-                        'ride_type' => $ride->ride_type,
-                        'pickup_time' => Carbon::parse($ride->pickup)->format('h:i A'),
-                        'status' => $ride->status,
-                        'commission' => $ride->commission
-                    ];
-                })
-            ],
-            'this_week' => [
-                'total_rides' => $thisWeekRides->count(),
-                'completed_rides' => $thisWeekRides->where('status', 'completed')->count(),
-                'total_commission' => $thisWeekRides->sum('commission')
-            ],
-            'this_month' => [
-                'total_rides' => $thisMonthRides->count(),
-                'completed_rides' => $thisMonthRides->where('status', 'completed')->count(),
-                'total_commission' => $thisMonthRides->sum('commission')
-            ],
-            'upcoming_rides' => Ride::where('driver_id', $driver->id)
-                ->where('date', '>', now())
-                ->orderBy('date')
-                ->orderBy('pickup')
-                ->take(5)
-                ->get()
-                ->map(function($ride) {
-                    return [
-                        'id' => $ride->id,
-                        'date' => $ride->date,
-                        'ride_type' => $ride->ride_type,
-                        'pickup_time' => Carbon::parse($ride->pickup)->format('h:i A'),
-                        'commission' => $ride->commission
-                    ];
-                })
+            'ride_id' => (string)$ride->id,
+            'status' => $newStatus,
+            'ride_type' => $ride->ride_type,
+            'driver_name' => $driver->name,
+            'updated_at' => $ride->updated_at->toDateTimeString()
         ];
+
+        // Send notification using Firebase service
+        $firebaseService = app(FirebaseNotificationService::class);
+        $firebaseService->sendNotification(
+            $parent->fcm_token,
+            $notification['title'],
+            $notification['body'],
+            $data
+        );
+
+        // Optional: Save notification to database for history
+        Notification::create([
+            'user_id'   => $parent->id,
+            'title'     => $notification['title'],
+            'message'   => $notification['body'],
+            'data'      => json_encode($data),
+            'type'      => 'ride_status_update',
+            'read_at'   => null
+        ]);
+    }
+
+    public function updateFcmToken(Request $request)
+    {
+        $request->validate([
+            'fcm_token' => 'required|string'
+        ]);
+
+        $user = Auth::user();
+        $user->update(['fcm_token' => $request->fcm_token]);
 
         return response()->json([
             'success' => true,
-            'data' => $data
+            'message' => 'FCM token updated successfully'
         ]);
     }
+
+    public function getNotifications(Request $request)
+    {
+        $user = Auth::user();
+
+        $notifications = \App\Models\Notification::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return response()->json([
+            'success' => true,
+            'data' => $notifications
+        ]);
+    }
+
+    public function markNotificationAsRead(Request $request, $notificationId)
+    {
+        $user = Auth::user();
+
+        $notification = Notification::where('id', $notificationId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($notification) {
+            $notification->update(['read_at' => now()]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Notification marked as read'
+        ]);
+    }
+
+    // Get driver dashboard stats
+    // public function driverDashboard()
+    // {
+    //     $driver = Auth::user();
+
+    //     // Today's rides
+    //     $todayRides = Ride::where('driver_id', $driver->id)
+    //         ->whereDate('date', today())
+    //         ->get();
+
+    //     // This week's rides
+    //     $thisWeekRides = Ride::where('driver_id', $driver->id)
+    //         ->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()])
+    //         ->get();
+
+    //     // This month's rides
+    //     $thisMonthRides = Ride::where('driver_id', $driver->id)
+    //         ->whereBetween('date', [now()->startOfMonth(), now()->endOfMonth()])
+    //         ->get();
+
+    //     $data = [
+    //         'today' => [
+    //             'total_rides' => $todayRides->count(),
+    //             'completed_rides' => $todayRides->where('status', 'completed')->count(),
+    //             'pending_rides' => $todayRides->whereIn('status', ['assigned', 'in_progress'])->count(),
+    //             'total_commission' => $todayRides->sum('commission'),
+    //             'rides' => $todayRides->map(function($ride) {
+    //                 return [
+    //                     'id' => $ride->id,
+    //                     'ride_type' => $ride->ride_type,
+    //                     'pickup_time' => Carbon::parse($ride->pickup)->format('h:i A'),
+    //                     'status' => $ride->status,
+    //                     'commission' => $ride->commission
+    //                 ];
+    //             })
+    //         ],
+    //         'this_week' => [
+    //             'total_rides' => $thisWeekRides->count(),
+    //             'completed_rides' => $thisWeekRides->where('status', 'completed')->count(),
+    //             'total_commission' => $thisWeekRides->sum('commission')
+    //         ],
+    //         'this_month' => [
+    //             'total_rides' => $thisMonthRides->count(),
+    //             'completed_rides' => $thisMonthRides->where('status', 'completed')->count(),
+    //             'total_commission' => $thisMonthRides->sum('commission')
+    //         ],
+    //         'upcoming_rides' => Ride::where('driver_id', $driver->id)
+    //             ->where('date', '>', now())
+    //             ->orderBy('date')
+    //             ->orderBy('pickup')
+    //             ->take(5)
+    //             ->get()
+    //             ->map(function($ride) {
+    //                 return [
+    //                     'id' => $ride->id,
+    //                     'date' => $ride->date,
+    //                     'ride_type' => $ride->ride_type,
+    //                     'pickup_time' => Carbon::parse($ride->pickup)->format('h:i A'),
+    //                     'commission' => $ride->commission
+    //                 ];
+    //             })
+    //     ];
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $data
+    //     ]);
+    // }
+
+
+
 
     // Get driver earnings
     // public function driverEarnings(Request $request)

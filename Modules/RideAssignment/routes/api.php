@@ -24,12 +24,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
             // Driver schedule APIs
             Route::get('/schedule', 'schedule');
             Route::get('/schedule/date', 'getDriverDateSchedule');
+            // Driver dashboard and earnings
+            // Route::get('/dashboard', 'driverDashboard');
+            // Route::get('/earnings', 'driverEarnings');
 
             // Driver actions
             Route::patch('/ride/{rideId}/status', 'updateRideStatus');
+            Route::post('/fcm-token', 'updateFcmToken');
+            Route::get('/notifications', 'getNotifications');
+            Route::patch('/notifications/{notificationId}/read', 'markNotificationAsRead');
 
-            // Driver dashboard and earnings
-            Route::get('/dashboard', 'driverDashboard');
-            // Route::get('/earnings', 'driverEarnings');
         });
 });

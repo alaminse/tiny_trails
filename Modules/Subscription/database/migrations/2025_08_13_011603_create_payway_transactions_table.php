@@ -11,45 +11,45 @@ return new class extends Migration
     {
         Schema::create('payway_transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('subscription_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('subscription_id')->nullable();
 
-            // PayWay specific fields
-            $table->string('payway_transaction_id')->unique()->index();
-            $table->string('payway_customer_id')->nullable()->index(); // Made nullable since it can be null in your code
-
-            // Transaction details
-            $table->string('transaction_type'); // payment, refund, verification, preAuth, capture
-            $table->decimal('amount', 12, 2)->default(0); // Increased precision for larger amounts
+            $table->string('payway_transaction_id')->unique();
+            $table->string('payway_customer_id')->nullable();
+            $table->string('transaction_type');
+            $table->decimal('amount', 12, 2)->default(0.00);
             $table->string('currency', 3)->default('aud');
-            $table->string('status')->index(); // approved, declined, pending, voided, suspended
+            $table->string('status');
 
-            // Response details
             $table->string('response_code')->nullable();
             $table->text('response_text')->nullable();
-            $table->json('gateway_response')->nullable(); // Full PayWay response
+            $table->longText('gateway_response')->nullable();
 
-            // Additional transaction fields
-            $table->string('order_number')->nullable()->index();
-            $table->string('receipt_number')->nullable()->index(); // Added index for receipt lookups
-            $table->decimal('principal_amount', 12, 2)->nullable(); // Amount before surcharge (increased precision)
-            $table->decimal('surcharge_amount', 12, 2)->nullable(); // Surcharge amount (increased precision)
+            $table->string('order_number')->nullable();
+            $table->string('receipt_number')->nullable();
 
-            // Processing details
-            $table->timestamp('processed_at')->nullable()->index(); // When transaction was processed
-            $table->date('settlement_date')->nullable()->index(); // Bank settlement date
+            $table->decimal('principal_amount', 12, 2)->nullable();
+            $table->decimal('surcharge_amount', 12, 2)->nullable();
 
-            // Audit and tracking
+            $table->timestamp('processed_at')->nullable();
+            $table->date('settlement_date')->nullable();
+
             $table->timestamps();
 
-            // Performance indexes
-            $table->index(['user_id', 'status']);
-            $table->index(['subscription_id', 'transaction_type']);
-            $table->index(['status', 'processed_at']);
-            $table->index(['payway_customer_id', 'transaction_type']);
-            $table->index(['payway_transaction_id', 'status']); // Added for transaction status lookups
-            $table->index(['order_number', 'status']); // Added for order tracking
-            $table->index(['created_at', 'status']); // Added for time-based queries
+            // Indexes
+            $table->index(['user_id', 'status'], 'payway_transactions_user_id_status_index');
+            $table->index(['subscription_id', 'transaction_type'], 'payway_transactions_subscription_id_transaction_type_index');
+            $table->index(['status', 'processed_at'], 'payway_transactions_status_processed_at_index');
+            $table->index(['payway_customer_id', 'transaction_type'], 'payway_transactions_payway_customer_id_transaction_type_index');
+            $table->index(['payway_transaction_id', 'status'], 'payway_transactions_payway_transaction_id_status_index');
+            $table->index(['order_number', 'status'], 'payway_transactions_order_number_status_index');
+            $table->index(['created_at', 'status'], 'payway_transactions_created_at_status_index');
+            $table->index('payway_customer_id', 'payway_transactions_payway_customer_id_index');
+            $table->index('status', 'payway_transactions_status_index');
+            $table->index('order_number', 'payway_transactions_order_number_index');
+            $table->index('receipt_number', 'payway_transactions_receipt_number_index');
+            $table->index('processed_at', 'payway_transactions_processed_at_index');
+            $table->index('settlement_date', 'payway_transactions_settlement_date_index');
         });
     }
 
