@@ -18,16 +18,20 @@
             <!--begin::Sidebar Menu-->
             <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="navigation"
                 aria-label="Main navigation" data-accordion="false" id="navigation">
-                <li class="nav-item">
-                    <a href="{{ route('admin.dashboard') }}"
-                        class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                        <i class="nav-icon bi bi-speedometer"></i>
-                        <p>
-                            Dashboard
-                        </p>
-                    </a>
-                </li>
+                @can('dashboard')
+                    <li class="nav-item">
+                        <a href="{{ route('admin.dashboard') }}"
+                            class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-speedometer"></i>
+                            <p>
+                                Dashboard
+                            </p>
+                        </a>
+                    </li>
+                @endcan
 
+
+                @canany(['list-users', 'list-roles', 'list-permissions'])
                 <li class="nav-item {{ request()->routeIs(['admin.users.*', 'admin.roles.*', 'admin.permissions.*']) ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-speedometer"></i>
@@ -59,7 +63,8 @@
                         </li>
                     </ul>
                 </li>
-
+                @endcan
+                @canany('list-kids')
                 <li class="nav-item">
                     <a href="{{ route('admin.kids.index') }}"
                         class="nav-link {{ request()->routeIs('admin.kids.index') ? 'active' : '' }}">
@@ -69,7 +74,8 @@
                         </p>
                     </a>
                 </li>
-
+                @endcan
+                @canany('list-drivers')
                 <li class="nav-item">
                     <a href="{{ route('admin.drivers.index') }}"
                         class="nav-link {{ request()->routeIs('admin.drivers.index') ? 'active' : '' }}">
@@ -79,6 +85,8 @@
                         </p>
                     </a>
                 </li>
+                @endcan
+                @canany('list-parents')
                 <li class="nav-item">
                     <a href="{{ route('admin.parents.index') }}"
                         class="nav-link {{ request()->routeIs('admin.parents.index') ? 'active' : '' }}">
@@ -88,7 +96,8 @@
                         </p>
                     </a>
                 </li>
-
+                @endcan
+                @canany('list-pickup')
                 <li class="nav-item">
                     <a href="{{ route('admin.pickuptypes.index') }}"
                         class="nav-link {{ request()->routeIs('admin.pickuptypes.index') ? 'active' : '' }}">
@@ -98,7 +107,9 @@
                         </p>
                     </a>
                 </li>
+                @endcan
 
+                @canany(['list-country', 'list-state', 'list-city'])
                 <li class="nav-item {{ request()->routeIs(['admin.countries.*', 'admin.states.*', 'admin.cities.*']) ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->routeIs(['admin.countries.*', 'admin.states.*', 'admin.cities.*']) ? 'active' : '' }}">
                         <i class="nav-icon bi bi-speedometer"></i>
@@ -108,12 +119,15 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
+                        @canany('list-country')
                         <li class="nav-item">
                             <a href="{{ route('admin.countries.index') }}" class="nav-link {{ request()->routeIs('admin.countries.index') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Country Lists</p>
                             </a>
                         </li>
+                        @endcan
+                        @canany('list-state')
                         <li class="nav-item">
                             <a href="{{ route('admin.states.index') }}"
                                 class="nav-link {{ request()->routeIs('admin.states.index') ? 'active' : '' }}">
@@ -121,6 +135,8 @@
                                 <p>State</p>
                             </a>
                         </li>
+                        @endcan
+                        @canany('list-city')
                         <li class="nav-item">
                             <a href="{{ route('admin.cities.index') }}"
                                 class="nav-link {{ request()->routeIs('admin.cities.index') ? 'active' : '' }}">
@@ -128,8 +144,11 @@
                                 <p>City</p>
                             </a>
                         </li>
+                        @endcan
                     </ul>
                 </li>
+                @endcan
+                @canany(['list-plan', 'list-subscription'])
                 <li class="nav-item {{ request()->routeIs(['admin.plans.*', 'admin.subscriptions.*']) ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ request()->routeIs(['admin.plans.*', 'admin.subscriptions.*']) ? 'active' : '' }}">
                         <i class="nav-icon bi bi-speedometer"></i>
@@ -139,12 +158,15 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
+                        @canany('list-plan')
                         <li class="nav-item">
                             <a href="{{ route('admin.plans.index') }}" class="nav-link {{ request()->routeIs('admin.plans.index') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Plan Lists</p>
                             </a>
                         </li>
+                        @endcan
+                        @canany('list-subscription')
                         <li class="nav-item">
                             <a href="{{ route('admin.subscriptions.index') }}"
                                 class="nav-link {{ request()->routeIs('admin.subscriptions.index') ? 'active' : '' }}">
@@ -152,8 +174,11 @@
                                 <p>Subscription </p>
                             </a>
                         </li>
+                        @endcan
                     </ul>
                 </li>
+                @endcan
+                @can('list-rideassign')
                 <li class="nav-item">
                     <a href="{{ route('admin.ride.assign.index') }}"
                         class="nav-link {{ request()->routeIs('admin.ride.assign.index') ? 'active' : '' }}">
@@ -163,6 +188,7 @@
                         </p>
                     </a>
                 </li>
+                @endcan
                 {{-- <li class="nav-item">
                     <a href="{{ route('admin.driver-commissions.index') }}" class="nav-link {{ request()->routeIs('admin.driver-commissions.index') ? 'active' : '' }}">
                         <i class="fas fa-money-bill-wave nav-icon"></i>

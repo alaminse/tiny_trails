@@ -18,9 +18,11 @@
                                 <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
                             </div>
 
+                            @canany('create-city')
                             <div class="p-2">
                                 <a href="#" class="btn btn-sm btn-gradient-success" id="addCityBtn">Add City</a>
                             </div>
+                            @endcan
                         </div>
                         <div class="table-responsive pt-3">
                             <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap"

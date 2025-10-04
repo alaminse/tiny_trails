@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Log;
 use Modules\UserRolePermission\app\Http\Requests\RoleRequest;
 use Spatie\Permission\Models\Role;
 
-
 class RoleController extends Controller
 {
     public function index()
@@ -113,3 +112,4 @@ class RoleController extends Controller
     }
 
 }
+

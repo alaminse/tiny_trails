@@ -24,16 +24,21 @@
                 <i class="fas fa-trash-alt"></i>
             </button>
         @else
+            @canany('edit-users')
             <a href="#" class="btn btn-gradient-primary btn-sm editBtn" data-id="{{ $user->id }}" title="Edit">
                 <i class="fas fa-edit"></i>
             </a>
+            @endcan
+            @canany('view-users')
             <a href="#" class="btn btn-gradient-primary btn-sm showBtn" data-id="{{ $user->id }}" title="Show">
                 <i class="fas fa-eye"></i>
             </a>
-        
+            @endcan
+            @canany('delete-users')
             <a href="#" class="btn btn-gradient-danger btn-sm deleteBtn" data-id="{{ $user->id }}" title="Trash">
                 <i class="fas fa-trash"></i>
             </a>
+            @endcan
             @if ($user->roles->contains('name', 'parent'))
                 <a href="{{ route('admin.kids.index', ['parent' => $user->id]) }}" class="btn btn-gradient-success btn-sm" title="Kids">
                     <i class="fas fa-user-friends"></i>

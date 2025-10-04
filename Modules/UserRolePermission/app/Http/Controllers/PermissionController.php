@@ -8,6 +8,7 @@ use Modules\UserRolePermission\app\Http\Requests\PermissionRequest;
 use Spatie\Permission\Models\Permission;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Spatie\Permission\Models\Role;
 
 class PermissionController extends Controller
 {
@@ -111,4 +112,28 @@ class PermissionController extends Controller
         return response()->json(['html' => $html]);
     }
 
+    public function assignPermission(Role $role)
+    {
+        $permissions = Permission::orderBy('id', 'DESC')->get();
+
+        return view('userrolepermission::assign_permission', compact('permissions', 'role'));
+    }
+
+    public function storePermissions(Request $request, Role $role)
+    {
+        try {
+            $permissionIds = $request->input('permissions', []);
+
+            // Get permission models from IDs
+            $permissions = Permission::whereIn('id', $permissionIds)->get();
+
+            $role->syncPermissions($permissions);
+
+            return redirect()->route('admin.roles.index')
+                ->with('success', 'Permissions assigned successfully to ' . $role->name);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to assign permissions: ' . $e->getMessage());
+        }
+    }
 }

@@ -5,6 +5,7 @@ use Modules\UserRolePermission\app\Http\Controllers\KidController;
 use Modules\UserRolePermission\app\Http\Controllers\UserController;
 use Modules\UserRolePermission\app\Http\Controllers\RoleController;
 use Modules\UserRolePermission\app\Http\Controllers\PermissionController;
+use Spatie\Permission\Models\Permission;
 
 Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
     Route::controller(UserController::class)
@@ -56,6 +57,8 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
             Route::post('/restore/{permission}','restore')->name('restore');
             Route::delete('/force-delete/{permission}','forceDelete')->name('forceDelete');
             Route::get('/get/data', 'getData')->name('data');
+            Route::get('/assign/{role}', 'assignPermission')->name('assign');
+            Route::post('assign/{role}', 'storePermissions')->name('assign');
         });
 
     Route::controller(KidController::class)
@@ -75,3 +78,42 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
             Route::get('/parents', 'parents')->name('parents');
         });
 });
+
+
+// Route::get('/create/permissions', function(){
+//         $modules = [
+//             'users',
+//             'roles',
+//             'permissions',
+//             'kids',
+//             'drivers',
+//             'parents',
+//             'pickup',
+//             'country',
+//             'state',
+//             'city',
+//             'plan',
+//             'subscription',
+//             'rideassign',
+//             'rides',
+//         ];
+
+//         $actions = [
+//             'create',
+//             'edit',
+//             'delete',
+//             'view',
+//             'list',
+//         ];
+
+//         foreach ($modules as $module) {
+//             foreach ($actions as $action) {
+//                 Permission::create([
+//                     'name' => $action . '-' . $module,
+//                     'guard_name' => 'web',
+//                 ]);
+//             }
+//         }
+
+//         return 'Permissions seeded successfully!. Total permissions created: ' . (count($modules) * count($actions));
+// });

@@ -459,6 +459,11 @@
         <script>
             $(document).ready(function() {
                 // API Routes Configuration
+                let canDelete = {{ auth()->user()->can('delete-roles') }};
+                let canView = {{ auth()->user()->can('view-subscription') }};
+                let canEdit = {{ auth()->user()->can('edit-subscription') }};
+
+
                 const routes = {
                     data: '/admin/subscriptions/data/get',
                     stats: '/admin/subscriptions/stats',
@@ -617,15 +622,20 @@
                                 render: function(data, type, row) {
                                     let buttons = '';
 
+
+                                    if (canView) {
                                     // View button
                                     buttons += `<button class="btn btn-sm btn-info viewBtn me-1" data-id="${row.id}" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </button>`;
+                                    }
 
+                                    if (canEdit) {
                                     // Edit button
                                     buttons += `<button class="btn btn-sm btn-warning editBtn me-1" data-id="${row.id}" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </button>`;
+                                    }
 
                                     // Action buttons based on status
                                     if (row.status === 'active' && !row.canceled_at) {
@@ -644,10 +654,11 @@
                                         </button>`;
                                     }
 
-                                    // Delete button
-                                    buttons += `<button class="btn btn-sm btn-danger deleteBtn" data-id="${row.id}" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>`;
+                                    if (canDelete) {
+                                        buttons += `<button class="btn btn-sm btn-danger deleteBtn" data-id="'.$row->id.'" title="Delete">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>`;
+                                    }
 
                                     return `<div class="action-buttons">${buttons}</div>`;
                                 }

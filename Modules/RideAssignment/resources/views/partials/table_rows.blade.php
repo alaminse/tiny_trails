@@ -21,15 +21,20 @@
             @endif
         </td>
         <td>
+            @can('view-rideassign')
             <a href="{{ route('admin.ride.assign.show', $ride->id) }}"
                class="btn btn-sm btn-gradient-primary" title="View Details">
                 <i class="fas fa-eye"></i>
             </a>
+            @endcan
+            @can('edit-rideassign')
             <a href="{{ route('admin.ride.assign.edit', $ride->id) }}"
                class="btn btn-sm btn-gradient-info" title="Edit">
                 <i class="fas fa-edit"></i>
             </a>
+            @endcan
             @if($ride->status !== 'completed')
+                @can('delete-rideassign')
                 <form action="{{ route('admin.ride.assign.destroy', $ride->id) }}" method="POST"
                       style="display:inline-block">
                     @csrf
@@ -40,6 +45,7 @@
                         <i class="fas fa-trash"></i>
                     </button>
                 </form>
+                @endcan
             @endif
         </td>
     </tr>

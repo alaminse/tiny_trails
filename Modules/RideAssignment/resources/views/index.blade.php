@@ -20,9 +20,11 @@
                                 <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
                             </div>
                             <div class="p-2">
+                                @can('unassigned-subscription')
                                 <a href="{{ route('admin.ride.assign.subscriptions') }}" class="btn btn-sm btn-gradient-success">
                                     Unassigned Subscription
                                 </a>
+                                @endcan
                             </div>
                         </div>
 

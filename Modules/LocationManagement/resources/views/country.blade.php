@@ -18,9 +18,11 @@
                                 <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
                             </div>
 
+                            @canany('create-country')
                             <div class="p-2">
                                 <a href="#" class="btn btn-sm btn-gradient-success" id="addCountryBtn">Add Country</a>
                             </div>
+                            @endcan
                         </div>
                         <div class="table-responsive pt-3">
                             <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap"

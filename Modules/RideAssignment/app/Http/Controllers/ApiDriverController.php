@@ -105,6 +105,8 @@ class ApiDriverController extends Controller
             'status' => 'required|in:in_progress,arrive_home,start_ride,completed,cancelled'
         ]);
 
+        return 'test';
+
         $driver = Auth::user();
 
         $ride = Ride::where('id', $rideId)

@@ -30,9 +30,10 @@ return new class extends Migration
             $table->string('end_pic')->nullable();
             $table->enum('status', [
                 'assigned',
+                'pending',
+                'going_to_pickup',
+                'arrived_at_pickup',
                 'in_progress',
-                'arrive_home',
-                'start_ride',
                 'completed',
                 'cancelled'
             ])->default('assigned');
@@ -40,6 +41,7 @@ return new class extends Migration
             $table->softDeletes();
         });
 
+        // 'assigned','in_progress','arrive_home','start_ride','completed','cancelled'
     }
 
     public function down(): void

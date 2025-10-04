@@ -27,12 +27,16 @@
                 <i class="fas fa-trash-alt"></i>
             </button>
         @else
+            @canany('edit-pickup')
             <a href="#" class="btn btn-gradient-primary btn-sm editBtn" data-id="{{ $pickup->id }}">
                 <i class="fas fa-edit"></i>
             </a>
+            @endcan
+            @canany('delete-pickup')
             <a href="#" class="btn btn-gradient-danger btn-sm deleteBtn" data-id="{{ $pickup->id }}">
                 <i class="fas fa-trash"></i>
             </a>
+            @endcan
         @endif
     </td>
 </tr>
