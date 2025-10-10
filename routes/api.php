@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\FaceRecognitionController;
 use App\Http\Controllers\Api\ParentApiController;
 
 /*
@@ -24,6 +25,11 @@ Route::prefix('auth')->group(function () {
         Route::get('user', [AuthController::class, 'user']);
         Route::get('profile', [AuthController::class, 'profile']);
         Route::post('profile', [AuthController::class, 'updateProfile']);
+
+
+
+        Route::post('/face/store', [FaceRecognitionController::class, 'store']);
+        Route::get('/face/my-face', [FaceRecognitionController::class, 'getMyFace']);
     });
 });
 
