@@ -140,27 +140,47 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Update user profile (Parent or Driver)
-     *
-     * @param UpdateProfileRequest $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function updateProfile(UpdateProfileRequest $request)
     {
         try {
-            $user = Auth::user();
-            $isDriver = $user->hasRole('driver');
-            $driver = $isDriver ? Driver::where('user_id', $user->id)->first() : null;
+            $user = auth()->user();
+            
+            // Get validated data
+            $validated = $request->validated();
+            
+            // Update basic fields
+            $basicFields = [
+                'first_name', 'last_name', 'email', 'phone', 
+                'dob', 'gender', 'height_cm', 'weight_kg',
+                'address', 'country_id', 'state_id', 'city_id'
+            ];
+            
+            foreach ($basicFields as $field) {
+                if (isset($validated[$field])) {
+                    $user->$field = $validated[$field];
+                }
+            }
 
-            // Update user basic information
-            $userData = $request->only([
-                'first_name', 'last_name', 'email', 'phone', 'dob',
-                'gender', 'height_cm', 'weight_kg', 'address',
-                'country_id', 'state_id', 'city_id'
-            ]);
+            // Update password if provided
+            if (isset($validated['password'])) {
+                $user->password = Hash::make($validated['password']);
+            }
 
-            // Upload new profile photo if provided
+            // Update driver-specific fields (only if user is a driver)
+            if ($user->hasRole('driver')) {
+                $driverFields = [
+                    'driving_license_number', 'driving_license_expiry',
+                    'car_model', 'car_make', 'car_year', 
+                    'car_color', 'car_plate_number'
+                ];
+                
+                foreach ($driverFields as $field) {
+                    if (isset($validated[$field])) {
+                        $user->$field = $validated[$field];
+                    }
+                }
+            }
+
             if ($request->file('photo')) {
                 $userData['photo'] = $this->uploadFile($request->file('photo'), 'user');
                 if ($user->photo) {
@@ -168,71 +188,45 @@ class AuthController extends Controller
                 }
             }
 
-            // Handle password update
-            if ($request->filled('password')) {
-                $userData['password'] = Hash::make($request->password);
-            }
-
-            $user->update($userData);
-
-            // Update driver-specific information if user is a driver
-            if ($isDriver && $driver && $request->hasAny([
-                'driving_license_number', 'driving_license_expiry', 'driving_license_image',
-                'car_model', 'car_make', 'car_year', 'car_color', 'car_plate_number',
-                'car_image', 'face_image'
-            ])) {
-                $driverData = $request->only([
-                    'driving_license_number', 'driving_license_expiry',
-                    'car_model', 'car_make', 'car_year', 'car_color', 'car_plate_number'
-                ]);
-
-                // Upload driving license image if provided
+            // Handle driver images (only if user is a driver)
+            if ($user->hasRole('driver')) {
                 if ($request->file('driving_license_image')) {
-                    $driverData['driving_license_image'] = $this->uploadFile($request->file('driving_license_image'), 'driver/license');
-                    if ($driver->driving_license_image) {
-                        $this->deleteFile($driver->driving_license_image);
+                    $userData['driving_license_image'] = $this->uploadFile($request->file('driving_license_image'), 'driver');
+                    if ($user->driving_license_image) {
+                        $this->deleteFile($user->driving_license_image);
                     }
                 }
 
-                // Upload car image if provided
                 if ($request->file('car_image')) {
-                    $driverData['car_image'] = $this->uploadFile($request->file('car_image'), 'driver/car');
-                    if ($driver->car_image) {
-                        $this->deleteFile($driver->car_image);
+                    $userData['car_image'] = $this->uploadFile($request->file('car_image'), 'driver');
+                    if ($user->car_image) {
+                        $this->deleteFile($user->car_image);
                     }
                 }
-
-                // Upload face image if provided
+                
                 if ($request->file('face_image')) {
-                    $driverData['faceImage'] = $this->uploadFile($request->file('face_image'), 'driver/face');
-                    if ($driver->faceImage) {
-                        $this->deleteFile($driver->faceImage);
+                    $userData['face_image'] = $this->uploadFile($request->file('face_image'), 'driver');
+                    if ($user->face_image) {
+                        $this->deleteFile($user->face_image);
                     }
                 }
-
-                $driver->update($driverData);
             }
 
-            // Reload user with updated data
-            $user->refresh();
-            $user->load(['country', 'state', 'city']);
+            $user->save();
 
-            // Load driver relationship if user is a driver
-            if ($isDriver) {
-                $user->loadMissing('driver');
-            }
+            // Reload user with relationships if needed
+            $user->load(['country', 'state', 'city', 'roles']);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Profile updated successfully',
-                'data' => new UserResource($user)
+                'data' => $user
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update profile',
-                'error' => $e->getMessage()
+                'message' => 'Failed to update profile: ' . $e->getMessage()
             ], 500);
         }
     }
