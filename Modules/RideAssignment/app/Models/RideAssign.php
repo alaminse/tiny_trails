@@ -30,14 +30,35 @@ class RideAssign extends Model
         'platform_commission' => 'decimal:2',
         'total_days' => 'integer'
     ];
-
-    public function subscription()
-    {
-        return $this->belongsTo(Subscription::class);
-    }
-
+    
+    /**
+     * Rides relationship
+     */
     public function rides()
     {
-        return $this->hasMany(Ride::class);
+        return $this->hasMany(Ride::class, 'ride_assign_id');
+    }
+
+    /**
+     * Driver relationship (through rides table)
+     */
+    public function driver()
+    {
+        return $this->hasOneThrough(
+            User::class,           // Final model
+            Ride::class,           // Intermediate model
+            'ride_assign_id',      // Foreign key on rides table
+            'id',                  // Foreign key on users table
+            'id',                  // Local key on ride_assigns table
+            'driver_id'            // Local key on rides table
+        );
+    }
+
+    /**
+     * Subscription relationship
+     */
+    public function subscription()
+    {
+        return $this->belongsTo(Subscription::class, 'subscription_id');
     }
 }

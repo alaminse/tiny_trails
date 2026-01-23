@@ -17,12 +17,11 @@ class Subscription extends Model
     protected $fillable = [
         'user_id',
         'plan_id',
+        'kid_id',
         'name',
         'payway_customer_id',
         'payway_subscription_id',
         'payway_status',
-        'trial_days',
-        'trial_ends_at',
         'ends_at',
         'canceled_at',
         'cancellation_reason',
@@ -30,12 +29,11 @@ class Subscription extends Model
         'card_brand',
         'card_last_four',
         'card_expiration',
-        'assign_ride'
+        'assign_ride',
+        'ends_at'
     ];
 
     protected $casts = [
-        'trial_days' => 'integer',
-        'trial_ends_at' => 'datetime',
         'ends_at' => 'datetime',
         'canceled_at' => 'datetime',
         'created_at' => 'datetime',
@@ -43,7 +41,6 @@ class Subscription extends Model
     ];
 
     protected $dates = [
-        'trial_ends_at',
         'ends_at',
         'canceled_at',
         'created_at',
@@ -336,10 +333,6 @@ class Subscription extends Model
 
         if ($this->hasExpired()) {
             return 'expired';
-        }
-
-        if ($this->isOnTrial()) {
-            return 'trial';
         }
 
         return $this->attributes['status'] ?? 'inactive';

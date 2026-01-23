@@ -24,11 +24,9 @@ class SubscriptionHelperController extends Controller
             $subscriptions = Subscription::with(['user', 'plan'])
                 ->where('status', 'active')
                 ->where(function($query) use ($date) {
-                    $query->where('trial_ends_at', '<=', $date)
-                          ->orWhere('ends_at', '<=', $date);
+                    $query->where('ends_at', '<=', $date);
                 })
                 ->whereNull('canceled_at')
-                ->orderBy('trial_ends_at')
                 ->orderBy('ends_at')
                 ->limit(10)
                 ->get();
@@ -45,12 +43,7 @@ class SubscriptionHelperController extends Controller
                         'plan' => [
                             'name' => $subscription->plan->name ?? 'Plan Deleted'
                         ],
-                        'ends_at' => $subscription->trial_ends_at ?? $subscription->ends_at,
-
-                        'days_remaining' => $subscription->onTrial()
-                            ? $subscription->trialDaysRemaining()
-                            : ($subscription->ends_at ? $subscription->ends_at->diffInDays(now()) : 0),
-                        'type' => $subscription->onTrial() ? 'trial' : 'billing'
+                        'ends_at' => $subscription->ends_at,
                     ];
                 })
             ]);
@@ -77,7 +70,6 @@ class SubscriptionHelperController extends Controller
                 ->whereIn('payway_status', ['past_due', 'unpaid', 'payment_failed'])
                 ->orWhere(function($query) {
                     $query->where('status', 'active')
-                          ->where('trial_ends_at', '<', now())
                           ->where('payway_status', '!=', 'active');
                 })
                 ->orderBy('updated_at', 'desc')
@@ -329,8 +321,6 @@ class SubscriptionHelperController extends Controller
                     'Status' => $subscription->status,
                     'PayWay Status' => $subscription->payway_status,
                     'PayWay Customer ID' => $subscription->payway_customer_id,
-                    'Trial Days' => $subscription->trial_days,
-                    'Trial Ends At' => $subscription->trial_ends_at?->format('Y-m-d H:i:s'),
                     'Next Billing' => $subscription->ends_at?->format('Y-m-d H:i:s'),
                     'Card Brand' => $subscription->card_brand,
                     'Card Last Four' => $subscription->card_last_four,
@@ -376,10 +366,7 @@ class SubscriptionHelperController extends Controller
                 'total' => Subscription::count(),
                 'active' => Subscription::where('status', 'active')->count(),
                 'inactive' => Subscription::where('status', 'inactive')->count(),
-                'on_trial' => Subscription::whereNotNull('trial_ends_at')
-                    ->where('trial_ends_at', '>', now())->count(),
-                'expired' => Subscription::where('trial_ends_at', '<', now())
-                    ->orWhere('ends_at', '<', now())->count(),
+                'expired' => Subscription::where('ends_at', '<', now())->count(),
                 'canceled' => Subscription::whereNotNull('canceled_at')->count(),
             ];
 
@@ -439,10 +426,6 @@ class SubscriptionHelperController extends Controller
 
         if ($subscription->payway_status === 'unpaid') {
             return 'unpaid';
-        }
-
-        if ($subscription->trial_ends_at && $subscription->trial_ends_at->isPast()) {
-            return 'trial_expired';
         }
 
         return 'payment_failed';

@@ -22,29 +22,31 @@
         </td>
         <td>
             @can('view-rideassign')
-            <a href="{{ route('admin.ride.assign.show', $ride->id) }}"
+            <!--{{ route('admin.ride.assign.show', $ride->id) }}-->
+            <a href="#"
                class="btn btn-sm btn-gradient-primary" title="View Details">
                 <i class="fas fa-eye"></i>
             </a>
             @endcan
             @can('edit-rideassign')
-            <a href="{{ route('admin.ride.assign.edit', $ride->id) }}"
+            <!--{{ route('admin.ride.assign.edit', $ride->id) }}-->
+            <a href="#"
                class="btn btn-sm btn-gradient-info" title="Edit">
                 <i class="fas fa-edit"></i>
             </a>
             @endcan
             @if($ride->status !== 'completed')
                 @can('delete-rideassign')
-                <form action="{{ route('admin.ride.assign.destroy', $ride->id) }}" method="POST"
-                      style="display:inline-block">
-                    @csrf
-                    @method('DELETE')
+                <!--<form action="{{ route('admin.ride.assign.destroy', $ride->id) }}" method="POST"-->
+                <!--      style="display:inline-block">-->
+                <!--    @csrf-->
+                <!--    @method('DELETE')-->
                     <button type="submit" class="btn btn-sm btn-gradient-danger"
                             onclick="return confirm('Are you sure you want to delete this ride assignment?')"
                             title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
-                </form>
+                <!--</form>-->
                 @endcan
             @endif
         </td>

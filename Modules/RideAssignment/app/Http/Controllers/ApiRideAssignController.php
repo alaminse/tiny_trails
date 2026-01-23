@@ -54,8 +54,9 @@ class ApiRideAssignController extends Controller
     {
         $user = Auth::user();
         $date = $request->get('date', now()->format('Y-m-d'));
-
-        $rides = Ride::where('parent_id', $user->id)
+    
+        $rides = Ride::with(['driver', 'kid']) // Eager load relationships
+            ->where('parent_id', $user->id)
             ->whereDate('date', $date)
             ->where('date', '>=', now()->format('Y-m-d')) // Only future dates
             ->orderBy('pickup')
@@ -66,12 +67,13 @@ class ApiRideAssignController extends Controller
                     'ride_type' => $ride->ride_type,
                     'pickup_time' => \Carbon\Carbon::parse($ride->pickup)->format('h:i A'),
                     'drop_off_time' => \Carbon\Carbon::parse($ride->drop_off)->format('h:i A'),
-                    'driver_name' => $ride->driver->name ?? 'N/A',
+                    'kid_name' => $ride->kid_name ?? 'N/A',
+                    'driver_name' => $ride->driver_name ?? 'N/A',
                     'driver_phone' => $ride->driver->phone ?? null,
                     'status' => $ride->status
                 ];
             });
-
+    
         return response()->json([
             'success' => true,
             'data' => [

@@ -7,7 +7,7 @@ use App\Http\Resources\RideResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Modules\RideAssignment\app\Models\RideAssignment;
+use Modules\RideAssignment\app\Models\RideAssign;
 use Modules\Subscription\app\Models\Subscription;
 
 class ParentApiController extends Controller
@@ -17,105 +17,149 @@ class ParentApiController extends Controller
     //     $this->middleware('auth:sanctum');
     // }
 
-    /**
-     * Parent Dashboard
-     */
-    public function dashboard(Request $request): JsonResponse
-    {
-        $parent = $request->user();
-        
-        if (!$parent->hasRole('parent')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+ /**
+ * Parent Dashboard
+ */
+public function dashboard(Request $request): JsonResponse
+{
+    $parent = $request->user();
+    
+    if (!$parent->hasRole('parent')) {
+        return response()->json(['error' => 'Unauthorized'], 403);
+    }
 
-        $today = Carbon::today();
-        $thisWeek = Carbon::now()->startOfWeek();
-        $thisMonth = Carbon::now()->startOfMonth();
+    $today = Carbon::today();
+    $thisWeek = Carbon::now()->startOfWeek();
+    $thisMonth = Carbon::now()->startOfMonth();
 
-        // Today's rides
-        $todayRides = RideAssignment::where('parent_id', $parent->id)
-            ->whereDate('ride_date', $today)
-            ->with(['driver', 'kid'])
-            ->orderBy('pickup_time')
-            ->get();
+    // Parent এর সব subscription IDs বের করা
+    $subscriptionIds = Subscription::where('user_id', $parent->id)
+        ->pluck('id')
+        ->toArray();
 
-        // Weekly rides
-        $weeklyRides = RideAssignment::where('parent_id', $parent->id)
-            ->where('ride_date', '>=', $thisWeek)
-            ->count();
+    // আজকের rides
+    $todayRides = RideAssign::whereIn('subscription_id', $subscriptionIds)
+        ->whereJsonContains('selected_dates', $today->format('Y-m-d'))
+        ->where('status', '!=', 'cancelled')
+        ->whereNull('deleted_at')
+        ->with(['subscription.user', 'rides.driver']) // এখানে rides.driver
+        ->get();
 
-        // Monthly spending
-        $monthlySpending = RideAssignment::where('parent_id', $parent->id)
-            ->where('ride_date', '>=', $thisMonth)
-            ->where('status', 'completed')
-            ->sum('ride_fare');
+    // সপ্তাহের rides count
+    $weekDates = collect();
+    for ($i = 0; $i < 7; $i++) {
+        $weekDates->push($thisWeek->copy()->addDays($i)->format('Y-m-d'));
+    }
 
-        // Active subscription
-        $subscription = Subscription::where('user_id', $parent->id)
-            ->where('status', 'active')
-            ->first();
+    $weeklyRides = RideAssign::whereIn('subscription_id', $subscriptionIds)
+        ->where(function($query) use ($weekDates) {
+            foreach ($weekDates as $date) {
+                $query->orWhereJsonContains('selected_dates', $date);
+            }
+        })
+        ->whereNull('deleted_at')
+        ->count();
 
-        // Recent rides
-        $recentRides = RideAssignment::where('parent_id', $parent->id)
-            ->where('ride_date', '>=', Carbon::now()->subDays(7))
-            ->with(['driver', 'kid'])
-            ->orderBy('ride_date', 'desc')
-            ->orderBy('pickup_time', 'desc')
-            ->limit(10)
-            ->get();
+    // মাসের খরচ
+    $monthDates = collect();
+    $daysInMonth = $thisMonth->copy()->daysInMonth;
+    for ($i = 0; $i < $daysInMonth; $i++) {
+        $monthDates->push($thisMonth->copy()->addDays($i)->format('Y-m-d'));
+    }
+
+    $monthlySpending = RideAssign::whereIn('subscription_id', $subscriptionIds)
+        ->where('status', 'completed')
+        ->where(function($query) use ($monthDates) {
+            foreach ($monthDates as $date) {
+                $query->orWhereJsonContains('selected_dates', $date);
+            }
+        })
+        ->whereNull('deleted_at')
+        ->sum('fare');
+
+    // Active subscription
+    $subscription = Subscription::where('user_id', $parent->id)
+        ->where('status', 'active')
+        ->first();
+
+    // সাম্প্রতিক rides - শেষ ৭ দিন
+    $recentDates = collect();
+    for ($i = 0; $i < 7; $i++) {
+        $recentDates->push(Carbon::now()->subDays($i)->format('Y-m-d'));
+    }
+
+    // সাম্প্রতিক rides
+    $recentRides = RideAssign::whereIn('subscription_id', $subscriptionIds)
+        ->where(function($query) use ($recentDates) {
+            foreach ($recentDates as $date) {
+                $query->orWhereJsonContains('selected_dates', $date);
+            }
+        })
+        ->whereNull('deleted_at')
+        ->with(['subscription.user', 'rides.driver']) // এখানে rides.driver
+        ->orderBy('created_at', 'desc')
+        ->limit(10)
+        ->get();
 
         return response()->json([
             'success' => true,
             'data' => [
-                'parent' => [
-                    'name' => $parent->first_name . ' ' . $parent->last_name,
-                    'email' => $parent->email,
-                    'phone' => $parent->phone,
-                ],
-                'stats' => [
-                    'today_rides' => $todayRides->count(),
-                    'weekly_rides' => $weeklyRides,
-                    'monthly_spending' => number_format($monthlySpending, 2),
-                ],
-                'subscription' => $subscription ? [
-                    'plan_name' => $subscription->name,
-                    'status' => $subscription->status,
-                    'ends_at' => $subscription->ends_at,
-                    'price' => $subscription->price,
-                ] : null,
-                'today_rides' => $todayRides->map(function ($ride) {
-                    return [
-                        'id' => $ride->id,
-                        'title' => $ride->ride_title,
-                        'pickup_location' => $ride->pickup_location,
-                        'dropoff_location' => $ride->dropoff_location,
-                        'pickup_time' => $ride->pickup_time,
-                        'status' => $ride->status,
-                        'fare' => $ride->ride_fare,
-                        'driver' => $ride->driver ? [
-                            'name' => $ride->driver->first_name . ' ' . $ride->driver->last_name,
-                            'phone' => $ride->driver->phone,
-                        ] : null,
-                        'kid' => $ride->kid ? [
-                            'name' => $ride->kid->first_name . ' ' . $ride->kid->last_name,
-                        ] : null,
-                    ];
-                }),
-                'recent_rides' => $recentRides->map(function ($ride) {
-                    return [
-                        'id' => $ride->id,
-                        'title' => $ride->ride_title,
-                        'date' => $ride->ride_date,
-                        'pickup_time' => $ride->pickup_time,
-                        'status' => $ride->status,
-                        'fare' => $ride->ride_fare,
-                        'driver' => $ride->driver ? $ride->driver->first_name . ' ' . $ride->driver->last_name : null,
-                    ];
-                }),
-            ]
+            'parent' => [
+                'name' => $parent->first_name . ' ' . $parent->last_name,
+                'email' => $parent->email,
+                'phone' => $parent->phone,
+            ],
+            'stats' => [
+                'today_rides' => $todayRides->count(),
+                'weekly_rides' => $weeklyRides,
+                'monthly_spending' => number_format($monthlySpending, 2),
+            ],
+            'subscription' => $subscription ? [
+                'plan_name' => $subscription->name,
+                'status' => $subscription->status,
+                'ends_at' => $subscription->ends_at,
+                'price' => $subscription->price,
+            ] : null,
+            'today_rides' => $todayRides->map(function ($ride) {
+                $firstRide = $ride->rides->first(); // প্রথম ride নিন
+    
+                return [
+                    'id' => $ride->id,
+                    'service_type' => $ride->service_type,
+                    'status' => $ride->status,
+                    'fare' => $ride->fare,
+                    'driver_commission' => $ride->driver_commission,
+                    'platform_commission' => $ride->platform_commission,
+                    'total_days' => $ride->total_days,
+                    'driver' => $firstRide && $firstRide->driver ? [
+                        'name' => $firstRide->driver->first_name . ' ' . $firstRide->driver->last_name,
+                        'phone' => $firstRide->driver->phone,
+                    ] : null,
+                    'subscription' => $ride->subscription ? [
+                        'parent_name' => $ride->subscription->user->first_name . ' ' . $ride->subscription->user->last_name,
+                    ] : null,
+                ];
+            }),
+            'recent_rides' => $recentRides->map(function ($ride) {
+                $firstRide = $ride->rides->first();
+    
+                return [
+                    'id' => $ride->id,
+                    'service_type' => $ride->service_type,
+                    'status' => $ride->status,
+                    'fare' => $ride->fare,
+                    'total_days' => $ride->total_days,
+                    'selected_dates' => json_decode($ride->selected_dates),
+                    'driver' => $firstRide && $firstRide->driver 
+                        ? $firstRide->driver->first_name . ' ' . $firstRide->driver->last_name 
+                        : null,
+                    'created_at' => $ride->created_at,
+                ];
+            }),
+            
+        ]
         ]);
     }
-
     /**
      * Parent's Scheduled Rides
      */
@@ -124,7 +168,7 @@ class ParentApiController extends Controller
         $parent = $request->user();
         $date = $request->get('date', Carbon::today()->toDateString());
         
-        $rides = RideAssignment::where('parent_id', $parent->id)
+        $rides = RideAssign::where('parent_id', $parent->id)
             ->whereDate('ride_date', $date)
             ->with(['driver', 'kid'])
             ->orderBy('pickup_time')
@@ -173,7 +217,7 @@ class ParentApiController extends Controller
         $limit = $request->get('limit', 20);
         $page = $request->get('page', 1);
 
-        $query = RideAssignment::where('parent_id', $parent->id)
+        $query = RideAssign::where('parent_id', $parent->id)
             ->with(['driver', 'kid']);
 
         if ($status !== 'all') {
@@ -237,7 +281,7 @@ class ParentApiController extends Controller
         ]);
 
         $parent = $request->user();
-        $ride = RideAssignment::where('id', $rideId)
+        $ride = RideAssign::where('id', $rideId)
             ->where('parent_id', $parent->id)
             ->first();
 

@@ -9,79 +9,76 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Traits\Upload;
+use Modules\UserRolePermission\app\Models\Driver;
 
 class FaceRecognitionController extends Controller
 {
+    use Upload;
     /**
      * Face registration - নতুন face store করা
      * POST /api/face/store
      */
+     
+                
+    
     public function store(Request $request)
-    {
-        try {
-            // Validation
-            $validator = Validator::make($request->all(), [
-                'face_image' => 'required|image|mimes:jpeg,png,jpg|max:5120', // Max 5MB
-                'embedding' => 'required|string',
-                'driver_name' => 'nullable|string|max:255',
-            ]);
+{
+    try {
+        // Validation
+        $validator = Validator::make($request->all(), [
+            'face_image' => 'required|image|mimes:jpeg,png,jpg|max:5120', // Max 5MB
+            'embedding' => 'required|string',
+        ]);
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation error',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
-            $user = Auth::user();
+        $user = Auth::user();
 
-            // পুরানো face data থাকলে delete করা
-            $oldFace = FaceData::where('user_id', $user->id)->first();
-            if ($oldFace) {
-                // পুরানো image delete করা
-                if ($oldFace->face_image_path) {
-                    Storage::disk('public')->delete($oldFace->face_image_path);
+        // Check if user is a driver
+        $driver = Driver::where('user_id', $user->id)->first();
+
+        if ($driver) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Driver Not found.'
+            ], 422);
+        }
+            
+            // Delete old face image if exists
+            if ($request->file('face_image')) {
+                $imagePath = $this->uploadFile($request->file('face_image'), 'driver/face');
+                if ($driver->faceImage) {
+                    $this->deleteFile($driver->faceImage);
                 }
-                $oldFace->delete();
             }
 
-            // নতুন image upload করা
-            $imagePath = null;
-            if ($request->hasFile('face_image')) {
-                $image = $request->file('face_image');
-                $filename = 'face_' . $user->id . '_' . time() . '.' . $image->getClientOriginalExtension();
-                $imagePath = $image->storeAs('faces', $filename, 'public');
-            }
-
-            // Database এ save করা
-            $faceData = FaceData::create([
-                'user_id' => $user->id,
-                'driver_name' => $request->driver_name ?? $user->full_name,
-                'embedding' => $request->embedding,
-                'face_image_path' => $imagePath,
-                'is_active' => true,
+            // Update driver record
+            $driver->update([
+                'face_embedding' => $request->embedding,
+                'faceImage' => $imagePath,
+                'is_verified' => 1
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'মুখ সফলভাবে নিবন্ধিত হয়েছে',
-                'data' => [
-                    'id' => $faceData->id,
-                    'driver_name' => $faceData->driver_name,
-                    'image_url' => $imagePath ? asset('storage/' . $imagePath) : null,
-                    'registered_at' => $faceData->created_at->format('Y-m-d H:i:s'),
-                ]
-            ], 201);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to get faces',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+                'message' => 'Driver face registered successfully.',
+                'data' => $driver->id,
+            ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to register face',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
 
     /**

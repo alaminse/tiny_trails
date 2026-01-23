@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Subscription\app\Models\Location;
 use Modules\UserRolePermission\app\Models\Driver;
+use Modules\UserRolePermission\app\Models\Kid;
 
 class Ride extends Model
 {
@@ -20,6 +21,7 @@ class Ride extends Model
         'ride_assign_id',
         'driver_id',
         'parent_id',
+        'kid_id',
         'pickup_location_id',
         'dropoff_location_id',
         'ride_type',
@@ -47,10 +49,25 @@ class Ride extends Model
     {
         return $this->belongsTo(RideAssign::class);
     }
+    
+    public function kid()
+    {
+        return $this->belongsTo(Kid::class, 'kid_id');
+    }
+
+    public function getKidNameAttribute()
+    {
+        return $this->kid ? $this->kid->first_name. ' ' .$this->kid->last_name  : null;
+    }
 
     public function driver()
     {
         return $this->belongsTo(User::class, 'driver_id');
+    }
+
+    public function getDriverNameAttribute()
+    {
+        return $this->driver ? $this->driver->first_name. ' ' .$this->driver->last_name  : null;
     }
 
     public function parent(): BelongsTo

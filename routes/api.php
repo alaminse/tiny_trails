@@ -2,8 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\FaceRecognitionController;
 use App\Http\Controllers\Api\ParentApiController;
+use App\Http\Controllers\Api\DriverController;
+use App\Http\Controllers\Api\FaceRecognitionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,15 +19,24 @@ use App\Http\Controllers\Api\ParentApiController;
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
-    Route::post('reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.reset');
+    Route::get('/reset-password/{token}', function ($token) {
+        return $token;
+        // return view('auth.reset-password', ['token' => $token]);
+    })->name('auth.reset-password');
+
+    Route::get('get/countries', [AuthController::class, 'getCountries']);
+    Route::get('get/states/{country_id}', [AuthController::class, 'getStates']);
+    Route::get('get/cities/{city_id}', [AuthController::class, 'getCities']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('user', [AuthController::class, 'user']);
         Route::get('profile', [AuthController::class, 'profile']);
         Route::post('profile', [AuthController::class, 'updateProfile']);
-
-
+        
+        
 
         Route::post('/face/store', [FaceRecognitionController::class, 'store']);
         Route::get('/face/my-face', [FaceRecognitionController::class, 'getMyFace']);
@@ -36,6 +46,13 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
+    Route::controller(DriverController::class)
+        ->prefix('driver')
+        ->group(function () {
+            Route::get('/dashboard','dashboard');
+            Route::patch('/face-verification', 'updateFaceVerification');
+
+        });
     // Parent Mobile API Routes
     Route::controller(ParentApiController::class)
         ->prefix('parent')

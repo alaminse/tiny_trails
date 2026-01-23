@@ -7,19 +7,11 @@ use Illuminate\Validation\Rule;
 
 class UpdateProfileRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         $user = $this->user();
@@ -38,7 +30,7 @@ class UpdateProfileRequest extends FormRequest
             'gender' => 'sometimes|in:male,female,other',
             'height_cm' => 'sometimes|numeric|min:0|max:300',
             'weight_kg' => 'sometimes|numeric|min:0|max:500',
-            'photo' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'photo' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:5120', // 5MB
             'address' => 'sometimes|string|max:500',
             'country_id' => 'sometimes|exists:countries,id',
             'state_id' => 'sometimes|exists:states,id',
@@ -51,25 +43,20 @@ class UpdateProfileRequest extends FormRequest
             $rules = array_merge($rules, [
                 'driving_license_number' => 'sometimes|string|max:255',
                 'driving_license_expiry' => 'sometimes|date|after:today',
-                'driving_license_image' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'driving_license_image' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:5120',
                 'car_model' => 'sometimes|string|max:255',
                 'car_make' => 'sometimes|string|max:255',
                 'car_year' => 'sometimes|integer|min:1900|max:' . (date('Y') + 1),
                 'car_color' => 'sometimes|string|max:100',
                 'car_plate_number' => 'sometimes|string|max:255',
-                'car_image' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:2048',
-                'face_image' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'car_image' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:5120',
+                'face_image' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:5120',
             ]);
         }
 
         return $rules;
     }
 
-    /**
-     * Get custom attributes for validator errors.
-     *
-     * @return array<string, string>
-     */
     public function attributes(): array
     {
         return [
@@ -94,11 +81,6 @@ class UpdateProfileRequest extends FormRequest
         ];
     }
 
-    /**
-     * Get custom error messages for validator.
-     *
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return [

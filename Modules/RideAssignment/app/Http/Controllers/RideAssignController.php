@@ -150,10 +150,9 @@ class RideAssignController extends Controller
             $driverCommission = ($baseFare * $driverCommissionPercent) / 100;
             $platformCommission = ($baseFare * $platformFee) / 100;
 
-            // Create ride assignment
+            // Create ride assignment            
             $rideAssign = RideAssign::create([
                 'subscription_id'       => $subscription->id ?? 1,
-                'parent_id'             => $subscription->user_id ?? 0,
                 'fare'                  => $baseFare,
                 'driver_commission'     => $driverCommission,
                 'platform_commission'   => $platformCommission,
@@ -190,6 +189,7 @@ class RideAssignController extends Controller
                         'ride_assign_id'        => $rideAssign->id,
                         'driver_id'             => $driverId,
                         'parent_id'             => $subscription->user_id,
+                        'kid_id'                => $subscription->kid_id,
                         'pickup_location_id'    => $times['pickup_location_id'],
                         'dropoff_location_id'   => $times['dropoff_location_id'],
                         'ride_type'             => $rideType,

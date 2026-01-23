@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Modules\Subscription\app\Models\Location;
 use Modules\Subscription\app\Models\Subscription;
 use Modules\Subscription\app\Models\PaywayTransaction;
+use Modules\Subscription\app\Models\Plan;
 
 class PayWayController extends Controller
 {
@@ -133,15 +134,16 @@ class PayWayController extends Controller
         try {
             // Only include fields that PayWay API accepts
             $customerData = [
-                'singleUseTokenId' => $singleUseTokenId,
-                'merchantId' => $this->merchantId,
-                'customerName' => trim($validated['billing_name']),
-                'emailAddress' => trim($validated['billing_email']),
-                'phoneNumber' => $this->formatPhoneNumber($validated['billing_phone']),
-                'street1' => trim($validated['billing_address']['street1']),
-                'cityName' => trim($validated['billing_address']['city']),
-                'state' => $this->mapStateToPayWay($validated['billing_address']['state']),
-                'postalCode' => trim($validated['billing_address']['postal_code']),
+                'singleUseTokenId'  => $singleUseTokenId,
+                'merchantId'        => $this->merchantId,
+                'customerName'      => trim($validated['billing_name']),
+                'emailAddress'      => trim($validated['billing_email']),
+                'phoneNumber'       => $this->formatPhoneNumber($validated['billing_phone']),
+                'street1'           => trim($validated['billing_address']['street1']),
+                'cityName'          => trim($validated['billing_address']['city']),
+                'state'             => $validated['billing_address']['state'],
+                // 'state'             => $this->mapStateToPayWay($validated['billing_address']['state']),
+                'postalCode'        => trim($validated['billing_address']['postal_code']),
             ];
 
             // Add street2 only if it has value
@@ -448,246 +450,284 @@ class PayWayController extends Controller
     }
 
     public function storeSubscription(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
-            'plan_id' => 'required|exists:plans,id',
-            'name' => 'required|string|max:255',
-            'trial_days' => 'nullable|integer|min:0|max:365',
-            'status' => 'required|in:active,inactive',
-            // Location validation add
-            'pickup_location.address' => 'required|string|max:500',
-            'pickup_location.latitude' => 'required|numeric|between:-90,90',
-            'pickup_location.longitude' => 'required|numeric|between:-180,180',
-            'pickup_location.street1' => 'required|string|max:255',
-            'pickup_location.street2' => 'nullable|string|max:255',
-            'pickup_location.city' => 'required|string|max:100',
-            'pickup_location.state' => 'required|string|max:100',
-            'pickup_location.postal_code' => 'required|string|max:20',
-            'pickup_location.country_code' => 'required|string|size:2',
+{
+    $validator = Validator::make($request->all(), [
+        'user_id' => 'nullable:users,id',
+        'kid_id' => 'nullable:kids,id',
+        'plan_id' => 'required|exists:plans,id',
+        'name' => 'required|string|max:255',
+        'status' => 'required|in:active,inactive',
+        // Location validation add
+        'pickup_location.address' => 'required|string|max:500',
+        'pickup_location.latitude' => 'required|numeric|between:-90,90',
+        'pickup_location.longitude' => 'required|numeric|between:-180,180',
+        'pickup_location.street1' => 'required|string|max:255',
+        'pickup_location.street2' => 'nullable|string|max:255',
+        'pickup_location.city' => 'required|string|max:100',
+        'pickup_location.state' => 'required|string|max:100',
+        'pickup_location.postal_code' => 'required|string|max:20',
+        'pickup_location.country_code' => 'required|string|size:2',
 
-            'dropoff_location.address' => 'required|string|max:500',
-            'dropoff_location.latitude' => 'required|numeric|between:-90,90',
-            'dropoff_location.longitude' => 'required|numeric|between:-180,180',
-            'dropoff_location.street1' => 'required|string|max:255',
-            'dropoff_location.street2' => 'nullable|string|max:255',
-            'dropoff_location.city' => 'required|string|max:100',
-            'dropoff_location.state' => 'required|string|max:100',
-            'dropoff_location.postal_code' => 'required|string|max:20',
-            'dropoff_location.country_code' => 'required|string|size:2',
+        'dropoff_location.address' => 'required|string|max:500',
+        'dropoff_location.latitude' => 'required|numeric|between:-90,90',
+        'dropoff_location.longitude' => 'required|numeric|between:-180,180',
+        'dropoff_location.street1' => 'required|string|max:255',
+        'dropoff_location.street2' => 'nullable|string|max:255',
+        'dropoff_location.city' => 'required|string|max:100',
+        'dropoff_location.state' => 'required|string|max:100',
+        'dropoff_location.postal_code' => 'required|string|max:20',
+        'dropoff_location.country_code' => 'required|string|size:2',
 
+        'card_number' => 'required|string|min:13|max:19',
+        'expiry_month' => 'required|string|size:2',
+        'expiry_year' => 'required|string',
+        'cvn' => 'required|string|min:3|max:4',
+        'cardholder_name' => 'required|string|max:255',
+        'billing_name' => 'required|string|max:255',
+        'billing_email' => [
+            'required',
+            'email:rfc,dns',
+            'max:254'
+        ],
+        'billing_phone' => [
+            'required',
+            'string',
+            'regex:/^(\+61|61|0)?[2-478][\d]{8}$/'
+        ],
+        'billing_address.street1' => 'required|string|max:255',
+        'billing_address.street2' => 'nullable|string|max:255',
+        'billing_address.city' => 'required|string|max:100',
+        'billing_address.state' => 'required|string|max:100',
+        'billing_address.postal_code' => 'required|string|max:20',
+        'billing_address.country_code' => 'required|string|size:2',
+    ]);
 
-            'card_number' => 'required|string|min:13|max:19',
-            'expiry_month' => 'required|string|size:2',
-            'expiry_year' => 'required|string',
-            'cvn' => 'required|string|min:3|max:4',
-            'cardholder_name' => 'required|string|max:255',
-            'billing_name' => 'required|string|max:255',
-            'billing_email' => [
-                'required',
-                'email:rfc,dns',
-                'max:254'
-            ],
-            'billing_phone' => [
-                'required',
-                'string',
-                'regex:/^(\+61|61|0)?[2-478][\d]{8}$/'
-            ],
-            'billing_address.street1' => 'required|string|max:255',
-            'billing_address.street2' => 'nullable|string|max:255',
-            'billing_address.city' => 'required|string|max:100',
-            'billing_address.state' => 'required|string|max:100',
-            'billing_address.postal_code' => 'required|string|max:20',
-            'billing_address.country_code' => 'required|string|size:2',
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation failed',
+            'errors' => $validator->errors()
+        ], 422);
+    }
+
+    $validated = $validator->validated();
+
+    // Additional email validation for PayWay
+    try {
+        $validated['billing_email'] = $this->validateEmailForPayWay($validated['billing_email']);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Email validation failed: ' . $e->getMessage()
+        ], 422);
+    }
+
+    DB::beginTransaction();
+    
+    $user = null;
+    try {
+        if(isset($validated['user_id']) && $validated['user_id']) {
+            $user = User::findOrFail($validated['user_id']);
+        } else {
+            $user = auth()->user();
+        }
+        
+        // ✅ Get plan with Eloquent model instead of DB facade
+        $plan = Plan::findOrFail($validated['plan_id']);
+
+        // Step 1: Create single-use token
+        $tokenResponse = $this->createSingleUseToken($validated);
+
+        if (!$tokenResponse['success']) {
+            throw new \Exception($tokenResponse['message']);
+        }
+
+        $singleUseTokenId = $tokenResponse['data']['singleUseTokenId'];
+
+        // Step 2: Create PayWay customer
+        $customerResponse = $this->createPayWayCustomer($singleUseTokenId, $validated);
+
+        if (!$customerResponse['success']) {
+            throw new \Exception('Failed to create PayWay customer: ' . $customerResponse['message']);
+        }
+
+        $paywayCustomer = $customerResponse['data'];
+
+        // 1. Pickup location save
+        $pickupLocationData = $request->pickup_location;
+        $pickupLocationData['type'] = 'pickup';
+        $pickupLocation = Location::create($pickupLocationData);
+
+        // 2. Drop off location save
+        $dropoffLocationData = $request->dropoff_location;
+        $dropoffLocationData['type'] = 'dropoff';
+        $dropoffLocation = Location::create($dropoffLocationData);
+
+        // ✅ Calculate subscription end date based on plan interval
+        $startDate = now();
+        $endDate = $this->calculateSubscriptionEndDate($startDate, $plan);
+
+        // Step 3: Create subscription in database
+        $subscription = new Subscription();
+        $subscription->user_id = $user->id;
+        $subscription->kid_id = $validated['kid_id'] ?? null;
+        $subscription->plan_id = $validated['plan_id'];
+        $subscription->name = $validated['name'];
+        $subscription->pickup_location_id = $pickupLocation->id;
+        $subscription->dropoff_location_id = $dropoffLocation->id;
+        $subscription->status = $validated['status'];
+        $subscription->payway_customer_id = $paywayCustomer['customerNumber'];
+        $subscription->payway_status = 'active';
+        
+        // ✅ Set subscription dates
+        $subscription->created_at = $startDate;
+        $subscription->ends_at = $endDate;
+
+        // Extract card details
+        if (isset($paywayCustomer['paymentSetup']['creditCard'])) {
+            $cardInfo = $paywayCustomer['paymentSetup']['creditCard'];
+            $subscription->card_brand = $cardInfo['cardScheme'] ?? null;
+            $subscription->card_last_four = substr($cardInfo['cardNumber'], -4);
+            $subscription->card_expiration = $validated['expiry_month'] . '/' . substr($validated['expiry_year'], -2);
+        } else {
+            $subscription->card_brand = $this->detectCardBrand($validated['card_number']);
+            $subscription->card_last_four = substr($validated['card_number'], -4);
+            $subscription->card_expiration = $validated['expiry_month'] . '/' . substr($validated['expiry_year'], -2);
+        }
+
+        $subscription->save();
+
+        // Step 4: Verify the stored card
+        $verificationResponse = $this->verifyStoredCard($paywayCustomer['customerNumber'], $subscription->id);
+
+        // Step 5: Process initial payment (if not in trial and plan has price)
+        $paymentResponse = null;
+
+        // Step 6: Record verification transaction
+        if ($verificationResponse && $verificationResponse['success']) {
+            $this->recordPaywayTransaction(
+                $user->id,
+                $subscription->id,
+                $verificationResponse['data'],
+                'verification'
+            );
+        }
+
+        // Step 7: Record initial payment transaction
+        if ($paymentResponse && $paymentResponse['success']) {
+            $this->recordPaywayTransaction(
+                $user->id,
+                $subscription->id,
+                $paymentResponse['data'],
+                'payment'
+            );
+        }
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Subscription created successfully',
+            'data' => [
+                'subscription_id' => $subscription->id,
+                'pickup_location' => $pickupLocation,
+                'dropoff_location' => $dropoffLocation,
+                'payway_customer_id' => $paywayCustomer['customerNumber'],
+                'verification_status' => $verificationResponse['success'] ?? false ? 'verified' : 'failed',
+                'payment_status' => $paymentResponse ? ($paymentResponse['success'] ? 'completed' : 'failed') : 'skipped',
+                'starts_at' => $subscription->created_at->format('Y-m-d'),
+                'ends_at' => $subscription->ends_at->format('Y-m-d'),
+                'plan_interval' => $plan->interval,
+                'card_info' => [
+                    'brand' => $subscription->card_brand,
+                    'last_four' => $subscription->card_last_four,
+                    'expiration' => $subscription->card_expiration
+                ]
+            ]
+        ], 201);
+
+    } catch (\Exception $e) {
+        DB::rollback();
+
+        Log::error('Subscription creation failed:', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'request_data' => $request->all()
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $validated = $validator->validated();
-
-        // Additional email validation for PayWay
-        try {
-            $validated['billing_email'] = $this->validateEmailForPayWay($validated['billing_email']);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email validation failed: ' . $e->getMessage()
-            ], 422);
-        }
-
-        DB::beginTransaction();
-
-        try {
-            $user = User::findOrFail($validated['user_id']);
-            $plan = DB::table('plans')->where('id', $validated['plan_id'])->first();
-
-            if (!$plan) {
-                throw new \Exception('Plan not found');
-            }
-
-            // Step 1: Create single-use token
-            $tokenResponse = $this->createSingleUseToken($validated);
-
-            if (!$tokenResponse['success']) {
-                throw new \Exception($tokenResponse['message']);
-            }
-
-            $singleUseTokenId = $tokenResponse['data']['singleUseTokenId'];
-
-            // Step 2: Create PayWay customer
-            $customerResponse = $this->createPayWayCustomer($singleUseTokenId, $validated);
-
-            if (!$customerResponse['success']) {
-                throw new \Exception('Failed to create PayWay customer: ' . $customerResponse['message']);
-            }
-
-            $paywayCustomer = $customerResponse['data'];
-
-
-            // 1. Pickup location save
-            $pickupLocationData = $request->pickup_location;
-            $pickupLocationData['type'] = 'pickup';
-            $pickupLocation = Location::create($pickupLocationData);
-
-            // 2. Drop off location save
-            $dropoffLocationData = $request->dropoff_location;
-            $dropoffLocationData['type'] = 'dropoff';
-            $dropoffLocation = Location::create($dropoffLocationData);
-
-            // Step 3: Create subscription in database first (for order number generation)
-            $subscription = new Subscription();
-            $subscription->user_id = $validated['user_id'];
-            $subscription->plan_id = $validated['plan_id'];
-            $subscription->name = $validated['name'];
-             $subscription->pickup_location_id = $pickupLocation->id; // pickup location ID
-            $subscription->dropoff_location_id = $dropoffLocation->id; // drop off location ID
-            $subscription->trial_days = $validated['trial_days'] ?? 0;
-            $subscription->status = $validated['status'];
-            $subscription->payway_customer_id = $paywayCustomer['customerNumber'];
-            $subscription->payway_status = 'active';
-
-            // Calculate dates
-            $startDate = now();
-            if ($subscription->trial_days > 0) {
-                $subscription->trial_ends_at = $startDate->copy()->addDays($subscription->trial_days);
-                $subscription->ends_at = $subscription->trial_ends_at->copy()->addDays($plan->billing_cycle_days ?? 30);
-            } else {
-                $subscription->trial_ends_at = null;
-                $subscription->ends_at = $startDate->copy()->addDays($plan->billing_cycle_days ?? 30);
-            }
-
-            // Extract card details
-            if (isset($paywayCustomer['paymentSetup']['creditCard'])) {
-                $cardInfo = $paywayCustomer['paymentSetup']['creditCard'];
-                $subscription->card_brand = $cardInfo['cardScheme'] ?? null;
-                $subscription->card_last_four = substr($cardInfo['cardNumber'], -4);
-                $subscription->card_expiration = $validated['expiry_month'] . '/' . substr($validated['expiry_year'], -2);
-            } else {
-                $subscription->card_brand = $this->detectCardBrand($validated['card_number']);
-                $subscription->card_last_four = substr($validated['card_number'], -4);
-                $subscription->card_expiration = $validated['expiry_month'] . '/' . substr($validated['expiry_year'], -2);
-            }
-
-            $subscription->save();
-
-            // Step 4: Verify the stored card
-            $verificationResponse = $this->verifyStoredCard($paywayCustomer['customerNumber'], $subscription->id);
-
-            // Step 5: Process initial payment (if not in trial and plan has price)
-            $paymentResponse = null;
-
-            if (($validated['trial_days'] ?? 0) <= 0 && isset($plan->price) && $plan->price > 0) {
-                $paymentResponse = $this->processPayment(
-                    $paywayCustomer['customerNumber'],
-                    $plan->sell_price > 0 ? $plan->sell_price : $plan->price,
-                    $this->generateOrderNumber('initial_payment', $subscription->id)
-                );
-
-                if (!$paymentResponse['success']) {
-                    throw new \Exception('Failed to process initial payment: ' . $paymentResponse['message']);
-                }
-            }
-
-            // Step 6: Record verification transaction
-            if ($verificationResponse && $verificationResponse['success']) {
-                $this->recordPaywayTransaction(
-                    $user->id,
-                    $subscription->id,
-                    $verificationResponse['data'],
-                    'verification'
-                );
-            }
-
-            // Step 7: Record initial payment transaction
-            if ($paymentResponse && $paymentResponse['success']) {
-                $this->recordPaywayTransaction(
-                    $user->id,
-                    $subscription->id,
-                    $paymentResponse['data'],
-                    'payment'
-                );
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Subscription created successfully',
-                'data' => [
-                    'subscription_id' => $subscription->id,
-                    'pickup_location' => $pickupLocation,
-                    'dropoff_location' => $dropoffLocation,
-                    'payway_customer_id' => $paywayCustomer['customerNumber'],
-                    'verification_status' => $verificationResponse['success'] ?? false ? 'verified' : 'failed',
-                    'payment_status' => $paymentResponse ? ($paymentResponse['success'] ? 'completed' : 'failed') : 'skipped',
-                    'trial_ends_at' => $subscription->trial_ends_at,
-                    'ends_at' => $subscription->ends_at,
-                    'card_info' => [
-                        'brand' => $subscription->card_brand,
-                        'last_four' => $subscription->card_last_four,
-                        'expiration' => $subscription->card_expiration
-                    ]
-                ]
-            ], 201);
-
-        } catch (\Exception $e) {
-            DB::rollback();
-
-            Log::error('Subscription creation failed:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to create subscription: ' . $e->getMessage()
-            ], 422);
-        }
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to create subscription: ' . $e->getMessage()
+        ], 422);
     }
+}
+
+/**
+ * Calculate subscription end date based on plan interval
+ * 
+ * @param \Carbon\Carbon $startDate
+ * @param \App\Models\Plan $plan
+ * @return \Carbon\Carbon
+ */
+private function calculateSubscriptionEndDate($startDate, $plan)
+{
+    $endDate = $startDate->copy();
+    $duration = $plan->duration ?? 1; // Default to 1 if duration not set
+    
+    // Normalize interval to lowercase
+    $interval = strtolower($plan->interval);
+    
+    switch ($interval) {
+        case 'day':
+        case 'daily':
+            $endDate->addDays($duration);
+            break;
+            
+        case 'week':
+        case 'weekly':
+            $endDate->addWeeks($duration);
+            break;
+            
+        case 'month':
+        case 'monthly':
+            $endDate->addMonths($duration);
+            break;
+            
+        case 'year':
+        case 'yearly':
+        case 'annual':
+        case 'annually':
+            $endDate->addYears($duration);
+            break;
+            
+        default:
+            // Default to 1 month if interval is not recognized
+            \Log::warning("Unknown plan interval: {$interval}, defaulting to 1 month", [
+                'plan_id' => $plan->id,
+                'interval' => $plan->interval
+            ]);
+            $endDate->addMonth();
+    }
+    
+    return $endDate;
+}
 
     /**
      * Map state names to PayWay format
      */
-    private function mapStateToPayWay($state)
-    {
-        $stateMapping = [
-            'New South Wales' => 'NSW',
-            'Victoria' => 'VIC',
-            'Queensland' => 'QLD',
-            'Western Australia' => 'WA',
-            'South Australia' => 'SA',
-            'Tasmania' => 'TAS',
-            'Northern Territory' => 'NT',
-            'Australian Capital Territory' => 'ACT',
-        ];
+    // private function mapStateToPayWay($state)
+    // {
+    //     $stateMapping = [
+    //         'New South Wales' => 'NSW',
+    //         'Victoria' => 'VIC',
+    //         'Queensland' => 'QLD',
+    //         'Western Australia' => 'WA',
+    //         'South Australia' => 'SA',
+    //         'Tasmania' => 'TAS',
+    //         'Northern Territory' => 'NT',
+    //         'Australian Capital Territory' => 'ACT',
+    //     ];
 
-        return $stateMapping[$state] ?? $state;
-    }
+    //     return $stateMapping[$state] ?? $state;
+    // }
 }

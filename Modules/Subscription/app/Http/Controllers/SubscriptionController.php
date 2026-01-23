@@ -20,6 +20,7 @@ use Modules\Subscription\app\Http\Requests\SubscriptionRequest;
 use Modules\Subscription\app\Http\Resources\PlanCollection;
 use Modules\Subscription\app\Models\Plan;
 use Modules\Subscription\app\Models\Subscription;
+use Modules\UserRolePermission\app\Models\Kid;
 
 class SubscriptionController extends Controller
 {
@@ -298,7 +299,6 @@ class SubscriptionController extends Controller
                 2 => 'plan.name',
                 3 => 'status',
                 4 => 'payway_status',
-                5 => 'trial_ends_at',
                 6 => 'ends_at',
                 7 => 'payment_method',
                 8 => 'actions'
@@ -360,9 +360,6 @@ class SubscriptionController extends Controller
                     'name' => $subscription->name,
                     'status' => ucfirst($subscription->status),
                     'payway_status' => ucfirst($subscription->payway_status ?? 'N/A'),
-                    'trial_ends_at' => $subscription->trial_ends_at
-                        ? $subscription->trial_ends_at->format('Y-m-d H:i:s')
-                        : 'N/A',
                     'ends_at' => $subscription->ends_at
                         ? $subscription->ends_at->format('Y-m-d H:i:s')
                         : 'N/A',
@@ -434,9 +431,6 @@ class SubscriptionController extends Controller
                     'plan' => $subscription->plan->name ?? 'N/A',
                     'status' => ucfirst($subscription->status),
                     'payway_status' => ucfirst($subscription->payway_status ?? 'N/A'),
-                    'trial_ends_at' => $subscription->trial_ends_at
-                        ? $subscription->trial_ends_at->format('Y-m-d')
-                        : 'N/A',
                     'ends_at' => $subscription->ends_at
                         ? $subscription->ends_at->format('Y-m-d')
                         : 'N/A',
@@ -735,6 +729,33 @@ class SubscriptionController extends Controller
                 'success' => false,
                 'message' => 'Failed to fetch cities.',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    public function getKids(Request $request): JsonResponse
+    {
+        try {
+            $user = auth()->user();
+            
+            // Get all kids belonging to the authenticated user
+            $kids = Kid::where('user_id', $user->id)
+                ->select('id', 'first_name', 'last_name')
+                ->orderBy('id', 'DESC')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Kids retrieved successfully',
+                'data' => $kids,
+                'count' => $kids->count(),
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load kids',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

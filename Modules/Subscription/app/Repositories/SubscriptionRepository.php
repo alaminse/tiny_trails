@@ -246,8 +246,6 @@ class SubscriptionRepository
             'total' => $this->model->count(),
             'active' => $this->model->active()->count(),
             'inactive' => $this->model->inactive()->count(),
-            'on_trial' => $this->model->onTrial()->count(),
-            'expired' => $this->model->expired()->count(),
             'canceled' => $this->model->whereNotNull('canceled_at')->count(),
         ];
     }
@@ -305,7 +303,6 @@ class SubscriptionRepository
         return Subscription::where('user_id', $user_id)
                             ->where('plan_id', $plan_id)
                             ->where('stripe_status', 'active')
-                            ->where('trial_ends_at', '>', now())
                             ->first();
     }
 }

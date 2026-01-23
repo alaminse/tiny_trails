@@ -66,11 +66,6 @@
             background: #e3f2fd;
         }
 
-        .calendar-day.selected {
-            background: #007bff;
-            color: white;
-        }
-
         .calendar-day.disabled {
             background: #f8f9fa;
             color: #6c757d;
@@ -127,6 +122,16 @@
             flex: 1;
             max-width: 150px;
         }
+        
+        .calendar-day.selected {
+    background: #007bff !important;  /* ✅ Selected always blue */
+    color: white !important;
+}
+
+.calendar-day.weekend:not(.selected) {
+    background: #ffe6e6;  /* ✅ Only when NOT selected */
+    color: #dc3545;
+}
     </style>
 @endsection
 
@@ -173,22 +178,22 @@
                                             <ul class="list-group list-group-flush">
                                                 <li class="list-group-item px-0 d-flex justify-content-between">
                                                     <span class="fw-semibold text-muted">Customer:</span>
-                                                    <span>{{ $subscription->user->first_name }}
-                                                        {{ $subscription->user->last_name }}</span>
+                                                    <span>{{ $subscription->user?->first_name }}
+                                                        {{ $subscription->user?->last_name }}</span>
                                                 </li>
                                                 <li class="list-group-item px-0 d-flex justify-content-between">
                                                     <span class="fw-semibold text-muted">Phone:</span>
-                                                    <span>{{ $subscription->user->phone }}</span>
+                                                    <span>{{ $subscription->user?->phone }}</span>
                                                 </li>
                                                 <li class="list-group-item px-0 d-flex justify-content-between">
                                                     <span class="fw-semibold text-muted">Kid:</span>
-                                                    <span>{{ $subscription->kid->first_name }}
-                                                        {{ $subscription->kid->last_name }}</span>
+                                                    <span>{{ $subscription->kid?->first_name }}
+                                                        {{ $subscription->kid?->last_name }}</span>
                                                 </li>
                                                 <li class="list-group-item px-0 d-flex justify-content-between">
                                                     <span class="fw-semibold text-muted">Plan:</span>
-                                                    <span>{{ $subscription->plan->name }}
-                                                        ({{ ucfirst($subscription->plan->interval) }}ly)</span>
+                                                    <span>{{ $subscription->plan?->name }}
+                                                        ({{ ucfirst($subscription->plan?->interval) }}ly)</span>
                                                 </li>
                                             </ul>
                                         </div>
@@ -391,683 +396,573 @@
     @push('scripts')
         <script>
             $(document).ready(function() {
-                // =============================================================================
-                // GLOBAL VARIABLES & CONFIGURATION
-                // =============================================================================
-                let currentDate = new Date();
-                let selectedDates = [];
-                let subscriptionStartDate = new Date('{{ $subscription->created_at }}');
-                let subscriptionEndDate = new Date('{{ $subscription->ends_at }}');
-
-                // Month names for calendar display
-                const monthNames = [
-                    "January", "February", "March", "April", "May", "June",
-                    "July", "August", "September", "October", "November", "December"
-                ];
-
-                // Day headers for calendar
-                const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-                // =============================================================================
-                // UTILITY FUNCTIONS
-                // =============================================================================
-
-                /**
-                 * Calculate working days between two dates (excluding weekends)
-                 * @param {Date} startDate - Start date
-                 * @param {Date} endDate - End date
-                 * @returns {number} Number of working days
-                 */
-                function calculateWorkingDaysBetweenDates(startDate, endDate) {
-                    let workingDays = 0;
-                    let currentDate = new Date(startDate);
-
-                    while (currentDate <= endDate) {
-                        const dayOfWeek = currentDate.getDay();
-                        // Skip weekends (Sunday = 0, Saturday = 6)
-                        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-                            workingDays++;
-                        }
-                        currentDate.setDate(currentDate.getDate() + 1);
-                    }
-
-                    return workingDays;
-                }
-
-                /**
-                 * Format date to YYYY-MM-DD string
-                 * @param {Date} date - Date to format
-                 * @returns {string} Formatted date string
-                 */
-                function formatDateString(date) {
-                    return date.toISOString().split('T')[0];
-                }
-
-                /**
-                 * Check if date is weekend (Saturday or Sunday)
-                 * @param {Date} date - Date to check
-                 * @returns {boolean} True if weekend
-                 */
-                function isWeekend(date) {
-                    const dayOfWeek = date.getDay();
-                    return dayOfWeek === 0 || dayOfWeek === 6; // Sunday = 0, Saturday = 6
-                }
-
-                /**
-                 * Check if date is within subscription period
-                 * @param {Date} date - Date to check
-                 * @returns {boolean} True if within subscription period
-                 */
-                function isWithinSubscriptionPeriod(date) {
-                    return date >= subscriptionStartDate && date <= subscriptionEndDate;
-                }
-
-                /**
-                 * Check if date is in the past
-                 * @param {Date} date - Date to check
-                 * @returns {boolean} True if date is in the past
-                 */
-                function isPastDate(date) {
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    return date < today;
-                }
-
-                /**
-                 * Safely parse float value with fallback
-                 * @param {string} value - Value to parse
-                 * @param {number} fallback - Fallback value if parsing fails
-                 * @returns {number} Parsed number or fallback
-                 */
-                function safeParseFloat(value, fallback = 0) {
-                    const parsed = parseFloat(value);
-                    return isNaN(parsed) ? fallback : parsed;
-                }
-
-                // =============================================================================
-                // COMMISSION CALCULATION FUNCTIONS
-                // =============================================================================
-
-                /**
-                 * Calculate and update commission displays
-                 * Main calculation function that handles all commission logic
-                 */
-                function calculateCommissions() {
-                    try {
-                        // Get input values with safe parsing
-                        const baseFare = safeParseFloat($('#base_fare').val());
-                        const driverCommissionPercent = safeParseFloat($('#driver_commission_percent').val());
-                        const platformFeePercent = safeParseFloat($('#platform_fee').val());
-
-                        // Calculate total working days from subscription period
-                        const totalWorkingDays = calculateWorkingDaysBetweenDates(subscriptionStartDate,
-                            subscriptionEndDate);
-                        $('#totalWorkingDays').val(totalWorkingDays);
-
-                        const selectedDaysCount = selectedDates.length;
-
-                        // Validate inputs
-                        if (baseFare <= 0) {
-                            console.warn('Base fare must be greater than 0');
-                            return;
-                        }
-
-                        // Single day calculations - percentage based
-                        const driverEarningsPerDay = (baseFare * (driverCommissionPercent / 100)) / totalWorkingDays;
-                        const platformCommissionPerDay = (baseFare * (platformFeePercent / 100)) / totalWorkingDays;
-
-                        // Total calculations for ALL working days in subscription period (automatic)
-                        const totalDriverEarnings = driverEarningsPerDay * totalWorkingDays;
-                        const totalPlatformCommission = platformCommissionPerDay * totalWorkingDays;
-
-                        // Selected days calculations (manual selection)
-                        const selectedDriverEarnings = driverEarningsPerDay * selectedDaysCount;
-                        const selectedPlatformCommission = platformCommissionPerDay * selectedDaysCount;
-                        const selectedRevenue = baseFare * selectedDaysCount;
-
-                        // Create data object for UI update
-                        const calculationData = {
-                            // Basic values
-                            baseFare,
-                            driverCommissionPercent,
-                            platformFeePercent,
-                            totalWorkingDays,
-                            selectedDaysCount,
-
-                            // Per day calculations
-                            driverEarningsPerDay,
-                            platformCommissionPerDay,
-
-                            // Total calculations
-                            totalDriverEarnings,
-                            totalPlatformCommission,
-
-                            // Selected calculations
-                            selectedDriverEarnings,
-                            selectedPlatformCommission,
-                            selectedRevenue
-                        };
-
-                        // Update UI with calculated data
-                        updateCommissionDisplay(calculationData);
-
-                        // Debug logging
-                        console.log('Commission Calculation Complete:', {
-                            inputs: {
-                                baseFare,
-                                driverPercent: driverCommissionPercent,
-                                platformPercent: platformFeePercent
-                            },
-                            perDay: {
-                                driver: driverEarningsPerDay,
-                                platform: platformCommissionPerDay
-                            },
-                            totals: {
-                                workingDays: totalWorkingDays,
-                                driver: totalDriverEarnings,
-                                platform: totalPlatformCommission,
-                            }
-                        });
-
-                    } catch (error) {
-                        console.error('Error in calculateCommissions:', error);
-                    }
-                }
-
-                /**
-                 * Update commission display elements in the UI
-                 * @param {Object} data - Calculated commission data
-                 */
-                function updateCommissionDisplay(data) {
-                    try {
-                        // Update working days counter with badges
-                        $('#selected_days_count').html(
-                            `<span>${data.selectedDaysCount} selected</span> /
-                            <span>${data.totalWorkingDays} total working days</span>`
-                        );
-
-                        // Update single day displays with calculation breakdown
-                        $('#driver_earnings_per_day').html(
-                            `<strong>AUD ${data.driverEarningsPerDay.toFixed(2)}</strong>`
-                        );
-
-                        $('#platform_commission_per_day').html(
-                            `<strong>AUD ${data.platformCommissionPerDay.toFixed(2)}</strong>`
-                        );
-
-                        // Update total displays for all working days (removed selected totals)
-                        $('#total_driver_earnings').html(
-                            `<strong>AUD ${data.totalDriverEarnings.toFixed(2)}</strong>
-                            <small class="text-muted">(${data.driverEarningsPerDay.toFixed(2)} × ${data.totalWorkingDays} days)</small>`
-                        );
-
-                        $('#total_platform_commission').html(
-                            `<strong>AUD ${data.totalPlatformCommission.toFixed(2)}</strong>
-                            <small class="text-muted">(${data.platformCommissionPerDay.toFixed(2)} × ${data.totalWorkingDays} days)</small>`
-                        );
-
-                        $('#total_revenue').html(
-                            `<strong>AUD ${data.baseFare.toFixed(2)}</strong>
-                            <small class="text-muted">(${data.totalWorkingDays} days)</small>`
-                        );
-
-                    } catch (error) {
-                        console.error('Error updating commission display:', error);
-                    }
-                }
-
-                // =============================================================================
-                // CALENDAR GENERATION FUNCTIONS
-                // =============================================================================
-
-                /**
-                 * Generate calendar for given month/year
-                 * @param {Date} date - Date representing the month to display
-                 */
-                function generateCalendar(date) {
-                    try {
-                        const year = date.getFullYear();
-                        const month = date.getMonth();
-                        const firstDay = new Date(year, month, 1);
-                        const startDate = new Date(firstDay);
-
-                        // Set start date to first day of calendar (may be from previous month)
-                        startDate.setDate(startDate.getDate() - firstDay.getDay());
-
-                        // Update calendar header
-                        $('#currentMonth').text(monthNames[month] + ' ' + year);
-
-                        // Generate complete calendar HTML
-                        let calendarHTML = generateCalendarHeaders();
-                        calendarHTML += generateCalendarDays(startDate, month);
-
-                        // Update calendar display
-                        $('#calendarGrid').html(calendarHTML);
-
-                        console.log(`Calendar generated for ${monthNames[month]} ${year}`);
-
-                    } catch (error) {
-                        console.error('Error generating calendar:', error);
-                    }
-                }
-
-                /**
-                 * Generate calendar day headers (Sun, Mon, Tue, etc.)
-                 * @returns {string} HTML for calendar headers
-                 */
-                function generateCalendarHeaders() {
-                    let headerHTML = '';
-                    dayHeaders.forEach(day => {
-                        headerHTML += `<div class="calendar-day-header">${day}</div>`;
-                    });
-                    return headerHTML;
-                }
-
-                /**
-                 * Generate calendar days for the month
-                 * @param {Date} startDate - First date to display (may be from previous month)
-                 * @param {number} currentMonth - Current month being displayed (0-11)
-                 * @returns {string} HTML for calendar days
-                 */
-                function generateCalendarDays(startDate, currentMonth) {
-                    let daysHTML = '';
-                    let currentCalendarDate = new Date(startDate);
-
-                    // Generate 6 weeks of days (42 days total)
-                    for (let i = 0; i < 42; i++) {
-                        const dateStr = formatDateString(currentCalendarDate);
-                        const isCurrentMonth = currentCalendarDate.getMonth() === currentMonth;
-                        const isSelected = selectedDates.includes(dateStr);
-
-                        const dayClasses = getDayClasses(currentCalendarDate, isCurrentMonth, isSelected);
-
-                        daysHTML += `<div class="${dayClasses}" data-date="${dateStr}" title="${formatDateForDisplay(currentCalendarDate)}">
-                            ${currentCalendarDate.getDate()}
-                        </div>`;
-
-                        currentCalendarDate.setDate(currentCalendarDate.getDate() + 1);
-                    }
-
-                    return daysHTML;
-                }
-
-                /**
-                 * Get CSS classes for calendar day based on its state
-                 * @param {Date} date - Date for the calendar day
-                 * @param {boolean} isCurrentMonth - Whether date is in current displayed month
-                 * @param {boolean} isSelected - Whether date is selected
-                 * @returns {string} Space-separated CSS classes
-                 */
-                function getDayClasses(date, isCurrentMonth, isSelected) {
-                    let classes = ['calendar-day'];
-
-                    // Add state-based classes
-                    if (isWeekend(date)) classes.push('weekend');
-                    if (!isCurrentMonth) classes.push('other-month');
-                    if (isWeekend(date) || !isWithinSubscriptionPeriod(date) || isPastDate(date)) {
-                        classes.push('disabled');
-                    }
-                    if (isSelected) classes.push('selected');
-
-                    return classes.join(' ');
-                }
-
-                /**
-                 * Format date for display in tooltips
-                 * @param {Date} date - Date to format
-                 * @returns {string} Formatted date string
-                 */
-                function formatDateForDisplay(date) {
-                    return date.toLocaleDateString('en-AU', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
-                }
-
-                // =============================================================================
-                // DATE SELECTION FUNCTIONS
-                // =============================================================================
-
-                function updateSelectedDatesDisplay() {
-                    try {
-                        if (selectedDates.length === 0) {
-                            $('#selectedDatesDisplay').hide();
-                        } else {
-                            $('#selectedDatesDisplay').show();
-                            displaySelectedDatesAccordion(); // Replace displaySelectedDateTags() with this
-                        }
-
-                        // Update hidden form input for submission
-                        $('#selectedDatesInput').val(JSON.stringify(selectedDates));
-
-                        console.log(`Selected dates updated: ${selectedDates.length} dates selected`);
-
-                    } catch (error) {
-                        console.error('Error updating selected dates display:', error);
-                    }
-                }
-
-                /**
-                 * Display selected date tags in a user-friendly format
-                 */
-                function displaySelectedDateTags() {
-                    try {
-                        let tagsHTML = '';
-
-                        // Sort dates and create tags
-                        selectedDates.sort().forEach(date => {
-                            const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('en-AU', {
-                                month: 'short',
-                                day: 'numeric'
-                            });
-                            tagsHTML +=
-                                `<span class="selected-date-tag" data-date="${date}">${formattedDate}</span>`;
-                        });
-
-                        $('#selectedDatesTags').html(tagsHTML);
-
-                    } catch (error) {
-                        console.error('Error displaying selected date tags:', error);
-                    }
-                }
-
-                /**
-                 * Handle date selection/deselection
-                 * @param {string} dateStr - Date string in YYYY-MM-DD format
-                 */
-                function toggleDateSelection(dateStr) {
-                    try {
-                        if (selectedDates.includes(dateStr)) {
-                            // Remove date from selection
-                            selectedDates = selectedDates.filter(d => d !== dateStr);
-                            $(`.calendar-day[data-date="${dateStr}"]`).removeClass('selected');
-                            console.log(`Date deselected: ${dateStr}`);
-                        } else {
-                            // Add date to selection
-                            selectedDates.push(dateStr);
-                            $(`.calendar-day[data-date="${dateStr}"]`).addClass('selected');
-                            console.log(`Date selected: ${dateStr}`);
-                        }
-
-                        // Update displays and recalculate
-                        updateSelectedDatesDisplay();
-
-                    } catch (error) {
-                        console.error('Error toggling date selection:', error);
-                    }
-                }
-
-                /**
-                 * Clear all selected dates
-                 */
-                function clearAllSelectedDates() {
-                    selectedDates = [];
-                    $('.calendar-day').removeClass('selected');
-                    updateSelectedDatesDisplay();
-                    console.log('All selected dates cleared');
-                }
-
-                // =============================================================================
-                // EVENT HANDLERS
-                // =============================================================================
-
-                /**
-                 * Initialize all event listeners
-                 */
-                function initializeEventListeners() {
-                    try {
-                        // Commission input changes - trigger recalculation
-                        $('#base_fare, #driver_commission_percent, #platform_fee').on('input change', function() {
-                            calculateCommissions();
-                        });
-
-                        // Calendar navigation - previous month
-                        $('#prevMonth').on('click', function(e) {
-                            e.preventDefault();
-                            currentDate.setMonth(currentDate.getMonth() - 1);
-                            generateCalendar(currentDate);
-                        });
-
-                        // Calendar navigation - next month
-                        $('#nextMonth').on('click', function(e) {
-                            e.preventDefault();
-                            currentDate.setMonth(currentDate.getMonth() + 1);
-                            generateCalendar(currentDate);
-                        });
-
-                        // Date selection - handle clicks on calendar days
-                        $(document).on('click', '.calendar-day:not(.disabled):not(.other-month)', function(e) {
-                            e.preventDefault();
-                            const dateStr = $(this).data('date');
-                            if (dateStr) {
-                                toggleDateSelection(dateStr);
-                            }
-                        });
-
-                        // Form submission validation
-                        $('#assignmentForm').on('submit', function(e) {
-                            if (selectedDates.length === 0) {
-                                e.preventDefault();
-                                alert('Please select at least one date for the ride assignments.');
-                                return false;
-                            }
-
-                            console.log('Form submitted with selected dates:', selectedDates);
-                            return true;
-                        });
-
-                        console.log('Event listeners initialized successfully');
-
-                    } catch (error) {
-                        console.error('Error initializing event listeners:', error);
-                    }
-                }
-
-                // =============================================================================
-                // INITIALIZATION & STARTUP
-                // =============================================================================
-
-                /**
-                 * Validate that required data is available
-                 * @returns {boolean} True if validation passes
-                 */
-                function validateInitialization() {
-                    // Check if subscription dates are properly loaded
-                    if (!subscriptionStartDate || !subscriptionEndDate) {
-                        console.error('Subscription dates not properly loaded from Laravel');
-                        return false;
-                    }
-
-                    // Check if required DOM elements exist
-                    const requiredElements = [
-                        '#base_fare', '#driver_commission_percent', '#platform_fee',
-                        '#calendarGrid', '#currentMonth', '#selectedDatesInput'
-                    ];
-
-                    for (let element of requiredElements) {
-                        if ($(element).length === 0) {
-                            console.error(`Required element not found: ${element}`);
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
-
-                /**
-                 * Initialize the complete application
-                 * Main entry point for the commission and calendar system
-                 */
-                function initialize() {
-                    try {
-                        console.log('Initializing Commission & Calendar System...');
-
-                        // Validate prerequisites
-                        if (!validateInitialization()) {
-                            console.error('Initialization failed - missing required data or elements');
-                            return;
-                        }
-
-                        // Initialize components in correct order
-                        initializeEventListeners();
-                        generateCalendar(currentDate);
-
-                        // Force initial calculation after DOM is ready
-                        setTimeout(function() {
-                            calculateCommissions();
-                        }, 100);
-
-                        // Log initialization success with debug info
-                        const totalWorkingDays = calculateWorkingDaysBetweenDates(subscriptionStartDate,
-                            subscriptionEndDate);
-
-                        console.log('✅ Commission & Calendar System Initialized Successfully');
-                        console.log('📅 Subscription Period:', {
-                            start: subscriptionStartDate.toLocaleDateString('en-AU'),
-                            end: subscriptionEndDate.toLocaleDateString('en-AU'),
-                            totalWorkingDays: totalWorkingDays
-                        });
-                        console.log('💰 Initial Commission Values:', {
-                            baseFare: safeParseFloat($('#base_fare').val()),
-                            driverPercent: safeParseFloat($('#driver_commission_percent').val()),
-                            platformPercent: safeParseFloat($('#platform_fee').val())
-                        });
-
-                    } catch (error) {
-                        console.error('❌ Failed to initialize Commission & Calendar System:', error);
-                    }
-                }
-
-                function displaySelectedDatesAccordion() {
-                    try {
-                        let accordionHTML = '';
-
-                        selectedDates.sort().forEach((date, index) => {
-                            // Fix: Add timezone handling to prevent date shifting
-                            const [year, month, day] = date.split('-').map(Number);
-                            const dateObj = new Date(year, month - 1, day + 1);
-
-                            let formattedDate = dateObj.toLocaleString("en-AU", {
-                                timeZone: "Australia/Sydney",
-                                weekday: "short",   // Mon, Tue, etc.
-                                year: "numeric",
-                                month: "short",     // Jan, Feb, etc.
-                                day: "2-digit"
-                            });
-
-                            const accordionId = `accordion-${date.replace(/-/g, '')}`;
-                            const collapseId = `collapse-${date.replace(/-/g, '')}`;
-
-                            accordionHTML += `
-                                <div class="accordion-item mb-2">
-                                    <div class="accordion-header" id="${accordionId}">
-                                        <button class="accordion-button collapsed d-flex justify-content-between align-items-center w-100" style="padding: 7px;"
-                                                type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}"
-                                                aria-expanded="false" aria-controls="${collapseId}"> ${formattedDate}
-                                        </button>
-                                    </div>
-                                    <div id="${collapseId}" class="accordion-collapse collapse"
-                                        aria-labelledby="${accordionId}" data-bs-parent="#selectedDatesAccordion">
-                                        <div class="accordion-body">
-                                            ${generateDateAssignmentForm(date, index)}
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-
-                        $('#selectedDatesAccordion').html(accordionHTML);
-
-                    } catch (error) {
-                        console.error('Error displaying selected dates accordion:', error);
-                    }
-                }
-
-                function generateDateAssignmentForm(date, index) {
-                    // Generate driver options from Laravel data
-                    let driversOptions = '<option value="">Select Driver</option>';
-
-                    @if(isset($drivers))
-                        @foreach($drivers as $driver)
-                            driversOptions += `<option value="{{ $driver->id }}">{{ $driver->driver_name }} - {{ $driver->user->phone }}</option>`;
-                        @endforeach
-                    @endif
-
-                    return `
-                        <div class="date-assignment-row">
-                            <div class="row g-3 align-items-end">
-                                <!-- Driver Selection -->
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">Assigned Driver:</label>
-                                    <select class="form-select driver-select" name="driver[${date}]" data-date="${date}">
-                                        ${driversOptions}
-                                    </select>
-                                </div>
-
-                                <!-- Date -->
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold">Date:</label>
-                                    <input type="date" class="form-control" name="ride_date[${date}]" value="${date}" data-date="${date}">
-                                </div>
-
-                                <!-- Pickup + Dropoff -->
-                                <div class="col-md-3">
-                                    <div class="row g-2">
-                                        <div class="col-6">
-                                            <label class="form-label fw-semibold">Pickup Time:</label>
-                                            <input type="time" class="form-control" name="pickup_time[${date}]" value="07:00" data-date="${date}">
-                                        </div>
-                                        <div class="col-6">
-                                            <label class="form-label fw-semibold">Dropoff Time:</label>
-                                            <input type="time" class="form-control" name="dropoff_time[${date}]" value="09:00" data-date="${date}">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <div class="row g-2">
-                                        <div class="col-6">
-                                            <label class="form-label fw-semibold">Return Pickup:</label>
-                                            <input type="time" class="form-control" name="return_pickup_time[${date}]" value="15:00" data-date="${date}">
-                                        </div>
-                                        <div class="col-6">
-                                            <label class="form-label fw-semibold">Return Home:</label>
-                                            <input type="time" class="form-control" name="return_home_time[${date}]" value="17:00" data-date="${date}">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                // =============================================================================
-                // START APPLICATION
-                // =============================================================================
-
-                // Start the application when DOM is ready
-                initialize();
-
-                // Expose useful functions to global scope for debugging
-                window.CommissionCalendar = {
-                    calculateCommissions,
-                    generateCalendar,
-                    clearAllSelectedDates,
-                    getSelectedDates: () => selectedDates,
-                    getTotalWorkingDays: () => calculateWorkingDaysBetweenDates(subscriptionStartDate,
-                        subscriptionEndDate)
-                };
+    // =============================================================================
+    // GLOBAL VARIABLES & CONFIGURATION
+    // =============================================================================
+    let currentDate = new Date();
+    let selectedDates = [];
+    let subscriptionStartDate = new Date('{{ $subscription->created_at }}');
+    let subscriptionEndDate = new Date('{{ $subscription->ends_at }}');
+    console.log(subscriptionStartDate);
+
+    // Month names for calendar display
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    // Day headers for calendar
+    const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    // =============================================================================
+    // UTILITY FUNCTIONS
+    // =============================================================================
+
+    function formatDateString(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function isWeekend(date) {
+        const dayOfWeek = date.getDay();
+        return dayOfWeek === 0 || dayOfWeek === 6;
+    }
+
+    function safeParseFloat(value, fallback = 0) {
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? fallback : parsed;
+    }
+
+    // ✅ Check if date is within 30 days from purchase date (and not before purchase)
+    function isWithin30Days(date) {
+        const checkDate = new Date(date);
+        checkDate.setHours(0, 0, 0, 0);
+        
+        const startDate = new Date(subscriptionStartDate);
+        startDate.setHours(0, 0, 0, 0);
+        
+        const endDate = new Date(subscriptionStartDate);
+        endDate.setDate(endDate.getDate() + 30);
+        endDate.setHours(0, 0, 0, 0);
+        
+        // ✅ Date must be >= purchase date AND <= purchase date + 30 days
+        return checkDate >= startDate && checkDate <= endDate;
+    }
+
+    // ✅ Check if date is before purchase date
+    function isBeforePurchaseDate(date) {
+        const checkDate = new Date(date);
+        checkDate.setHours(0, 0, 0, 0);
+        
+        const startDate = new Date(subscriptionStartDate);
+        startDate.setHours(0, 0, 0, 0);
+        
+        return checkDate < startDate;
+    }
+
+    // =============================================================================
+    // COMMISSION CALCULATION FUNCTIONS
+    // =============================================================================
+
+    function calculateCommissions() {
+        try {
+            console.log('=== Starting Commission Calculation ===');
+            
+            // Get input values
+            const baseFare = safeParseFloat($('#base_fare').val());
+            const driverCommissionPercent = safeParseFloat($('#driver_commission_percent').val());
+            const platformFeePercent = safeParseFloat($('#platform_fee').val());
+
+            console.log('Input Values:', {
+                baseFare,
+                driverCommissionPercent,
+                platformFeePercent
             });
 
-            @if(session('success'))
-                toastr.success("{{ session('success') }}");
-            @endif
+            // ✅ Use selected dates count directly
+            const totalDays = selectedDates.length;
+            $('#totalWorkingDays').val(totalDays);
 
-            @if(session('error'))
-                toastr.error("{{ session('error') }}");
-            @endif
+            console.log('Total Selected Days:', totalDays);
+
+            // Validate
+            if (baseFare <= 0) {
+                console.warn('Invalid base fare');
+                // Show zero values
+                updateCommissionDisplay({
+                    baseFare: 0,
+                    driverCommissionPercent: 0,
+                    platformFeePercent: 0,
+                    totalDays: 0,
+                    driverEarningsPerDay: 0,
+                    platformCommissionPerDay: 0,
+                    totalDriverEarnings: 0,
+                    totalPlatformCommission: 0
+                });
+                return;
+            }
+
+            // Calculate per day (divide by selected days)
+            let driverEarningsPerDay = 0;
+            let platformCommissionPerDay = 0;
+            let totalDriverEarnings = 0;
+            let totalPlatformCommission = 0;
+
+            if (totalDays > 0) {
+                driverEarningsPerDay = (baseFare * (driverCommissionPercent / 100)) / totalDays;
+                platformCommissionPerDay = (baseFare * (platformFeePercent / 100)) / totalDays;
+                totalDriverEarnings = driverEarningsPerDay * totalDays;
+                totalPlatformCommission = platformCommissionPerDay * totalDays;
+            } else {
+                // If no days selected, show total amounts
+                totalDriverEarnings = baseFare * (driverCommissionPercent / 100);
+                totalPlatformCommission = baseFare * (platformFeePercent / 100);
+                driverEarningsPerDay = 0;
+                platformCommissionPerDay = 0;
+            }
+
+            console.log('Calculated Values:', {
+                perDay: {
+                    driver: driverEarningsPerDay,
+                    platform: platformCommissionPerDay
+                },
+                total: {
+                    driver: totalDriverEarnings,
+                    platform: totalPlatformCommission
+                }
+            });
+
+            // Update UI
+            updateCommissionDisplay({
+                baseFare,
+                driverCommissionPercent,
+                platformFeePercent,
+                totalDays,
+                driverEarningsPerDay,
+                platformCommissionPerDay,
+                totalDriverEarnings,
+                totalPlatformCommission
+            });
+
+            console.log('=== Commission Calculation Complete ===');
+
+        } catch (error) {
+            console.error('Error in calculateCommissions:', error);
+        }
+    }
+
+    function updateCommissionDisplay(data) {
+        try {
+            // Update selected days counter
+            if (data.totalDays > 0) {
+                $('#selected_days_count').html(
+                    `${data.totalDays} ${data.totalDays === 1 ? 'day' : 'days'} selected`
+                );
+            } else {
+                $('#selected_days_count').html('No dates selected');
+            }
+
+            // Update single day displays
+            $('#driver_earnings_per_day').html(
+                `AUD ${data.driverEarningsPerDay.toFixed(2)}`
+            );
+
+            $('#platform_commission_per_day').html(
+                `AUD ${data.platformCommissionPerDay.toFixed(2)}`
+            );
+
+            // Update total displays
+            $('#total_driver_earnings').html(
+                `AUD ${data.totalDriverEarnings.toFixed(2)}`
+            );
+
+            $('#total_platform_commission').html(
+                `AUD ${data.totalPlatformCommission.toFixed(2)}`
+            );
+
+            $('#total_revenue').html(
+                `AUD ${data.baseFare.toFixed(2)}`
+            );
+
+            console.log('UI Updated Successfully');
+
+        } catch (error) {
+            console.error('Error updating commission display:', error);
+        }
+    }
+
+    // =============================================================================
+    // CALENDAR GENERATION FUNCTIONS
+    // =============================================================================
+
+    function generateCalendar(date) {
+        try {
+            console.log('=== Generating Calendar ===');
+            
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            
+            console.log('Calendar for:', monthNames[month], year);
+
+            // Update header
+            $('#currentMonth').text(monthNames[month] + ' ' + year);
+
+            // Generate calendar HTML
+            let calendarHTML = '';
+            
+            // Add day headers
+            dayHeaders.forEach(day => {
+                calendarHTML += `<div class="calendar-day-header">${day}</div>`;
+            });
+
+            // Get first day of month
+            const firstDay = new Date(year, month, 1);
+            const firstDayOfWeek = firstDay.getDay();
+            
+            // Get last day of month
+            const lastDay = new Date(year, month + 1, 0);
+            const lastDate = lastDay.getDate();
+
+            // Get last day of previous month
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+
+            // Add previous month's trailing days
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                const dayNum = prevMonthLastDay - i;
+                const prevMonth = month === 0 ? 11 : month - 1;
+                const prevYear = month === 0 ? year - 1 : year;
+                const prevDate = new Date(prevYear, prevMonth, dayNum);
+                const dateStr = formatDateString(prevDate);
+                
+                calendarHTML += `<div class="calendar-day other-month disabled" data-date="${dateStr}">
+                    ${dayNum}
+                </div>`;
+            }
+
+            // ✅ Add current month's days (Only enable from purchase date to +30 days)
+            for (let day = 1; day <= lastDate; day++) {
+                const currentDate = new Date(year, month, day);
+                const dateStr = formatDateString(currentDate);
+                const isSelected = selectedDates.includes(dateStr);
+                
+                let classes = 'calendar-day';
+                
+                // ✅ Check if date is valid (purchase date to +30 days)
+                const isValidDate = isWithin30Days(currentDate);
+                const isBeforePurchase = isBeforePurchaseDate(currentDate);
+                
+                // ✅ Weekend check - no color change when selected
+                if (isWeekend(currentDate) && !isSelected) {
+                    classes += ' weekend';
+                }
+                
+                // ✅ Disable dates before purchase date OR after 30 days
+                if (!isValidDate || isBeforePurchase) {
+                    classes += ' disabled';
+                }
+                
+                // ✅ Selected date highlight (removes weekend color)
+                if (isSelected) {
+                    classes += ' selected';
+                }
+
+                calendarHTML += `<div class="${classes}" data-date="${dateStr}">
+                    ${day}
+                </div>`;
+            }
+
+            // Add next month's leading days
+            const totalCells = firstDayOfWeek + lastDate;
+            const remainingCells = 42 - totalCells;
+            
+            for (let day = 1; day <= remainingCells; day++) {
+                const nextMonth = month === 11 ? 0 : month + 1;
+                const nextYear = month === 11 ? year + 1 : year;
+                const nextDate = new Date(nextYear, nextMonth, day);
+                const dateStr = formatDateString(nextDate);
+                
+                calendarHTML += `<div class="calendar-day other-month disabled" data-date="${dateStr}">
+                    ${day}
+                </div>`;
+            }
+
+            // Update calendar
+            $('#calendarGrid').html(calendarHTML);
+            
+            console.log('Calendar HTML generated, length:', calendarHTML.length);
+            console.log('=== Calendar Generation Complete ===');
+
+        } catch (error) {
+            console.error('Error generating calendar:', error);
+        }
+    }
+
+    // =============================================================================
+    // DATE SELECTION FUNCTIONS
+    // =============================================================================
+
+    function updateSelectedDatesDisplay() {
+        try {
+            if (selectedDates.length === 0) {
+                $('#selectedDatesAccordion').html('<p class="text-muted">No dates selected yet.</p>');
+            } else {
+                displaySelectedDatesAccordion();
+            }
+
+            // Update hidden input
+            $('#selectedDatesInput').val(JSON.stringify(selectedDates));
+
+            // Recalculate commissions
+            calculateCommissions();
+
+            console.log(`Selected dates: ${selectedDates.length}`);
+
+        } catch (error) {
+            console.error('Error updating selected dates display:', error);
+        }
+    }
+
+    function toggleDateSelection(dateStr) {
+        try {
+            if (selectedDates.includes(dateStr)) {
+                // Remove date
+                selectedDates = selectedDates.filter(d => d !== dateStr);
+                $(`.calendar-day[data-date="${dateStr}"]`).removeClass('selected');
+                console.log(`Date deselected: ${dateStr}`);
+            } else {
+                // Add date
+                selectedDates.push(dateStr);
+                $(`.calendar-day[data-date="${dateStr}"]`).addClass('selected');
+                console.log(`Date selected: ${dateStr}`);
+            }
+
+            updateSelectedDatesDisplay();
+
+        } catch (error) {
+            console.error('Error toggling date selection:', error);
+        }
+    }
+
+    function displaySelectedDatesAccordion() {
+        try {
+            let accordionHTML = '';
+
+            selectedDates.sort().forEach((date, index) => {
+                const [year, month, day] = date.split('-').map(Number);
+                const dateObj = new Date(year, month - 1, day);
+
+                let formattedDate = dateObj.toLocaleDateString("en-AU", {
+                    weekday: "short",
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit"
+                });
+
+                const accordionId = `accordion-${date.replace(/-/g, '')}`;
+                const collapseId = `collapse-${date.replace(/-/g, '')}`;
+
+                accordionHTML += `
+                    <div class="accordion-item mb-2">
+                        <div class="accordion-header" id="${accordionId}">
+                            <button class="accordion-button collapsed d-flex justify-content-between align-items-center w-100" style="padding: 7px;"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}"
+                                    aria-expanded="false" aria-controls="${collapseId}">
+                                ${formattedDate}
+                            </button>
+                        </div>
+                        <div id="${collapseId}" class="accordion-collapse collapse"
+                            aria-labelledby="${accordionId}" data-bs-parent="#selectedDatesAccordion">
+                            <div class="accordion-body">
+                                ${generateDateAssignmentForm(date, index)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            $('#selectedDatesAccordion').html(accordionHTML);
+
+        } catch (error) {
+            console.error('Error displaying accordion:', error);
+        }
+    }
+
+    function generateDateAssignmentForm(date, index) {
+        let driversOptions = '<option value="">Select Driver</option>';
+
+        @if(isset($drivers))
+            @foreach($drivers as $driver)
+                driversOptions += `<option value="{{ $driver->id }}">{{ $driver->driver_name }} - {{ $driver->user?->phone }}</option>`;
+            @endforeach
+        @endif
+
+        return `
+            <div class="date-assignment-row">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Assigned Driver:</label>
+                        <select class="form-select driver-select" name="driver[${date}]" data-date="${date}">
+                            ${driversOptions}
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Date:</label>
+                        <input type="date" class="form-control" name="ride_date[${date}]" value="${date}" data-date="${date}" readonly>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Pickup Time:</label>
+                                <input type="time" class="form-control" name="pickup_time[${date}]" value="07:00" data-date="${date}">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Dropoff Time:</label>
+                                <input type="time" class="form-control" name="dropoff_time[${date}]" value="09:00" data-date="${date}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Return Pickup:</label>
+                                <input type="time" class="form-control" name="return_pickup_time[${date}]" value="15:00" data-date="${date}">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-semibold">Return Home:</label>
+                                <input type="time" class="form-control" name="return_home_time[${date}]" value="17:00" data-date="${date}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // =============================================================================
+    // EVENT HANDLERS
+    // =============================================================================
+
+    function initializeEventListeners() {
+        try {
+            // Commission input changes
+            $('#base_fare, #driver_commission_percent, #platform_fee').on('input change', function() {
+                console.log('Input changed:', $(this).attr('id'), '=', $(this).val());
+                calculateCommissions();
+            });
+
+            // Calendar navigation
+            $('#prevMonth').on('click', function(e) {
+                e.preventDefault();
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                generateCalendar(currentDate);
+            });
+
+            $('#nextMonth').on('click', function(e) {
+                e.preventDefault();
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                generateCalendar(currentDate);
+            });
+
+            // ✅ Date selection (Only dates within 30 days from purchase)
+            $(document).on('click', '.calendar-day:not(.other-month):not(.disabled)', function(e) {
+                e.preventDefault();
+                const dateStr = $(this).data('date');
+                if (dateStr) {
+                    toggleDateSelection(dateStr);
+                }
+            });
+
+            // Form submission
+            $('#assignmentForm').on('submit', function(e) {
+                if (selectedDates.length === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one date for the ride assignments.');
+                    return false;
+                }
+                return true;
+            });
+
+            console.log('Event listeners initialized');
+
+        } catch (error) {
+            console.error('Error initializing event listeners:', error);
+        }
+    }
+
+    // =============================================================================
+    // INITIALIZATION
+    // =============================================================================
+
+    function initialize() {
+        try {
+            console.log('=== INITIALIZING SYSTEM ===');
+            
+            // Log subscription dates
+            console.log('Subscription Period:', {
+                start: subscriptionStartDate,
+                end: subscriptionEndDate,
+                startFormatted: subscriptionStartDate.toLocaleDateString('en-AU'),
+                endFormatted: subscriptionEndDate.toLocaleDateString('en-AU')
+            });
+
+            // ✅ Calculate and log 30-day range
+            const thirtyDaysLater = new Date(subscriptionStartDate);
+            thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+            
+            console.log('Valid Date Range (30 days):', {
+                from: subscriptionStartDate.toLocaleDateString('en-AU'),
+                to: thirtyDaysLater.toLocaleDateString('en-AU'),
+                totalDays: 30
+            });
+
+            // Check if dates are valid
+            if (isNaN(subscriptionStartDate.getTime()) || isNaN(subscriptionEndDate.getTime())) {
+                console.error('Invalid subscription dates!');
+                alert('Error: Invalid subscription dates. Please check the data.');
+                return;
+            }
+
+            // Initialize
+            initializeEventListeners();
+            generateCalendar(currentDate);
+            calculateCommissions();
+
+            console.log('=== SYSTEM INITIALIZED SUCCESSFULLY ===');
+
+        } catch (error) {
+            console.error('=== INITIALIZATION FAILED ===', error);
+        }
+    }
+
+    // Start application
+    initialize();
+
+    // Debug helper
+    window.DebugCalendar = {
+        recalculate: calculateCommissions,
+        regenerateCalendar: () => generateCalendar(currentDate),
+        getSelectedDates: () => selectedDates,
+        clearDates: () => {
+            selectedDates = [];
+            updateSelectedDatesDisplay();
+            generateCalendar(currentDate);
+        }
+    };
+});
+
+// Toastr notifications
+@if(session('success'))
+    toastr.success("{{ session('success') }}");
+@endif
+
+@if(session('error'))
+    toastr.error("{{ session('error') }}");
+@endif
         </script>
     @endpush
 @endsection

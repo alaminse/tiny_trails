@@ -9,6 +9,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->prefix('subscriptions')
         ->name('subscriptions.')
         ->group(function () {
+            Route::get('/get/kids', 'getKids');
             Route::get('/plans', 'plans');
             // User's own subscriptions
             Route::get('/my-subscriptions', 'getUserSubscriptions')->name('my-subscriptions');

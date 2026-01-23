@@ -10,12 +10,186 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Modules\UserRolePermission\app\Http\Resources\UserResource;
 use Modules\UserRolePermission\app\Models\Driver;
+use Modules\LocationManagement\app\Models\Country;
+use Modules\LocationManagement\app\Models\State;
+use Modules\LocationManagement\app\Models\City;
+use App\Models\User;
 use App\Traits\Upload;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Illuminate\Auth\Events\PasswordReset;
 
 class AuthController extends Controller
 {
-
     use Upload;
+    
+    public function getCountries()
+    {
+        try {
+            $countries = Country::select('id', 'name')
+                ->where('status', 'active')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Countries retrieved successfully',
+                'data' => $countries
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve countries',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getStates($country_id)
+    {
+        try {
+            $states = State::select('id', 'name', 'country_id')
+                ->where('country_id', $country_id)
+                ->where('status', 'active')
+                ->orderBy('name', 'asc')
+                ->get();
+
+            if ($states->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No states found for this country',
+                    'data' => []
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'States retrieved successfully',
+                'data' => $states
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve states',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getCities($state_id)
+    {
+        try {
+            $cities = City::select('id', 'name', 'state_id')
+                ->where('state_id', $state_id)
+                ->where('status', 'active')
+                ->orderBy('name', 'asc')
+                ->get();
+
+            if ($cities->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No cities found for this state',
+                    'data' => []
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cities retrieved successfully',
+                'data' => $cities
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve cities',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    public function register(Request $request)
+    {
+        try {
+            // ✅ Validation rules
+            $validator = Validator::make($request->all(), [
+                'first_name'    => 'required|string|max:255',
+                'last_name'     => 'required|string|max:255',
+                'email'         => 'required|email|unique:users,email',
+                'password'      => 'required|string|min:8|confirmed',
+                'phone'         => 'required|string|max:20|unique:users,phone',
+                'dob'           => 'required|date|before:today',
+                'gender'        => 'required|in:male,female,other',
+                'height_cm'     => 'nullable|numeric|min:0|max:300',
+                'weight_kg'     => 'nullable|numeric|min:0|max:500',
+                'photo'         => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                'address'       => 'required|string',
+                'country_id'    => 'required|exists:countries,id',
+                'state_id'      => 'required|exists:states,id',
+                'city_id'       => 'required|exists:cities,id',
+                'status'        => 'nullable|in:active,inactive,pending',
+            ]);
+
+            // ✅ যদি validation fail করে
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation Error',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+            
+            // ✅ validated data
+            $validated = $validator->validated();
+            
+            DB::beginTransaction();
+            
+            if ($request->file('photo')) {
+                $userData['photo'] = $this->uploadFile($request->file('photo'), 'parent/profile');
+                if ($user->photo) {
+                    $this->deleteFile($user->photo);
+                }
+            }
+            
+            // Hash password
+            $validated['password'] = Hash::make($validated['password']);
+            
+            // Set default status if not provided
+            $validated['status'] = $validated['status'] ?? 'active';
+
+            // Create user
+            $user = User::create($validated);
+
+            // Assign parent role
+            $user->assignRole('parent');
+
+            // Generate token
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Parent registered successfully',
+                'data' => [
+                    'user' => $user->load('roles'),
+                    'token' => $token
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Registration failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function login(Request $request)
     {
@@ -89,29 +263,6 @@ class AuthController extends Controller
         ]);
     }
 
-    public function resetPassword(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:users,email',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation errors',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        // Here you would typically send a password reset email
-        // For now, we'll just return a success message
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Password reset link sent to your email'
-        ]);
-    }
-
     public function profile(Request $request)
     {
         try {
@@ -142,7 +293,7 @@ class AuthController extends Controller
 
     public function updateProfile(UpdateProfileRequest $request)
     {
-        try {
+        // try {
             $user = auth()->user();
             
             // Get validated data
@@ -223,11 +374,77 @@ class AuthController extends Controller
                 'data' => $user
             ], 200);
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update profile: ' . $e->getMessage()
-            ], 500);
-        }
+        // } catch (\Exception $e) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Failed to update profile: ' . $e->getMessage()
+        //     ], 500);
+        // }
     }
+    
+    public function forgotPassword(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email|exists:users,email',
+    ]);
+    
+    try {
+        $status = Password::sendResetLink($request->only('email'));
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Password reset link sent to your email',
+            ], 200);
+        }
+
+        // Log the actual status for debugging
+        \Log::error('Password reset failed', ['status' => $status]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to send reset link: ' . $status,
+        ], 500);
+        
+    } catch (\Exception $e) {
+        \Log::error('Password reset error', ['error' => $e->getMessage()]);
+        
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+
+
+public function resetPassword(Request $request)
+{
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|min:8|confirmed',
+    ]);
+
+    $status = Password::reset(
+        $request->only('email', 'password', 'password_confirmation', 'token'),
+        function ($user, $password) {
+            $user->password = Hash::make($password);
+            $user->save();
+        }
+    );
+
+    if ($status === Password::PASSWORD_RESET) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset successfully',
+        ], 200);
+    }
+
+    return response()->json([
+        'success' => false,
+        'message' => 'Failed to reset password',
+    ], 400);
+}
+
 }

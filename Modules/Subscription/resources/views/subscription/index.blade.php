@@ -178,17 +178,6 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <div class="stats-card bg-info">
-                        <div class="text-center">
-                            <div class="metric-icon">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="stats-number" id="trial-subscriptions">{{ $stats['on_trial'] ?? 0 }}</div>
-                            <div>On Trial</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2">
                     <div class="stats-card bg-warning">
                         <div class="text-center">
                             <div class="metric-icon">
@@ -346,13 +335,12 @@
                                     <thead class="table-dark">
                                         <tr>
                                             <th width="5%">No</th>
-                                            <th width="15%">User</th>
+                                            <th width="17%">User</th>
                                             <th width="15%">Plan</th>
-                                            <th width="10%">Status</th>
-                                            <th width="10%">PayWay Status</th>
-                                            <th width="12%">Trial Ends</th>
+                                            <th width="12%">Status</th>
+                                            <th width="12%">PayWay Status</th>
                                             <th width="12%">Next Billing</th>
-                                            <th width="10%">Payment Method</th>
+                                            <th width="14%">Payment Method</th>
                                             <th width="15%">Actions</th>
                                         </tr>
                                     </thead>
@@ -367,82 +355,82 @@
             </div>
 
             <!-- Dashboard Widgets -->
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="card border-warning">
-                        <div class="card-header bg-warning text-dark">
-                            <h6 class="mb-0">
-                                <i class="fas fa-exclamation-triangle me-2"></i>Expiring Soon
-                                <span class="badge bg-dark ms-2" id="expiring-count">0</span>
-                            </h6>
-                        </div>
-                        <div class="card-body dashboard-widget">
-                            <div id="expiring-subscriptions">
-                                <div class="text-center text-muted loading-skeleton" style="height: 60px; border-radius: 5px;">
-                                    <div class="d-flex align-items-center justify-content-center h-100">
-                                        <i class="fas fa-spinner fa-spin me-2"></i> Loading...
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer text-center">
-                            <button class="btn btn-warning btn-sm" onclick="loadExpiringSubscriptions()">
-                                <i class="fas fa-sync-alt me-1"></i>Refresh
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <!--<div class="row">-->
+            <!--    <div class="col-md-4">-->
+            <!--        <div class="card border-warning">-->
+            <!--            <div class="card-header bg-warning text-dark">-->
+            <!--                <h6 class="mb-0">-->
+            <!--                    <i class="fas fa-exclamation-triangle me-2"></i>Expiring Soon-->
+            <!--                    <span class="badge bg-dark ms-2" id="expiring-count">0</span>-->
+            <!--                </h6>-->
+            <!--            </div>-->
+            <!--            <div class="card-body dashboard-widget">-->
+            <!--                <div id="expiring-subscriptions">-->
+            <!--                    <div class="text-center text-muted loading-skeleton" style="height: 60px; border-radius: 5px;">-->
+            <!--                        <div class="d-flex align-items-center justify-content-center h-100">-->
+            <!--                            <i class="fas fa-spinner fa-spin me-2"></i> Loading...-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                </div>-->
+            <!--            </div>-->
+            <!--            <div class="card-footer text-center">-->
+            <!--                <button class="btn btn-warning btn-sm" onclick="loadExpiringSubscriptions()">-->
+            <!--                    <i class="fas fa-sync-alt me-1"></i>Refresh-->
+            <!--                </button>-->
+            <!--            </div>-->
+            <!--        </div>-->
+            <!--    </div>-->
 
-                <div class="col-md-4">
-                    <div class="card border-danger">
-                        <div class="card-header bg-danger text-white">
-                            <h6 class="mb-0">
-                                <i class="fas fa-credit-card me-2"></i>Payment Issues
-                                <span class="badge bg-light text-dark ms-2" id="issues-count">0</span>
-                            </h6>
-                        </div>
-                        <div class="card-body dashboard-widget">
-                            <div id="payment-issues">
-                                <div class="text-center text-muted loading-skeleton" style="height: 60px; border-radius: 5px;">
-                                    <div class="d-flex align-items-center justify-content-center h-100">
-                                        <i class="fas fa-spinner fa-spin me-2"></i> Loading...
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer text-center">
-                            <button class="btn btn-danger btn-sm" onclick="loadPaymentIssues()">
-                                <i class="fas fa-sync-alt me-1"></i>Refresh
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <!--    <div class="col-md-4">-->
+            <!--        <div class="card border-danger">-->
+            <!--            <div class="card-header bg-danger text-white">-->
+            <!--                <h6 class="mb-0">-->
+            <!--                    <i class="fas fa-credit-card me-2"></i>Payment Issues-->
+            <!--                    <span class="badge bg-light text-dark ms-2" id="issues-count">0</span>-->
+            <!--                </h6>-->
+            <!--            </div>-->
+            <!--            <div class="card-body dashboard-widget">-->
+            <!--                <div id="payment-issues">-->
+            <!--                    <div class="text-center text-muted loading-skeleton" style="height: 60px; border-radius: 5px;">-->
+            <!--                        <div class="d-flex align-items-center justify-content-center h-100">-->
+            <!--                            <i class="fas fa-spinner fa-spin me-2"></i> Loading...-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                </div>-->
+            <!--            </div>-->
+            <!--            <div class="card-footer text-center">-->
+            <!--                <button class="btn btn-danger btn-sm" onclick="loadPaymentIssues()">-->
+            <!--                    <i class="fas fa-sync-alt me-1"></i>Refresh-->
+            <!--                </button>-->
+            <!--            </div>-->
+            <!--        </div>-->
+            <!--    </div>-->
 
-                <div class="col-md-4">
-                    <div class="card border-info">
-                        <div class="card-header bg-info text-white">
-                            <h6 class="mb-0">
-                                <i class="fas fa-clock me-2"></i>Recent Activity
-                                <span class="badge bg-light text-dark ms-2" id="activity-count">0</span>
-                            </h6>
-                        </div>
-                        <div class="card-body dashboard-widget">
-                            <div id="recent-activity">
-                                <div class="text-center text-muted loading-skeleton" style="height: 60px; border-radius: 5px;">
-                                    <div class="d-flex align-items-center justify-content-center h-100">
-                                        <i class="fas fa-spinner fa-spin me-2"></i> Loading...
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer text-center">
-                            <button class="btn btn-info btn-sm" onclick="loadRecentActivity()">
-                                <i class="fas fa-sync-alt me-1"></i>Refresh
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!--    <div class="col-md-4">-->
+            <!--        <div class="card border-info">-->
+            <!--            <div class="card-header bg-info text-white">-->
+            <!--                <h6 class="mb-0">-->
+            <!--                    <i class="fas fa-clock me-2"></i>Recent Activity-->
+            <!--                    <span class="badge bg-light text-dark ms-2" id="activity-count">0</span>-->
+            <!--                </h6>-->
+            <!--            </div>-->
+            <!--            <div class="card-body dashboard-widget">-->
+            <!--                <div id="recent-activity">-->
+            <!--                    <div class="text-center text-muted loading-skeleton" style="height: 60px; border-radius: 5px;">-->
+            <!--                        <div class="d-flex align-items-center justify-content-center h-100">-->
+            <!--                            <i class="fas fa-spinner fa-spin me-2"></i> Loading...-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                </div>-->
+            <!--            </div>-->
+            <!--            <div class="card-footer text-center">-->
+            <!--                <button class="btn btn-info btn-sm" onclick="loadRecentActivity()">-->
+            <!--                    <i class="fas fa-sync-alt me-1"></i>Refresh-->
+            <!--                </button>-->
+            <!--            </div>-->
+            <!--        </div>-->
+            <!--    </div>-->
+            <!--</div>-->
 
         </div>
     </div>
@@ -519,7 +507,6 @@
                                                 </div>
                                             </div>
                                             <div>
-                                                <h6 class="mb-0">${data.name || 'Unknown User'}</h6>
                                                 <small class="text-muted">${data.email || ''}</small>
                                             </div>
                                         </div>
@@ -569,24 +556,6 @@
                                         'pending': 'secondary'
                                     };
                                     return `<span class="badge bg-${statusColors[data] || 'secondary'} payway-status-badge">${data}</span>`;
-                                }
-                            },
-                            {
-                                data: 'trial_ends_at',
-                                name: 'trial_ends_at',
-                                render: function(data, type, row) {
-                                    if (!data) return '<span class="text-muted">No trial</span>';
-                                    const date = new Date(data);
-                                    const now = new Date();
-                                    const isExpired = date < now;
-                                    const daysLeft = Math.ceil((date - now) / (1000 * 60 * 60 * 24));
-
-                                    return `
-                                        <span class="badge bg-${isExpired ? 'warning' : 'info'}">
-                                            ${date.toLocaleDateString()}
-                                            ${!isExpired ? `<br><small>${daysLeft} days left</small>` : '<br><small>Expired</small>'}
-                                        </span>
-                                    `;
                                 }
                             },
                             {
@@ -1043,43 +1012,43 @@
                 }
 
                 // Dashboard Functions
-                async function updateStats() {
-                    try {
-                        const response = await fetch(routes.stats);
-                        const data = await response.json();
+                // async function updateStats() {
+                //     try {
+                //         const response = await fetch(routes.stats);
+                //         const data = await response.json();
 
-                        console.log(data);
+                //         console.log(data);
 
-                        if (data.success) {
-                            // Update subscription counts
-                            $('#total-subscriptions').text(data.data.total || 0);
-                            $('#active-subscriptions').text(data.data.active || 0);
-                            $('#inactive-subscriptions').text(data.data.inactive || 0);
-                            $('#trial-subscriptions').text(data.data.on_trial || 0);
-                            $('#expired-subscriptions').text(data.data.expired || 0);
-                            $('#canceled-subscriptions').text(data.data.canceled || 0);
+                //         if (data.success) {
+                //             // Update subscription counts
+                //             $('#total-subscriptions').text(data.data.total || 0);
+                //             $('#active-subscriptions').text(data.data.active || 0);
+                //             $('#inactive-subscriptions').text(data.data.inactive || 0);
+                //             $('#trial-subscriptions').text(data.data.on_trial || 0);
+                //             $('#expired-subscriptions').text(data.data.expired || 0);
+                //             $('#canceled-subscriptions').text(data.data.canceled || 0);
 
-                            console.log('Monthly Revenue: ');
-                            console.log(data.data.monthly_revenue);
+                //             console.log('Monthly Revenue: ');
+                //             console.log(data.data.monthly_revenue);
 
-                            // Update revenue stats
-                            $('#monthly-revenue').text('$' + parseFloat(data.data.monthly_revenue || 0).toLocaleString('en-AU', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            }));
-                            $('#yearly-revenue').text('$' + parseFloat(data.data.yearly_revenue || 0).toLocaleString('en-AU', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            }));
-                            $('#total-active-value').text('$' + parseFloat(data.data.total_active_value || 0).toLocaleString('en-AU', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            }));
-                        }
-                    } catch (error) {
-                        console.error('Failed to update stats:', error);
-                    }
-                }
+                //             // Update revenue stats
+                //             $('#monthly-revenue').text('$' + parseFloat(data.data.monthly_revenue || 0).toLocaleString('en-AU', {
+                //                 minimumFractionDigits: 2,
+                //                 maximumFractionDigits: 2
+                //             }));
+                //             $('#yearly-revenue').text('$' + parseFloat(data.data.yearly_revenue || 0).toLocaleString('en-AU', {
+                //                 minimumFractionDigits: 2,
+                //                 maximumFractionDigits: 2
+                //             }));
+                //             $('#total-active-value').text('$' + parseFloat(data.data.total_active_value || 0).toLocaleString('en-AU', {
+                //                 minimumFractionDigits: 2,
+                //                 maximumFractionDigits: 2
+                //             }));
+                //         }
+                //     } catch (error) {
+                //         console.error('Failed to update stats:', error);
+                //     }
+                // }
 
                 async function loadExpiringSubscriptions() {
                     try {

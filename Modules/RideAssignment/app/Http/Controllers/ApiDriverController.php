@@ -10,9 +10,13 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Modules\RideAssignment\app\Models\Ride;
+use App\Traits\Upload;
+use Illuminate\Support\Facades\Validator;
 
 class ApiDriverController extends Controller
 {
+    
+    use Upload;
     // Driver Schedule API - Get all upcoming schedule grouped by date
     public function schedule()
     {
@@ -102,10 +106,8 @@ class ApiDriverController extends Controller
     public function updateRideStatus(Request $request, $rideId)
     {
         $request->validate([
-            'status' => 'required|in:in_progress,arrive_home,start_ride,completed,cancelled'
+            'status' => 'required|in:going_to_pickup,arrived_at_pickup,in_progress,completed,cancelled'
         ]);
-
-        return 'test';
 
         $driver = Auth::user();
 
@@ -151,7 +153,7 @@ class ApiDriverController extends Controller
 
         // Create notification messages based on status
         $notifications = [
-            'in_progress' => [
+            'going_to_pickup' => [
                 'title' => 'Driver is on the way',
                 'body' => "{$driver->name} is heading to pickup location"
             ],
@@ -251,6 +253,54 @@ class ApiDriverController extends Controller
             'success' => true,
             'message' => 'Notification marked as read'
         ]);
+    }
+    
+    public function uploadPhoto(Request $request, $rideId)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'photo'     => 'nullable|image',
+                'end_pic'   => 'nullable|image',
+                ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $ride = Ride::findOrFail($rideId);
+            $data = [];
+        
+            if($request->file('photo'))
+            {
+                $data['selfie'] = $this->uploadFile($request->file('photo'), 'ride/selfie');
+            }
+            
+            if($request->file('end_pic'))
+            {
+                $data['end_pic'] = $this->uploadFile($request->file('end_pic'), 'ride/end_pic');
+            }
+        
+            $ride->update($data);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Photo uploaded successfully',
+                'data' => [
+                    'ride' => $ride,
+                ],
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload photo',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     // Get driver dashboard stats
