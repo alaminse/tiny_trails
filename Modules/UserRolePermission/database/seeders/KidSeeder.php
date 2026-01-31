@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\UserRolePermission\database\Seeders;
+namespace Modules\UserRolePermission\database\seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\UserRolePermission\App\Models\Kid;

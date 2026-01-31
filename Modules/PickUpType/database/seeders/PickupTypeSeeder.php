@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\PickUpType\Database\Seeders;
+namespace Modules\PickUpType\database\seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;

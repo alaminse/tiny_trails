@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\LocationManagement\database\Seeders;
+namespace Modules\LocationManagement\database\seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;

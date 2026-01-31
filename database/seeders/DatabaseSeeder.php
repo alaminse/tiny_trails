@@ -1,21 +1,21 @@
 <?php
 
-namespace Database\Seeders;
+namespace database\seeders;
 
 use Illuminate\Database\Seeder;
-use Database\Seeders\RoleSeeder;
-use Database\Seeders\UserSeeder;
-use Database\Seeders\LocationSeeder;
-use Database\Seeders\PermissionSeeder;
-use Modules\Subscription\database\Seeders\PlanSeeder;
-use Modules\RideAssignment\database\Seeders\RideSeeder;
-use Modules\PickUpType\Database\Seeders\PickupTypeSeeder;
-use Modules\UserRolePermission\database\Seeders\KidSeeder;
-use Modules\LocationManagement\database\Seeders\CitySeeder;
-use Modules\LocationManagement\database\Seeders\StateSeeder;
-use Modules\RideAssignment\database\Seeders\RideAssignSeeder;
-use Modules\Subscription\database\Seeders\SubscriptionSeeder;
-use Modules\UserRolePermission\database\Seeders\DriverSeeder;
+use database\seeders\RoleSeeder;
+use database\seeders\UserSeeder;
+use database\seeders\LocationSeeder;
+use database\seeders\PermissionSeeder;
+use Modules\Subscription\database\seeders\PlanSeeder;
+use Modules\RideAssignment\database\seeders\RideSeeder;
+use Modules\PickUpType\database\seeders\PickupTypeSeeder;
+use Modules\UserRolePermission\database\seeders\KidSeeder;
+use Modules\LocationManagement\database\seeders\CitySeeder;
+use Modules\LocationManagement\database\seeders\StateSeeder;
+use Modules\RideAssignment\database\seeders\RideAssignSeeder;
+use Modules\Subscription\database\seeders\SubscriptionSeeder;
+use Modules\UserRolePermission\database\seeders\DriverSeeder;
 use Modules\LocationManagement\database\seeders\CountrySeeder;
 
 class DatabaseSeeder extends Seeder

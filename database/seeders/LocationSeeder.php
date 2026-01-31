@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;
+namespace database\seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Subscription\app\Models\Location;
