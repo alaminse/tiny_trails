@@ -9,7 +9,7 @@ use Modules\UserRolePermission\app\Models\Kid;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Subscription\database\Factories\SubscriptionFactory;
+use Modules\Subscription\database\factories\SubscriptionFactory;
 
 class Subscription extends Model
 {

@@ -6,9 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\UserRolePermission\database\Factories\DriverFactory;
-
-// use Modules\UserRolePermission\Database\Factories\DriverFactory;
+use Modules\UserRolePermission\database\factories\DriverFactory;
 
 class Driver extends Model
 {

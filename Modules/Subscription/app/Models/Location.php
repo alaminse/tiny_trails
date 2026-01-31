@@ -4,7 +4,7 @@ namespace Modules\Subscription\app\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Subscription\Database\Factories\LocationFactory;
+use Modules\Subscription\database\factories\LocationFactory;
 
 class Location extends Model
 {

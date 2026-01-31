@@ -10,7 +10,7 @@ use Modules\PickUpType\app\Models\PickupType;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Subscription\Database\Factories\PlanFactory;
+use Modules\Subscription\database\factories\PlanFactory;
 
 class Plan extends Model
 {

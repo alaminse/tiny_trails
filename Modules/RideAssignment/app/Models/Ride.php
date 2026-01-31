@@ -9,7 +9,7 @@ use Modules\Subscription\app\Models\Location;
 use Modules\UserRolePermission\app\Models\Kid;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\RideAssignment\database\Factories\RideFactory;
+use Modules\RideAssignment\database\factories\RideFactory;
 
 class Ride extends Model
 {

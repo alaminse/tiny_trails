@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-// use Modules\LocationManagement\Database\Factories\CountryFactory;
-
 class State extends Model
 {
     use HasFactory, SoftDeletes;

@@ -5,7 +5,7 @@ namespace Modules\PickUpType\app\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\PickUpType\database\Factories\PickupTypeFactory;
+use Modules\PickUpType\database\factories\PickupTypeFactory;
 
 class PickupType extends Model
 {
