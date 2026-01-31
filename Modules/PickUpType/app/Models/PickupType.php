@@ -3,16 +3,29 @@
 namespace Modules\PickUpType\app\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\PickUpType\database\Factories\PickupTypeFactory;
 
 class PickupType extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $fillable = [
+        'name', 'amount', 'min_notice_minutes', 'requires_instant_notification', 'status'
+    ];
 
-    protected $guarded =['id'];
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'min_notice_minutes' => 'integer',
+        'requires_instant_notification' => 'boolean',
+    ];
 
+
+    protected static function newFactory()
+    {
+        return PickupTypeFactory::new();
+    }
     // Scopes
     public function scopeActive($query)
     {

@@ -4,12 +4,12 @@ namespace Modules\RideAssignment\app\Models;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Subscription\app\Models\Location;
-use Modules\UserRolePermission\app\Models\Driver;
 use Modules\UserRolePermission\app\Models\Kid;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\RideAssignment\database\Factories\RideFactory;
 
 class Ride extends Model
 {
@@ -45,11 +45,16 @@ class Ride extends Model
         'end_at' => 'datetime'
     ];
 
+    protected static function newFactory()
+    {
+        return RideFactory::new();
+    }
+
     public function rideAssign()
     {
         return $this->belongsTo(RideAssign::class);
     }
-    
+
     public function kid()
     {
         return $this->belongsTo(Kid::class, 'kid_id');

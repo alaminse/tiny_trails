@@ -12,33 +12,55 @@ return new class extends Migration
         // The subscriptions table links users to plans and stores all billing info.
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
-            // Foreign key to link to the users table
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            // Foreign key to link to the plans table
-            $table->foreignId('plan_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('kid_id')->nullable()->constrained((new Kid())->getTable());
-            $table->foreignId('pickup_location_id')->nullable()->constrained('locations')->onDelete('set null');
-            $table->foreignId('dropoff_location_id')->nullable()->constrained('locations')->onDelete('set null');
 
-            $table->string('name'); // Descriptive name for the subscription, e.g., 'default'
+            // Foreign Keys
+            $table->foreignId('user_id')
+                ->constrained('users')
+                ->onDelete('cascade');
 
-            // PayWay specific fields (updated from Stripe)
-            $table->string('payway_customer_id')->nullable()->index(); // PayWay customer ID
-            $table->string('payway_subscription_id')->nullable()->unique(); // PayWay recurring billing ID
-            $table->string('payway_status'); // The status as reported by PayWay
+            $table->foreignId('plan_id')
+                ->nullable()
+                ->constrained('plans')
+                ->onDelete('set null');
 
-            $table->string('trial_days', 0);
+            $table->foreignId('kid_id')
+                ->nullable()
+                ->constrained('kids')
+                ->onDelete('set null');
+
+            $table->foreignId('pickup_location_id')
+                ->nullable()
+                ->constrained('locations')
+                ->onDelete('set null');
+
+            $table->foreignId('dropoff_location_id')
+                ->nullable()
+                ->constrained('locations')
+                ->onDelete('set null');
+
+            // Subscription Details
+            $table->string('name'); // e.g., 'default'
+
+            // PayWay specific fields
+            $table->string('payway_customer_id')->nullable()->index();
+            $table->string('payway_subscription_id')->nullable()->unique();
+            $table->string('payway_status');
+
+            // Trial & Subscription Period
+            $table->unsignedInteger('trial_days')->default(0);
             $table->timestamp('trial_ends_at')->nullable();
-            $table->timestamp('ends_at')->nullable(); // The end of the current billing period
-            $table->timestamp('canceled_at')->nullable(); // When the user canceled the subscription
-            $table->text('cancellation_reason')->nullable(); // Reason for cancellation
+            $table->timestamp('ends_at')->nullable();
+            $table->timestamp('canceled_at')->nullable();
+            $table->text('cancellation_reason')->nullable();
+
+            // Status
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->enum('assign_ride', ['assigned', 'unassigned'])->default('unassigned');
 
-            // Card details (optional, but useful for user-facing info)
+            // Card details
             $table->string('card_brand')->nullable();
             $table->string('card_last_four', 4)->nullable();
-            $table->string('card_expiration')->nullable(); // Format: MM/YY
+            $table->string('card_expiration')->nullable(); // MM/YY
 
             $table->timestamps();
             $table->softDeletes();
@@ -49,6 +71,7 @@ return new class extends Migration
             $table->index(['payway_status', 'status']);
             $table->index('trial_ends_at');
             $table->index('ends_at');
+            $table->index('kid_id');
         });
     }
 

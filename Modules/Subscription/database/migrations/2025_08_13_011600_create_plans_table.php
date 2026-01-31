@@ -9,27 +9,40 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // The main plans table with billing and feature attributes.
         Schema::create('plans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pickup_type_id')->constrained((new PickupType())->getTable());
+
+            // Foreign Key
+            $table->foreignId('pickup_type_id')
+                ->constrained('pickup_types')
+                ->onDelete('restrict');
+
+            // Plan Details
             $table->string('name')->unique();
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->decimal('price', 10, 2)->default(0); // Changed to decimal for better precision
-            $table->decimal('sell_price', 10, 2)->default(0); // Changed to decimal for better precision
+
+            // Pricing
+            $table->decimal('price', 10, 2)->default(0);
+            $table->decimal('sell_price', 10, 2)->default(0);
             $table->string('currency', 3)->default('AUD');
-            $table->string('interval'); // e.g., 'month', 'year', 'week', 'day'
+
+            // Billing Interval
+            $table->string('interval');
             $table->unsignedSmallInteger('interval_count')->default(1);
-            $table->json('features')->nullable(); // A JSON column for a list of features
+
+            // Features & Status
+            $table->json('features')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->unsignedInteger('sort_order')->default(0);
+
             $table->timestamps();
             $table->softDeletes();
 
-            // Indexes for better performance
+            // Indexes
             $table->index(['status', 'sort_order']);
             $table->index('pickup_type_id');
+            $table->index('interval');
         });
     }
 

@@ -2,8 +2,9 @@
 
 namespace Modules\Subscription\app\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\Subscription\Database\Factories\LocationFactory;
 
 class Location extends Model
 {
@@ -26,6 +27,11 @@ class Location extends Model
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
     ];
+
+    protected static function newFactory()
+    {
+        return LocationFactory::new();
+    }
 
     // Subscription এর সাথে relationship
     public function pickupSubscriptions()

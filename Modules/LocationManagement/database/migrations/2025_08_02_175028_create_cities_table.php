@@ -14,11 +14,16 @@ return new class extends Migration
     {
         Schema::create('cities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('state_id')->constrained((new State())->getTable());
+            $table->foreignId('state_id')
+                ->constrained('states')
+                ->onDelete('cascade');
             $table->string('name');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index('state_id');
+            $table->index('status');
         });
     }
 

@@ -14,11 +14,16 @@ return new class extends Migration
     {
         Schema::create('states', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('country_id')->constrained((new Country())->getTable());
+            $table->foreignId('country_id')
+                ->constrained('countries')
+                ->onDelete('cascade');
             $table->string('name');
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index('country_id');
+            $table->index('is_active');
         });
     }
 

@@ -3,13 +3,12 @@
 namespace Modules\UserRolePermission\App\Models;
 
 use App\Models\User;
-use Database\Factories\KidFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\UserRolePermission\database\Factories\KidFactory;
 
-// use Modules\UserRolePermission\Database\Factories\KidFactory;
 
 class Kid extends Model
 {

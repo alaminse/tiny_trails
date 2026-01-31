@@ -14,7 +14,7 @@ class CityController extends Controller
 {
     public function index()
     {
-        $states = State::where('status', 'active')->get();
+        $states = City::where('status', 'active')->get();
         return view('locationmanagement::city', compact('states'));
     }
 

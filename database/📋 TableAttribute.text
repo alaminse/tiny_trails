@@ -1,0 +1,383 @@
+📋 Table: cache
+============================================================
+• key (varchar)
+• value (mediumtext)
+• expiration (int)
+
+📋 Table: cache_locks
+============================================================
+• key (varchar)
+• owner (varchar)
+• expiration (int)
+
+📋 Table: cities
+============================================================
+• id (bigint)
+• state_id (bigint)
+• name (varchar)
+• status (enum)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: countries
+============================================================
+• id (bigint)
+• name (varchar)
+• status (enum)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: driver_commissions
+============================================================
+• id (bigint)
+• driver_id (bigint)
+• ride_id (bigint)
+• commission_amount (decimal)
+• platform_fee (decimal)
+• total_fare (decimal)
+• payment_status (enum)
+• paid_at (timestamp)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: drivers
+============================================================
+• id (bigint)
+• user_id (bigint)
+• driving_license_number (varchar)
+• driving_license_expiry (date)
+• driving_license_image (varchar)
+• car_model (varchar)
+• car_make (varchar)
+• car_year (year)
+• car_color (varchar)
+• car_plate_number (varchar)
+• car_image (varchar)
+• face_embedding (text)
+• face_image (varchar)
+• is_verified (tinyint)
+• device_token (varchar)
+• status (enum)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: failed_jobs
+============================================================
+• id (bigint)
+• uuid (varchar)
+• connection (text)
+• queue (text)
+• payload (longtext)
+• exception (longtext)
+• failed_at (timestamp)
+
+📋 Table: job_batches
+============================================================
+• id (varchar)
+• name (varchar)
+• total_jobs (int)
+• pending_jobs (int)
+• failed_jobs (int)
+• failed_job_ids (longtext)
+• options (mediumtext)
+• cancelled_at (int)
+• created_at (int)
+• finished_at (int)
+
+📋 Table: jobs
+============================================================
+• id (bigint)
+• queue (varchar)
+• payload (longtext)
+• attempts (tinyint)
+• reserved_at (int)
+• available_at (int)
+• created_at (int)
+
+📋 Table: kids
+============================================================
+• id (bigint)
+• user_id (bigint)
+• first_name (varchar)
+• last_name (varchar)
+• dob (date)
+• gender (enum)
+• height_cm (decimal)
+• weight_kg (decimal)
+• photo (varchar)
+• school_name (varchar)
+• school_address (varchar)
+• emergency_contact (varchar)
+• kit_imei (varchar)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: locations
+============================================================
+• id (bigint)
+• address (varchar)
+• latitude (decimal)
+• longitude (decimal)
+• street1 (varchar)
+• street2 (varchar)
+• city (varchar)
+• state (varchar)
+• postal_code (varchar)
+• country_code (varchar)
+• type (enum)
+• created_at (timestamp)
+• updated_at (timestamp)
+
+📋 Table: migrations
+============================================================
+• id (int)
+• migration (varchar)
+• batch (int)
+
+📋 Table: model_has_permissions
+============================================================
+• permission_id (bigint)
+• model_type (varchar)
+• model_id (bigint)
+
+📋 Table: model_has_roles
+============================================================
+• role_id (bigint)
+• model_type (varchar)
+• model_id (bigint)
+
+📋 Table: notifications
+============================================================
+• id (bigint)
+• user_id (bigint)
+• title (varchar)
+• message (text)
+• data (longtext)
+• type (varchar)
+• read_at (timestamp)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: password_reset_tokens
+============================================================
+• email (varchar)
+• token (varchar)
+• created_at (timestamp)
+
+📋 Table: payway_transactions
+============================================================
+• id (bigint)
+• user_id (bigint)
+• subscription_id (bigint)
+• payway_transaction_id (varchar)
+• payway_customer_id (varchar)
+• transaction_type (varchar)
+• amount (decimal)
+• currency (varchar)
+• status (varchar)
+• response_code (varchar)
+• response_text (text)
+• gateway_response (longtext)
+• order_number (varchar)
+• receipt_number (varchar)
+• principal_amount (decimal)
+• surcharge_amount (decimal)
+• processed_at (timestamp)
+• settlement_date (date)
+• created_at (timestamp)
+• updated_at (timestamp)
+
+📋 Table: permissions
+============================================================
+• id (bigint)
+• name (varchar)
+• guard_name (varchar)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: personal_access_tokens
+============================================================
+• id (bigint)
+• tokenable_type (varchar)
+• tokenable_id (bigint)
+• name (text)
+• token (varchar)
+• abilities (text)
+• last_used_at (timestamp)
+• expires_at (timestamp)
+• created_at (timestamp)
+• updated_at (timestamp)
+
+📋 Table: pickup_types
+============================================================
+• id (bigint)
+• name (varchar)
+• amount (decimal)
+• min_notice_minutes (int)
+• requires_instant_notification (tinyint)
+• status (enum)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: plans
+============================================================
+• id (bigint)
+• pickup_type_id (bigint)
+• name (varchar)
+• slug (varchar)
+• description (text)
+• price (decimal)
+• sell_price (decimal)
+• currency (varchar)
+• interval (varchar)
+• interval_count (smallint)
+• features (longtext)
+• status (enum)
+• sort_order (int)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: ride_assigns
+============================================================
+• id (bigint)
+• subscription_id (bigint)
+• fare (decimal)
+• driver_commission (decimal)
+• platform_commission (decimal)
+• service_type (enum)
+• total_days (int)
+• selected_dates (longtext)
+• status (enum)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: rides
+============================================================
+• id (bigint)
+• ride_assign_id (bigint)
+• driver_id (bigint)
+• parent_id (bigint)
+• pickup_location_id (bigint)
+• dropoff_location_id (bigint)
+• ride_type (enum)
+• commission (decimal)
+• date (date)
+• pickup (time)
+• drop_off (time)
+• end_at (datetime)
+• face_verification1 (varchar)
+• selfie (varchar)
+• face_verification2 (varchar)
+• end_pic (varchar)
+• status (enum)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: role_has_permissions
+============================================================
+• permission_id (bigint)
+• role_id (bigint)
+
+📋 Table: roles
+============================================================
+• id (bigint)
+• name (varchar)
+• guard_name (varchar)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: sessions
+============================================================
+• id (varchar)
+• user_id (bigint)
+• ip_address (varchar)
+• user_agent (text)
+• payload (longtext)
+• last_activity (int)
+
+📋 Table: states
+============================================================
+• id (bigint)
+• country_id (bigint)
+• name (varchar)
+• is_active (tinyint)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: subscriptions
+============================================================
+• id (bigint)
+• user_id (bigint)
+• plan_id (bigint)
+• kid_id (bigint)
+• pickup_location_id (bigint)
+• dropoff_location_id (bigint)
+• name (varchar)
+• payway_customer_id (varchar)
+• payway_subscription_id (varchar)
+• payway_status (varchar)
+• trial_days (int)
+• trial_ends_at (timestamp)
+• ends_at (timestamp)
+• canceled_at (timestamp)
+• cancellation_reason (text)
+• status (enum)
+• assign_ride (enum)
+• card_brand (varchar)
+• card_last_four (varchar)
+• card_expiration (varchar)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+📋 Table: users
+============================================================
+• id (bigint)
+• first_name (varchar)
+• last_name (varchar)
+• email (varchar)
+• password (varchar)
+• phone (varchar)
+• dob (date)
+• gender (enum)
+• height_cm (decimal)
+• weight_kg (decimal)
+• photo (varchar)
+• address (text)
+• country_id (varchar)
+• state_id (varchar)
+• city_id (varchar)
+• fcm_token (varchar)
+• status (enum)
+• email_verified_at (timestamp)
+• remember_token (varchar)
+• created_at (timestamp)
+• updated_at (timestamp)
+• deleted_at (timestamp)
+
+
+Comment #1: Parent Verification & Registration Security (Pending)
+
+
+
+Goal: Implement robust, multi-factor verification to ensure account legitimacy (not a bot).
+
+Recommended Terminology: Frame this as a "Multi-Factor Account Verification" step.
+Implementation Flow:
+Primary Verification: Collect and validate the parent's mobile number via a 6-digit SMS code.
+Secondary Verification: Collect and validate the email address via a 6-digit email code.
+Security PIN Setup: Prompt the user to set a 4-digit security PIN for future identity checks (e.g., password resets).
+

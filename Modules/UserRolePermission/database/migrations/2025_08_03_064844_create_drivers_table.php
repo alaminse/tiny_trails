@@ -12,14 +12,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('drivers', function (Blueprint $table) {
+        Schema::create('drivers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
+            // Foreign Key
+            $table->foreignId('user_id')
+                ->constrained('users')
+                ->onDelete('cascade');
+
+            // Driving License Details
             $table->string('driving_license_number')->nullable();
             $table->date('driving_license_expiry')->nullable();
             $table->string('driving_license_image')->nullable();
 
+            // Car Details
             $table->string('car_model')->nullable();
             $table->string('car_make')->nullable();
             $table->year('car_year')->nullable();
@@ -27,15 +33,24 @@ return new class extends Migration
             $table->string('car_plate_number')->nullable();
             $table->string('car_image')->nullable();
 
+            // Face Recognition
             $table->text('face_embedding')->nullable();
-            $table->string('faceImage')->nullable();
+            $table->string('face_image')->nullable();
+
+            // Verification & Status
             $table->boolean('is_verified')->default(false);
             $table->string('device_token')->nullable();
-
             $table->enum('status', ['active', 'inactive'])->default('active');
 
             $table->timestamps();
             $table->softDeletes();
+
+            // Indexes for better performance
+            $table->index('user_id');
+            $table->index('status');
+            $table->index('is_verified');
+            $table->index('driving_license_number');
+            $table->index('car_plate_number');
         });
     }
 

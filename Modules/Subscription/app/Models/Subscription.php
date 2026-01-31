@@ -2,13 +2,14 @@
 
 namespace Modules\Subscription\app\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\UserRolePermission\app\Models\Kid;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\Subscription\database\Factories\SubscriptionFactory;
 
 class Subscription extends Model
 {
@@ -47,6 +48,12 @@ class Subscription extends Model
         'updated_at',
         'deleted_at',
     ];
+
+    protected static function newFactory()
+    {
+        // Laravel কে বলে দিন যে এই মডেলের জন্য কোন ফ্যাক্টরি ব্যবহার করতে হবে
+        return SubscriptionFactory::new();
+    }
 
     /**
      * Get the user that owns the subscription

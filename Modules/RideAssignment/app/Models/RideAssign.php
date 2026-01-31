@@ -2,10 +2,12 @@
 
 namespace Modules\RideAssignment\app\Models;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\Subscription\app\Models\Subscription;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\RideAssignment\database\Factories\RideAssignFactory;
 
 class RideAssign extends Model
 {
@@ -30,7 +32,12 @@ class RideAssign extends Model
         'platform_commission' => 'decimal:2',
         'total_days' => 'integer'
     ];
-    
+
+    protected static function newFactory()
+    {
+        return RideAssignFactory::new();
+    }
+
     /**
      * Rides relationship
      */
