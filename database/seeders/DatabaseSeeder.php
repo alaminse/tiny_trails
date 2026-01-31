@@ -1,12 +1,12 @@
 <?php
 
-namespace database\seeders;
+namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use database\seeders\RoleSeeder;
-use database\seeders\UserSeeder;
-use database\seeders\LocationSeeder;
-use database\seeders\PermissionSeeder;
+use Database\Seeders\RoleSeeder;
+use Database\Seeders\UserSeeder;
+use Database\Seeders\LocationSeeder;
+use Database\Seeders\PermissionSeeder;
 use Modules\Subscription\database\seeders\PlanSeeder;
 use Modules\RideAssignment\database\seeders\RideSeeder;
 use Modules\PickUpType\database\seeders\PickupTypeSeeder;
