@@ -16,7 +16,7 @@ use Modules\LocationManagement\database\Seeders\StateSeeder;
 use Modules\RideAssignment\database\Seeders\RideAssignSeeder;
 use Modules\Subscription\database\Seeders\SubscriptionSeeder;
 use Modules\UserRolePermission\database\Seeders\DriverSeeder;
-use Modules\LocationManagement\database\Seeders\CountrySeeder;
+use Modules\LocationManagement\database\seeders\CountrySeeder;
 
 class DatabaseSeeder extends Seeder
 {
