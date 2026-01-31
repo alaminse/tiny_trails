@@ -3,7 +3,7 @@
 namespace Modules\UserRolePermission\database\Factories;
 
 use App\Models\User;
-use Modules\UserRolePermission\App\Models\Kid;
+use Modules\UserRolePermission\app\Models\Kid;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class KidFactory extends Factory

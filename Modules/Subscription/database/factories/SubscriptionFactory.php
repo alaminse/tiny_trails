@@ -5,7 +5,7 @@ namespace Modules\Subscription\database\Factories;
 use App\Models\User;
 use Modules\Subscription\app\Models\Plan;
 use Modules\Subscription\app\Models\Location;
-use Modules\UserRolePermission\App\Models\Kid;
+use Modules\UserRolePermission\app\Models\Kid;
 use Modules\Subscription\app\Models\Subscription;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

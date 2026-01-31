@@ -3,7 +3,7 @@
 namespace Modules\Subscription\Database\Factories;
 
 use Illuminate\Support\Str;
-use Modules\Subscription\App\Models\Plan;
+use Modules\Subscription\app\Models\Plan;
 use Modules\PickUpType\app\Models\PickupType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

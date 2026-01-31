@@ -3,7 +3,7 @@
 namespace Modules\UserRolePermission\database\seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\UserRolePermission\App\Models\Kid;
+use Modules\UserRolePermission\app\Models\Kid;
 
 class KidSeeder extends Seeder
 {
