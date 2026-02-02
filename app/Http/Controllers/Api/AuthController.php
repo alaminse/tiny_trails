@@ -24,7 +24,7 @@ use Illuminate\Auth\Events\PasswordReset;
 class AuthController extends Controller
 {
     use Upload;
-    
+
     public function getCountries()
     {
         try {
@@ -110,7 +110,7 @@ class AuthController extends Controller
             ], 500);
         }
     }
-    
+
     public function register(Request $request)
     {
         try {
@@ -141,22 +141,22 @@ class AuthController extends Controller
                     'errors' => $validator->errors(),
                 ], 422);
             }
-            
+
             // ✅ validated data
             $validated = $validator->validated();
-            
+
             DB::beginTransaction();
-            
+
             if ($request->file('photo')) {
                 $userData['photo'] = $this->uploadFile($request->file('photo'), 'parent/profile');
                 if ($user->photo) {
                     $this->deleteFile($user->photo);
                 }
             }
-            
+
             // Hash password
             $validated['password'] = Hash::make($validated['password']);
-            
+
             // Set default status if not provided
             $validated['status'] = $validated['status'] ?? 'active';
 
@@ -182,7 +182,7 @@ class AuthController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Registration failed',
@@ -295,17 +295,17 @@ class AuthController extends Controller
     {
         // try {
             $user = auth()->user();
-            
+
             // Get validated data
             $validated = $request->validated();
-            
+
             // Update basic fields
             $basicFields = [
-                'first_name', 'last_name', 'email', 'phone', 
+                'first_name', 'last_name', 'email', 'phone',
                 'dob', 'gender', 'height_cm', 'weight_kg',
                 'address', 'country_id', 'state_id', 'city_id'
             ];
-            
+
             foreach ($basicFields as $field) {
                 if (isset($validated[$field])) {
                     $user->$field = $validated[$field];
@@ -321,10 +321,10 @@ class AuthController extends Controller
             if ($user->hasRole('driver')) {
                 $driverFields = [
                     'driving_license_number', 'driving_license_expiry',
-                    'car_model', 'car_make', 'car_year', 
+                    'car_model', 'car_make', 'car_year',
                     'car_color', 'car_plate_number'
                 ];
-                
+
                 foreach ($driverFields as $field) {
                     if (isset($validated[$field])) {
                         $user->$field = $validated[$field];
@@ -354,7 +354,7 @@ class AuthController extends Controller
                         $this->deleteFile($user->car_image);
                     }
                 }
-                
+
                 if ($request->file('face_image')) {
                     $userData['face_image'] = $this->uploadFile($request->file('face_image'), 'driver');
                     if ($user->face_image) {
@@ -381,13 +381,13 @@ class AuthController extends Controller
         //     ], 500);
         // }
     }
-    
+
     public function forgotPassword(Request $request)
 {
     $request->validate([
         'email' => 'required|email|exists:users,email',
     ]);
-    
+
     try {
         $status = Password::sendResetLink($request->only('email'));
 
@@ -405,10 +405,10 @@ class AuthController extends Controller
             'success' => false,
             'message' => 'Failed to send reset link: ' . $status,
         ], 500);
-        
+
     } catch (\Exception $e) {
         \Log::error('Password reset error', ['error' => $e->getMessage()]);
-        
+
         return response()->json([
             'success' => false,
             'message' => $e->getMessage(),

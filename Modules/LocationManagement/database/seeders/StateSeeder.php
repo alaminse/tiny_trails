@@ -26,14 +26,14 @@ class StateSeeder extends Seeder
         }
 
         $states = [
-            ['name' => 'New South Wales', 'country_id' => $australiaId, 'is_active' => 1],
-            ['name' => 'Victoria', 'country_id' => $australiaId, 'is_active' => 1],
-            ['name' => 'Queensland', 'country_id' => $australiaId, 'is_active' => 1],
-            ['name' => 'South Australia', 'country_id' => $australiaId, 'is_active' => 1],
-            ['name' => 'Western Australia', 'country_id' => $australiaId, 'is_active' => 1],
-            ['name' => 'Tasmania', 'country_id' => $australiaId, 'is_active' => 1],
-            ['name' => 'Australian Capital Territory', 'country_id' => $australiaId, 'is_active' => 1],
-            ['name' => 'Northern Territory', 'country_id' => $australiaId, 'is_active' => 1],
+            ['name' => 'New South Wales', 'country_id' => $australiaId],
+            ['name' => 'Victoria', 'country_id' => $australiaId],
+            ['name' => 'Queensland', 'country_id' => $australiaId],
+            ['name' => 'South Australia', 'country_id' => $australiaId],
+            ['name' => 'Western Australia', 'country_id' => $australiaId],
+            ['name' => 'Tasmania', 'country_id' => $australiaId],
+            ['name' => 'Australian Capital Territory', 'country_id' => $australiaId],
+            ['name' => 'Northern Territory', 'country_id' => $australiaId],
         ];
 
         foreach ($states as $state) {

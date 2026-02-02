@@ -14,8 +14,8 @@ class StateController extends Controller
 {
     public function index()
     {
-        $countries = Country::where('status', 'active')->get();
-        return view('locationmanagement::state', compact('countries'));
+        $states = State::get();
+        return view('locationmanagement::state', compact('states'));
     }
 
     public function store(StateRequest $request)

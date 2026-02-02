@@ -17,12 +17,11 @@ return new class extends Migration
                 ->constrained('countries')
                 ->onDelete('cascade');
             $table->string('name');
-            $table->boolean('is_active')->default(true);
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
             $table->softDeletes();
 
             $table->index('country_id');
-            $table->index('is_active');
         });
     }
 

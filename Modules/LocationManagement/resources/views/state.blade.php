@@ -69,8 +69,8 @@
                     <div class="form-group mb-3">
                         <label for="country_id">Select Country</label>
                         <select name="country_id" id="state_country_id" class="form-control select2 select2-danger" data-dropdown-css-class="select2-danger" style="width: 100%;" required>
-                            @foreach ($countries as $country)
-                                <option value="{{ $country->id }}">{{ ucfirst($country->name) }}</option>
+                            @foreach ($states as $state)
+                                <option value="{{ $state->id }}">{{ ucfirst($state->name) }}</option>
                             @endforeach
                         </select>
                     </div>
