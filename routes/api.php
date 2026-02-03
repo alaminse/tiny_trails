@@ -29,6 +29,7 @@ Route::prefix('auth')->group(function () {
     Route::get('get/countries', [AuthController::class, 'getCountries']);
     Route::get('get/states', [AuthController::class, 'allStates']);
     Route::get('get/cities', [AuthController::class, 'allCities']);
+    Route::get('get/state/{stateId}', [AuthController::class, 'getStateByCity']);
     Route::get('get/states/{country_id}', [AuthController::class, 'getStates']);
     Route::get('get/cities/{city_id}', [AuthController::class, 'getCities']);
 

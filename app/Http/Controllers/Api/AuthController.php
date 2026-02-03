@@ -46,7 +46,7 @@ class AuthController extends Controller
     public function allStates()
     {
         try {
-            $states = State::select('id', 'name')
+            $states = State::select('id', 'name', 'country_id')
                 ->where('status', 'active')
                 ->get();
 
@@ -68,7 +68,7 @@ class AuthController extends Controller
     public function allCities()
     {
         try {
-            $cities = City::select('id', 'name')
+            $cities = City::select('id', 'name', 'state_id')
                 ->where('status', 'active')
                 ->get();
 
@@ -86,6 +86,27 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+    public function getStateByCity($stateId)
+    {
+        try {
+            $cities = State::find($stateId);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cities retrieved successfully',
+                'data' => $cities
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve cities',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     public function getStates($country_id)
     {
