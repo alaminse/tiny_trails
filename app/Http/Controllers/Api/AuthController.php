@@ -305,7 +305,8 @@ class AuthController extends Controller
                 'success' => false,
                 'message' => 'Account verification is required to login. Please complete the verification process.',
                 'data' => [
-                    'verification_status' => $user->verification_status,
+                    'user'                  => $user,
+                    'verification_status'   => $user->verification_status,
                 ],
             ], 403);
         }
