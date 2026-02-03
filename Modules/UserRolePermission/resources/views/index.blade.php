@@ -72,8 +72,15 @@
                     if (roleValue) {
                         if (roleValue.toLowerCase() === 'driver') {
                             $('#driverFields').slideDown();
+                        } else if (roleValue.toLowerCase() === 'parent') {
+                            $('#driverFields').slideUp();
+                            // Hide weight and height fields for parent
+                            $('#height_cm').closest('.col-md-4').slideUp();
+                            $('#weight_kg').closest('.col-md-4').slideUp();
                         } else {
                             $('#driverFields').slideUp();
+                            $('#height_cm').closest('.col-md-4').slideDown();
+                            $('#weight_kg').closest('.col-md-4').slideDown();
                         }
                     }
                 });

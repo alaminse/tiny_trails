@@ -57,6 +57,11 @@ class User  extends Authenticatable implements CanResetPasswordContract
         ];
     }
 
+    public function verificationCodes()
+    {
+        return $this->morphMany(VerificationCode::class, 'verifiable');
+    }
+
     public function scopeExcludeAuth($query)
     {
         return $query->where('id', '!=', Auth::id());

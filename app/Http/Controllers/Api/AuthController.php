@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\UpdateProfileRequest;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Modules\UserRolePermission\app\Http\Resources\UserResource;
-use Modules\LocationManagement\app\Models\Country;
-use Modules\LocationManagement\app\Models\State;
-use Modules\LocationManagement\app\Models\City;
 use App\Models\User;
 use App\Traits\Upload;
+use Illuminate\Http\Request;
+use App\Models\VerificationCode;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\UpdateProfileRequest;
+use Modules\LocationManagement\app\Models\City;
+use Modules\LocationManagement\app\Models\State;
+use Modules\LocationManagement\app\Models\Country;
+use Modules\UserRolePermission\app\Http\Resources\UserResource;
 
 class AuthController extends Controller
 {
@@ -31,14 +32,14 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Countries retrieved successfully',
-                'data' => $countries
+                'data' => $countries,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve countries',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -53,14 +54,14 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'States retrieved successfully',
-                'data' => $states
+                'data' => $states,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve states',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -75,14 +76,14 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Cities retrieved successfully',
-                'data' => $cities
+                'data' => $cities,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve cities',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -93,38 +94,37 @@ class AuthController extends Controller
             // City find করুন
             $city = City::find($cityId);
 
-            if (!$city) {
+            if (! $city) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'City not found'
+                    'message' => 'City not found',
                 ], 404);
             }
 
             // City থেকে State বের করুন
             $state = State::find($city->state_id);
 
-            if (!$state) {
+            if (! $state) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'State not found for this city'
+                    'message' => 'State not found for this city',
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'message' => 'State retrieved successfully',
-                'data' => $state
+                'data' => $state,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve state',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     public function getStates($country_id)
     {
@@ -139,21 +139,21 @@ class AuthController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'No states found for this country',
-                    'data' => []
+                    'data' => [],
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'message' => 'States retrieved successfully',
-                'data' => $states
+                'data' => $states,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve states',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -171,21 +171,21 @@ class AuthController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'No cities found for this state',
-                    'data' => []
+                    'data' => [],
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Cities retrieved successfully',
-                'data' => $cities
+                'data' => $cities,
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve cities',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -195,21 +195,21 @@ class AuthController extends Controller
         try {
             // ✅ Validation rules
             $validator = Validator::make($request->all(), [
-                'first_name'    => 'required|string|max:255',
-                'last_name'     => 'required|string|max:255',
-                'email'         => 'required|email|unique:users,email',
-                'password'      => 'required|string|min:8|confirmed',
-                'phone'         => 'required|string|max:20|unique:users,phone',
-                'dob'           => 'required|date|before:today',
-                'gender'        => 'required|in:male,female,other',
-                'height_cm'     => 'nullable|numeric|min:0|max:300',
-                'weight_kg'     => 'nullable|numeric|min:0|max:500',
-                'photo'         => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-                'address'       => 'required|string',
-                'country_id'    => 'required|exists:countries,id',
-                'state_id'      => 'required|exists:states,id',
-                'city_id'       => 'required|exists:cities,id',
-                'status'        => 'nullable|in:active,inactive,pending',
+                'first_name' => 'required|string|max:255',
+                'last_name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:8|confirmed',
+                'phone' => 'required|string|max:20|unique:users,phone',
+                'dob' => 'required|date|before:today',
+                'gender' => 'required|in:male,female,other',
+                'height_cm' => 'nullable|numeric|min:0|max:300',
+                'weight_kg' => 'nullable|numeric|min:0|max:500',
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                'address' => 'required|string',
+                'country_id' => 'required|exists:countries,id',
+                'state_id' => 'required|exists:states,id',
+                'city_id' => 'required|exists:cities,id',
+                'status' => 'nullable|in:active,inactive,pending',
             ]);
 
             // ✅ যদি validation fail করে
@@ -255,8 +255,8 @@ class AuthController extends Controller
                 'message' => 'Parent registered successfully',
                 'data' => [
                     'user' => $user->load('roles'),
-                    'token' => $token
-                ]
+                    'token' => $token,
+                ],
             ], 200);
 
         } catch (\Exception $e) {
@@ -265,7 +265,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Registration failed',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -273,8 +273,8 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email'     => 'required|email',
-            'password'  => 'required',
+            'email' => 'required|email',
+            'password' => 'required',
             'fcm_token' => 'nullable|string',
         ]);
 
@@ -282,17 +282,16 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validation errors',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        if (! Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid credentials'
+                'message' => 'Invalid credentials',
             ], 401);
         }
-
 
         $user = Auth::user();
 
@@ -300,7 +299,7 @@ class AuthController extends Controller
         if ($user->status !== 'active') {
             return response()->json([
                 'success' => false,
-                'message' => 'Your account is ' . $user->status
+                'message' => 'Your account is '.$user->status,
             ], 403);
         }
 
@@ -317,9 +316,9 @@ class AuthController extends Controller
             'data' => [
                 'user' => $user,
                 'token' => $token,
-                'role'  => $user->getRoleNames(),
-                'token_type' => 'Bearer'
-            ]
+                'role' => $user->getRoleNames(),
+                'token_type' => 'Bearer',
+            ],
         ]);
     }
 
@@ -329,7 +328,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Logged out successfully'
+            'message' => 'Logged out successfully',
         ]);
     }
 
@@ -338,7 +337,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'data' => $request->user(),
-            'role'  => $request->user()->getRoleNames()
+            'role' => $request->user()->getRoleNames(),
         ]);
     }
 
@@ -358,14 +357,14 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Profile retrieved successfully',
-                'data' => new UserResource($user)
+                'data' => new UserResource($user),
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve profile',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -373,85 +372,85 @@ class AuthController extends Controller
     public function updateProfile(UpdateProfileRequest $request)
     {
         // try {
-            $user = auth()->user();
+        $user = auth()->user();
 
-            // Get validated data
-            $validated = $request->validated();
+        // Get validated data
+        $validated = $request->validated();
 
-            // Update basic fields
-            $basicFields = [
-                'first_name', 'last_name', 'email', 'phone',
-                'dob', 'gender', 'height_cm', 'weight_kg',
-                'address', 'country_id', 'state_id', 'city_id'
+        // Update basic fields
+        $basicFields = [
+            'first_name', 'last_name', 'email', 'phone',
+            'dob', 'gender', 'height_cm', 'weight_kg',
+            'address', 'country_id', 'state_id', 'city_id',
+        ];
+
+        foreach ($basicFields as $field) {
+            if (isset($validated[$field])) {
+                $user->$field = $validated[$field];
+            }
+        }
+
+        // Update password if provided
+        if (isset($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        // Update driver-specific fields (only if user is a driver)
+        if ($user->hasRole('driver')) {
+            $driverFields = [
+                'driving_license_number', 'driving_license_expiry',
+                'car_model', 'car_make', 'car_year',
+                'car_color', 'car_plate_number',
             ];
 
-            foreach ($basicFields as $field) {
+            foreach ($driverFields as $field) {
                 if (isset($validated[$field])) {
                     $user->$field = $validated[$field];
                 }
             }
+        }
 
-            // Update password if provided
-            if (isset($validated['password'])) {
-                $user->password = Hash::make($validated['password']);
+        if ($request->file('photo')) {
+            $userData['photo'] = $this->uploadFile($request->file('photo'), 'user');
+            if ($user->photo) {
+                $this->deleteFile($user->photo);
             }
+        }
 
-            // Update driver-specific fields (only if user is a driver)
-            if ($user->hasRole('driver')) {
-                $driverFields = [
-                    'driving_license_number', 'driving_license_expiry',
-                    'car_model', 'car_make', 'car_year',
-                    'car_color', 'car_plate_number'
-                ];
-
-                foreach ($driverFields as $field) {
-                    if (isset($validated[$field])) {
-                        $user->$field = $validated[$field];
-                    }
+        // Handle driver images (only if user is a driver)
+        if ($user->hasRole('driver')) {
+            if ($request->file('driving_license_image')) {
+                $userData['driving_license_image'] = $this->uploadFile($request->file('driving_license_image'), 'driver');
+                if ($user->driving_license_image) {
+                    $this->deleteFile($user->driving_license_image);
                 }
             }
 
-            if ($request->file('photo')) {
-                $userData['photo'] = $this->uploadFile($request->file('photo'), 'user');
-                if ($user->photo) {
-                    $this->deleteFile($user->photo);
+            if ($request->file('car_image')) {
+                $userData['car_image'] = $this->uploadFile($request->file('car_image'), 'driver');
+                if ($user->car_image) {
+                    $this->deleteFile($user->car_image);
                 }
             }
 
-            // Handle driver images (only if user is a driver)
-            if ($user->hasRole('driver')) {
-                if ($request->file('driving_license_image')) {
-                    $userData['driving_license_image'] = $this->uploadFile($request->file('driving_license_image'), 'driver');
-                    if ($user->driving_license_image) {
-                        $this->deleteFile($user->driving_license_image);
-                    }
-                }
-
-                if ($request->file('car_image')) {
-                    $userData['car_image'] = $this->uploadFile($request->file('car_image'), 'driver');
-                    if ($user->car_image) {
-                        $this->deleteFile($user->car_image);
-                    }
-                }
-
-                if ($request->file('face_image')) {
-                    $userData['face_image'] = $this->uploadFile($request->file('face_image'), 'driver');
-                    if ($user->face_image) {
-                        $this->deleteFile($user->face_image);
-                    }
+            if ($request->file('face_image')) {
+                $userData['face_image'] = $this->uploadFile($request->file('face_image'), 'driver');
+                if ($user->face_image) {
+                    $this->deleteFile($user->face_image);
                 }
             }
+        }
 
-            $user->save();
+        $user->save();
 
-            // Reload user with relationships if needed
-            $user->load(['country', 'state', 'city', 'roles']);
+        // Reload user with relationships if needed
+        $user->load(['country', 'state', 'city', 'roles']);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Profile updated successfully',
-                'data' => $user
-            ], 200);
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully',
+            'data' => $user,
+        ], 200);
 
         // } catch (\Exception $e) {
         //     return response()->json([
@@ -462,68 +461,152 @@ class AuthController extends Controller
     }
 
     public function forgotPassword(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email|exists:users,email',
-    ]);
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
 
-    try {
-        $status = Password::sendResetLink($request->only('email'));
+        try {
+            $status = Password::sendResetLink($request->only('email'));
 
-        if ($status === Password::RESET_LINK_SENT) {
+            if ($status === Password::RESET_LINK_SENT) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Password reset link sent to your email',
+                ], 200);
+            }
+
+            // Log the actual status for debugging
+            \Log::error('Password reset failed', ['status' => $status]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send reset link: '.$status,
+            ], 500);
+
+        } catch (\Exception $e) {
+            \Log::error('Password reset error', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->password = Hash::make($password);
+                $user->save();
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
             return response()->json([
                 'success' => true,
-                'message' => 'Password reset link sent to your email',
+                'message' => 'Password reset successfully',
             ], 200);
         }
 
-        // Log the actual status for debugging
-        \Log::error('Password reset failed', ['status' => $status]);
-
         return response()->json([
             'success' => false,
-            'message' => 'Failed to send reset link: ' . $status,
-        ], 500);
-
-    } catch (\Exception $e) {
-        \Log::error('Password reset error', ['error' => $e->getMessage()]);
-
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ], 500);
+            'message' => 'Failed to reset password',
+        ], 400);
     }
-}
 
+    public function sendVerificationCodes(parent $parent)
+    {
+        // কোড জেনারেট করুন
+        $phoneCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $emailCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
+        // ফোন কোড সংরক্ষণ করুন
+        VerificationCode::create([
+            'verifiable_type' => parent::class,
+            'verifiable_id' => $parent->id,
+            'type' => 'phone',
+            'code' => Hash::make($phoneCode), // হ্যাশ করে রাখুন
+            'expires_at' => now()->addMinutes(10),
+        ]);
 
-public function resetPassword(Request $request)
-{
-    $request->validate([
-        'token' => 'required',
-        'email' => 'required|email',
-        'password' => 'required|min:8|confirmed',
-    ]);
+        // ইমেল কোড সংরক্ষণ করুন
+        VerificationCode::create([
+            'verifiable_type' => parent::class,
+            'verifiable_id' => $parent->id,
+            'type' => 'email',
+            'code' => Hash::make($emailCode), // হ্যাশ করে রাখুন
+            'expires_at' => now()->addMinutes(15), // ইমেলের জন্য আলাদা মেয়াদ দিতে পারেন
+        ]);
 
-    $status = Password::reset(
-        $request->only('email', 'password', 'password_confirmation', 'token'),
-        function ($user, $password) {
-            $user->password = Hash::make($password);
-            $user->save();
+        // এখন SMS এবং ইমেল পাঠান
+        // Log::info("Sending phone code {$phoneCode} to {$parent->phone}");
+        // Mail::to($parent->email)->send(new YourEmailVerificationMail($emailCode));
+
+        // ডেভেলপমেন্টের জন্য কোডগুলো রিটার্ন করে দিন
+        return [
+            'phone_code' => $phoneCode,
+            'email_code' => $emailCode,
+        ];
+    }
+
+    /**
+     * ফোন যাচাই করার জন্য একটি উদাহরণ মেথড
+     */
+    public function verifyPhone(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer',
+            'code' => 'required|string|digits:6',
+        ]);
+
+        $parent = parent::findOrFail($request->user_id);
+
+        // আমাদের হেলপার মেথড ব্যবহার করে সঠিক কোডটি খুঁজে বের করুন
+        $verificationCode = VerificationCode::findLatestValid($parent, 'phone');
+
+        if (! $verificationCode || ! Hash::check($request->code, $verificationCode->code)) {
+            return response()->json(['message' => 'Invalid or expired verification code.'], 422);
         }
-    );
 
-    if ($status === Password::PASSWORD_RESET) {
-        return response()->json([
-            'success' => true,
-            'message' => 'Password reset successfully',
-        ], 200);
+        // সফল হলে, কোডটি মুছে ফেলুন এবং ইউজারের স্ট্যাটাস আপডেট করুন
+        $verificationCode->delete();
+        $parent->phone_verified_at = now();
+        $parent->save();
+
+        return response()->json(['message' => 'Phone number verified successfully.']);
     }
 
-    return response()->json([
-        'success' => false,
-        'message' => 'Failed to reset password',
-    ], 400);
-}
+    /**
+     * ইমেল যাচাই করার জন্য একটি উদাহরণ মেথড
+     */
+    public function verifyEmail(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer',
+            'code' => 'required|string|digits:6',
+        ]);
 
+        $parent = parent::findOrFail($request->user_id);
+
+        $verificationCode = VerificationCode::findLatestValid($parent, 'email');
+
+        if (! $verificationCode || ! Hash::check($request->code, $verificationCode->code)) {
+            return response()->json(['message' => 'Invalid or expired verification code.'], 422);
+        }
+
+        $verificationCode->delete();
+        $parent->email_verified_at = now();
+        $parent->save();
+
+        return response()->json(['message' => 'Email verified successfully.']);
+    }
 }
