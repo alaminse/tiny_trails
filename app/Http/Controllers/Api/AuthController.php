@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Modules\UserRolePermission\app\Http\Resources\UserResource;
-use Modules\UserRolePermission\app\Models\Driver;
 use Modules\LocationManagement\app\Models\Country;
 use Modules\LocationManagement\app\Models\State;
 use Modules\LocationManagement\app\Models\City;
@@ -17,9 +16,6 @@ use App\Models\User;
 use App\Traits\Upload;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
-use Illuminate\Auth\Events\PasswordReset;
 
 class AuthController extends Controller
 {
@@ -42,6 +38,50 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve countries',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function allStates()
+    {
+        try {
+            $states = State::select('id', 'name')
+                ->where('status', 'active')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'States retrieved successfully',
+                'data' => $states
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve states',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function allCities()
+    {
+        try {
+            $cities = City::select('id', 'name')
+                ->where('status', 'active')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cities retrieved successfully',
+                'data' => $cities
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve cities',
                 'error' => $e->getMessage()
             ], 500);
         }

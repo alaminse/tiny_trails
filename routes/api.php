@@ -27,6 +27,8 @@ Route::prefix('auth')->group(function () {
     })->name('auth.reset-password');
 
     Route::get('get/countries', [AuthController::class, 'getCountries']);
+    Route::get('get/states', [AuthController::class, 'allStates']);
+    Route::get('get/cities', [AuthController::class, 'allCities']);
     Route::get('get/states/{country_id}', [AuthController::class, 'getStates']);
     Route::get('get/cities/{city_id}', [AuthController::class, 'getCities']);
 
@@ -35,8 +37,8 @@ Route::prefix('auth')->group(function () {
         Route::get('user', [AuthController::class, 'user']);
         Route::get('profile', [AuthController::class, 'profile']);
         Route::post('profile', [AuthController::class, 'updateProfile']);
-        
-        
+
+
 
         Route::post('/face/store', [FaceRecognitionController::class, 'store']);
         Route::get('/face/my-face', [FaceRecognitionController::class, 'getMyFace']);
