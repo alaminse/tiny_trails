@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Models\User;
+use App\Models\VerificationCode;
 use App\Traits\Upload;
 use Illuminate\Http\Request;
-use App\Models\VerificationCode;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Requests\UpdateProfileRequest;
 use Modules\LocationManagement\app\Models\City;
-use Modules\LocationManagement\app\Models\State;
 use Modules\LocationManagement\app\Models\Country;
+use Modules\LocationManagement\app\Models\State;
 use Modules\UserRolePermission\app\Http\Resources\UserResource;
 
 class AuthController extends Controller
@@ -91,7 +92,7 @@ class AuthController extends Controller
     public function getStateByCity($cityId)
     {
         try {
-            // City find করুন
+            // City find
             $city = City::find($cityId);
 
             if (! $city) {
@@ -101,7 +102,7 @@ class AuthController extends Controller
                 ], 404);
             }
 
-            // City থেকে State বের করুন
+            // City from State
             $state = State::find($city->state_id);
 
             if (! $state) {
@@ -193,7 +194,6 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         try {
-            // ✅ Validation rules
             $validator = Validator::make($request->all(), [
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
@@ -228,9 +228,6 @@ class AuthController extends Controller
 
             if ($request->file('photo')) {
                 $userData['photo'] = $this->uploadFile($request->file('photo'), 'parent/profile');
-                if ($user->photo) {
-                    $this->deleteFile($user->photo);
-                }
             }
 
             // Hash password
@@ -303,6 +300,16 @@ class AuthController extends Controller
             ], 403);
         }
 
+        if ($user->verification_status !== 'fully_verified') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Account verification is required to login. Please complete the verification process.',
+                'data' => [
+                    'verification_status' => $user->verification_status,
+                ],
+            ], 403);
+        }
+
         // Update FCM token if provided
         if ($request->fcm_token) {
             $user->update(['fcm_token' => $request->fcm_token]);
@@ -371,93 +378,93 @@ class AuthController extends Controller
 
     public function updateProfile(UpdateProfileRequest $request)
     {
-        // try {
-        $user = auth()->user();
+        try {
+            $user = Auth::user();
 
-        // Get validated data
-        $validated = $request->validated();
+            // Get validated data
+            $validated = $request->validated();
 
-        // Update basic fields
-        $basicFields = [
-            'first_name', 'last_name', 'email', 'phone',
-            'dob', 'gender', 'height_cm', 'weight_kg',
-            'address', 'country_id', 'state_id', 'city_id',
-        ];
-
-        foreach ($basicFields as $field) {
-            if (isset($validated[$field])) {
-                $user->$field = $validated[$field];
-            }
-        }
-
-        // Update password if provided
-        if (isset($validated['password'])) {
-            $user->password = Hash::make($validated['password']);
-        }
-
-        // Update driver-specific fields (only if user is a driver)
-        if ($user->hasRole('driver')) {
-            $driverFields = [
-                'driving_license_number', 'driving_license_expiry',
-                'car_model', 'car_make', 'car_year',
-                'car_color', 'car_plate_number',
+            // Update basic fields
+            $basicFields = [
+                'first_name', 'last_name', 'email', 'phone',
+                'dob', 'gender', 'height_cm', 'weight_kg',
+                'address', 'country_id', 'state_id', 'city_id',
             ];
 
-            foreach ($driverFields as $field) {
+            foreach ($basicFields as $field) {
                 if (isset($validated[$field])) {
                     $user->$field = $validated[$field];
                 }
             }
-        }
 
-        if ($request->file('photo')) {
-            $userData['photo'] = $this->uploadFile($request->file('photo'), 'user');
-            if ($user->photo) {
-                $this->deleteFile($user->photo);
+            // Update password if provided
+            if (isset($validated['password'])) {
+                $user->password = Hash::make($validated['password']);
             }
-        }
 
-        // Handle driver images (only if user is a driver)
-        if ($user->hasRole('driver')) {
-            if ($request->file('driving_license_image')) {
-                $userData['driving_license_image'] = $this->uploadFile($request->file('driving_license_image'), 'driver');
-                if ($user->driving_license_image) {
-                    $this->deleteFile($user->driving_license_image);
+            // Update driver-specific fields (only if user is a driver)
+            if ($user->hasRole('driver')) {
+                $driverFields = [
+                    'driving_license_number', 'driving_license_expiry',
+                    'car_model', 'car_make', 'car_year',
+                    'car_color', 'car_plate_number',
+                ];
+
+                foreach ($driverFields as $field) {
+                    if (isset($validated[$field])) {
+                        $user->$field = $validated[$field];
+                    }
                 }
             }
 
-            if ($request->file('car_image')) {
-                $userData['car_image'] = $this->uploadFile($request->file('car_image'), 'driver');
-                if ($user->car_image) {
-                    $this->deleteFile($user->car_image);
+            if ($request->file('photo')) {
+                $userData['photo'] = $this->uploadFile($request->file('photo'), 'user');
+                if ($user->photo) {
+                    $this->deleteFile($user->photo);
                 }
             }
 
-            if ($request->file('face_image')) {
-                $userData['face_image'] = $this->uploadFile($request->file('face_image'), 'driver');
-                if ($user->face_image) {
-                    $this->deleteFile($user->face_image);
+            // Handle driver images (only if user is a driver)
+            if ($user->hasRole('driver')) {
+                if ($request->file('driving_license_image')) {
+                    $userData['driving_license_image'] = $this->uploadFile($request->file('driving_license_image'), 'driver');
+                    if ($user->driving_license_image) {
+                        $this->deleteFile($user->driving_license_image);
+                    }
+                }
+
+                if ($request->file('car_image')) {
+                    $userData['car_image'] = $this->uploadFile($request->file('car_image'), 'driver');
+                    if ($user->car_image) {
+                        $this->deleteFile($user->car_image);
+                    }
+                }
+
+                if ($request->file('face_image')) {
+                    $userData['face_image'] = $this->uploadFile($request->file('face_image'), 'driver');
+                    if ($user->face_image) {
+                        $this->deleteFile($user->face_image);
+                    }
                 }
             }
+
+            $user->save();
+
+            // Reload user with relationships if needed
+            $user->load(['country', 'state', 'city', 'roles']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile updated successfully',
+                'data' => $user,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update profile: '.$e->getMessage(),
+            ], 500);
         }
-
-        $user->save();
-
-        // Reload user with relationships if needed
-        $user->load(['country', 'state', 'city', 'roles']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Profile updated successfully',
-            'data' => $user,
-        ], 200);
-
-        // } catch (\Exception $e) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Failed to update profile: ' . $e->getMessage()
-        //     ], 500);
-        // }
     }
 
     public function forgotPassword(Request $request)
@@ -477,7 +484,7 @@ class AuthController extends Controller
             }
 
             // Log the actual status for debugging
-            \Log::error('Password reset failed', ['status' => $status]);
+            Log::error('Password reset failed', ['status' => $status]);
 
             return response()->json([
                 'success' => false,
@@ -485,7 +492,7 @@ class AuthController extends Controller
             ], 500);
 
         } catch (\Exception $e) {
-            \Log::error('Password reset error', ['error' => $e->getMessage()]);
+            Log::error('Password reset error', ['error' => $e->getMessage()]);
 
             return response()->json([
                 'success' => false,
@@ -497,9 +504,9 @@ class AuthController extends Controller
     public function resetPassword(Request $request)
     {
         $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
+            'token'     => 'required',
+            'email'     => 'required|email',
+            'password'  => 'required|min:8|confirmed',
         ]);
 
         $status = Password::reset(
@@ -523,89 +530,77 @@ class AuthController extends Controller
         ], 400);
     }
 
-    public function sendVerificationCodes(parent $parent)
+    public function sendVerificationCodes(User $user)
     {
-        // কোড জেনারেট করুন
         $phoneCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $emailCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        // ফোন কোড সংরক্ষণ করুন
         VerificationCode::create([
-            'verifiable_type' => parent::class,
-            'verifiable_id' => $parent->id,
+            'verifiable_type' => User::class,
+            'verifiable_id' => $user->id,
             'type' => 'phone',
-            'code' => Hash::make($phoneCode), // হ্যাশ করে রাখুন
+            'code' => Hash::make($phoneCode),
             'expires_at' => now()->addMinutes(10),
         ]);
 
-        // ইমেল কোড সংরক্ষণ করুন
         VerificationCode::create([
-            'verifiable_type' => parent::class,
-            'verifiable_id' => $parent->id,
+            'verifiable_type' => User::class,
+            'verifiable_id' => $user->id,
             'type' => 'email',
-            'code' => Hash::make($emailCode), // হ্যাশ করে রাখুন
-            'expires_at' => now()->addMinutes(15), // ইমেলের জন্য আলাদা মেয়াদ দিতে পারেন
+            'code' => Hash::make($emailCode),
+            'expires_at' => now()->addMinutes(15),
         ]);
 
         // এখন SMS এবং ইমেল পাঠান
         // Log::info("Sending phone code {$phoneCode} to {$parent->phone}");
         // Mail::to($parent->email)->send(new YourEmailVerificationMail($emailCode));
 
-        // ডেভেলপমেন্টের জন্য কোডগুলো রিটার্ন করে দিন
         return [
             'phone_code' => $phoneCode,
             'email_code' => $emailCode,
         ];
     }
 
-    /**
-     * ফোন যাচাই করার জন্য একটি উদাহরণ মেথড
-     */
     public function verifyPhone(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|integer',
-            'code' => 'required|string|digits:6',
+            'user_id'   => 'required|integer',
+            'code'      => 'required|string|digits:6',
         ]);
 
-        $parent = parent::findOrFail($request->user_id);
+        $user = User::findOrFail($request->user_id);
 
-        // আমাদের হেলপার মেথড ব্যবহার করে সঠিক কোডটি খুঁজে বের করুন
-        $verificationCode = VerificationCode::findLatestValid($parent, 'phone');
+        $verificationCode = VerificationCode::findLatestValid($user, 'phone');
 
         if (! $verificationCode || ! Hash::check($request->code, $verificationCode->code)) {
             return response()->json(['message' => 'Invalid or expired verification code.'], 422);
         }
 
-        // সফল হলে, কোডটি মুছে ফেলুন এবং ইউজারের স্ট্যাটাস আপডেট করুন
         $verificationCode->delete();
-        $parent->phone_verified_at = now();
-        $parent->save();
+        $user->phone_verified_at = now();
+        $user->save();
 
         return response()->json(['message' => 'Phone number verified successfully.']);
     }
 
-    /**
-     * ইমেল যাচাই করার জন্য একটি উদাহরণ মেথড
-     */
     public function verifyEmail(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|integer',
-            'code' => 'required|string|digits:6',
+            'user_id'   => 'required|integer',
+            'code'      => 'required|string|digits:6',
         ]);
 
-        $parent = parent::findOrFail($request->user_id);
+        $user = User::findOrFail($request->user_id);
 
-        $verificationCode = VerificationCode::findLatestValid($parent, 'email');
+        $verificationCode = VerificationCode::findLatestValid($user, 'email');
 
         if (! $verificationCode || ! Hash::check($request->code, $verificationCode->code)) {
             return response()->json(['message' => 'Invalid or expired verification code.'], 422);
         }
 
         $verificationCode->delete();
-        $parent->email_verified_at = now();
-        $parent->save();
+        $user->email_verified_at = now();
+        $user->save();
 
         return response()->json(['message' => 'Email verified successfully.']);
     }
