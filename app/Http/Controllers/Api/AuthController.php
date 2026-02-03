@@ -87,21 +87,39 @@ class AuthController extends Controller
         }
     }
 
-    public function getStateByCity($stateId)
+    public function getStateByCity($cityId)
     {
         try {
-            $cities = State::find($stateId);
+            // City find করুন
+            $city = City::find($cityId);
+
+            if (!$city) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'City not found'
+                ], 404);
+            }
+
+            // City থেকে State বের করুন
+            $state = State::find($city->state_id);
+
+            if (!$state) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'State not found for this city'
+                ], 404);
+            }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Cities retrieved successfully',
-                'data' => $cities
+                'message' => 'State retrieved successfully',
+                'data' => $state
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve cities',
+                'message' => 'Failed to retrieve state',
                 'error' => $e->getMessage()
             ], 500);
         }
