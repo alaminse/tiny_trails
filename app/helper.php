@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\DB;
 
 if (!function_exists('getImageUrl')) {
-    function getImageUrl(string $path = null): string
+    function getImageUrl(?string $path = null): string
     {
         if($path == null) return asset('backend/img/default.jpg');
 
@@ -22,24 +22,6 @@ if (!function_exists('checkslug')) {
     }
 }
 
-function jimiSign(array $params, string $secret): string
-{
-    unset($params['sign']);
-    ksort($params);
 
-    $query = $secret;
-    foreach ($params as $key => $value) {
-        if ($value !== null && $value !== '') {
-            $query .= $key . $value;
-        }
-    }
-    $query .= $secret;
-
-    return strtoupper(md5($query));
-}
-
-
-
-// Payment Method
 
 

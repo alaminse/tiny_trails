@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->timestamp('phone_verified_at')->nullable();
             $table->string('security_pin')->nullable();
-            $table->enum('verification_status', ['pending', 'phone_verified', 'email_verified', 'fully_verified'])->default('pending');
-
+            $table->enum('verification_status', ['pending', 'phone_verified', 'email_verified', 'pin_verified', 'fully_verified'])->default('pending');
         });
     }
 

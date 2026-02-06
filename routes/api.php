@@ -2,8 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\ParentApiController;
 use App\Http\Controllers\Api\DriverController;
+use App\Http\Controllers\Api\ParentApiController;
+use App\Http\Controllers\Api\VerificationController;
 use App\Http\Controllers\Api\FaceRecognitionController;
 
 /*
@@ -19,6 +20,7 @@ use App\Http\Controllers\Api\FaceRecognitionController;
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
+
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.reset');
     Route::get('/reset-password/{token}', function ($token) {
@@ -26,6 +28,14 @@ Route::prefix('auth')->group(function () {
         // return view('auth.reset-password', ['token' => $token]);
     })->name('auth.reset-password');
 
+    Route::controller(VerificationController::class)->prefix('verification')->group(function () {
+        Route::post('/verify-phone', 'verifyPhone');
+        Route::post('/send-phone-code', 'sendPhoneCode');
+        Route::post('/send-email', 'sendEmailVerification');
+        Route::post('/verify-email', 'verifyEmail');
+        Route::post('/verify-pin', 'verifyPin');
+    });
+    
     Route::get('get/countries', [AuthController::class, 'getCountries']);
     Route::get('get/states', [AuthController::class, 'allStates']);
     Route::get('get/cities', [AuthController::class, 'allCities']);

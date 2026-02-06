@@ -270,9 +270,9 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required',
-            'fcm_token' => 'nullable|string',
+            'email'         => 'required|email',
+            'password'      => 'required',
+            'fcm_token'     => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -292,7 +292,6 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        // Check if user is active
         if ($user->status !== 'active') {
             return response()->json([
                 'success' => false,
@@ -300,18 +299,6 @@ class AuthController extends Controller
             ], 403);
         }
 
-        if ($user->verification_status !== 'fully_verified') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Account verification is required to login. Please complete the verification process.',
-                'data' => [
-                    'user'                  => $user,
-                    'verification_status'   => $user->verification_status,
-                ],
-            ], 403);
-        }
-
-        // Update FCM token if provided
         if ($request->fcm_token) {
             $user->update(['fcm_token' => $request->fcm_token]);
         }
@@ -322,10 +309,11 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Login successful',
             'data' => [
-                'user' => $user,
-                'token' => $token,
-                'role' => $user->getRoleNames(),
-                'token_type' => 'Bearer',
+                'user'                  => $user,
+                'token'                 => $token,
+                'role'                  => $user->getRoleNames(),
+                'token_type'            => 'Bearer',
+                'verification_status'   => $user->verification_status,
             ],
         ]);
     }
