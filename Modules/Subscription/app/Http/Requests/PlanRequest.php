@@ -38,6 +38,10 @@ class PlanRequest extends FormRequest
             'interval' => ['required', Rule::in(['day', 'week', 'month', 'year'])],
             'interval_count' => 'required|integer|min:1',
             'features' => 'nullable|string',
+            'plan_tier' => 'nullable|string|max:50',
+            'iot_level' => 'nullable|string|max:50',
+            'includes_hardware' => 'nullable|boolean',
+            'hardware_price' => 'nullable|numeric|min:0',
             'status' => 'required|in:active,inactive',
             'sort_order' => 'nullable|integer|min:0',
         ];
@@ -66,6 +70,10 @@ class PlanRequest extends FormRequest
             'interval_count.required' => 'Interval count is required.',
             'interval_count.integer' => 'Interval count must be a valid integer.',
             'interval_count.min' => 'Interval count must be at least 1.',
+            'plan_tier.max' => 'Plan tier must not exceed 50 characters.',
+            'iot_level.max' => 'IoT level must not exceed 50 characters.',
+            'hardware_price.numeric' => 'Hardware price must be a valid number.',
+            'hardware_price.min' => 'Hardware price must be greater than or equal to 0.',
             'status.required' => 'Status is required.',
             'status.in' => 'Invalid status value.',
             'sort_order.integer' => 'Sort order must be a valid integer.',
@@ -82,6 +90,13 @@ class PlanRequest extends FormRequest
         if (!$this->has('sort_order')) {
             $this->merge([
                 'sort_order' => 0,
+            ]);
+        }
+
+        // Convert boolean fields
+        if ($this->has('includes_hardware')) {
+            $this->merge([
+                'includes_hardware' => filter_var($this->includes_hardware, FILTER_VALIDATE_BOOLEAN),
             ]);
         }
     }

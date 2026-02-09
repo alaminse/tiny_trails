@@ -4,7 +4,9 @@
     <td>{{ $kid->parent_name }}</td>
     <td>{{ $kid->first_name }} {{ $kid->last_name }}</td>
     <td>{{ $kid->dob }}</td>
-    <td>{{ $kid->gender }}</td>
+    <td>
+        <span class="bg-purple-blue px-3">{{ $kid->gender }}</span>
+    </td>
     <td>
         @if ($kid->trashed())
             <button class="btn btn-gradient-info btn-sm restoreBtn" data-id="{{ $kid->id }}" title="Restore">

@@ -2,129 +2,187 @@
 
 namespace Modules\Subscription\app\Models;
 
-
-use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\PickUpType\app\Models\PickupType;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Subscription\database\factories\PlanFactory;
 
 class Plan extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
-        'pickup_type_id', 'name', 'slug', 'description', 'price', 'sell_price',
-        'currency', 'interval', 'interval_count', 'features', 'status', 'sort_order'
-    ];
-
-    protected $casts = [
-        'price' => 'decimal:2',
-        'sell_price' => 'decimal:2',
-        'features' => 'array', // JSON কে array তে কনভার্ট করা হবে
-    ];
-
-    // এই মেথডটি খুবই গুরুত্বপূর্ণ
     /**
-     * Create a new factory instance for the model.
+     * The attributes that are mass assignable.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @var array
      */
-    protected static function newFactory()
+    protected $fillable = [
+        'pickup_type_id',
+        'name',
+        'slug',
+        'description',
+        'price',
+        'sell_price',
+        'currency',
+        'interval',
+        'interval_count',
+        'features',
+        'plan_tier',
+        'iot_level',
+        'includes_hardware',
+        'hardware_price',
+        'status',
+        'sort_order'
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'price' => 'float',
+        'sell_price' => 'float',
+        'hardware_price' => 'float',
+        'includes_hardware' => 'boolean',
+        'features' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime'
+    ];
+
+    /**
+     * Get the pickup type that owns the plan.
+     */
+    public function pickupType()
     {
-        // Laravel কে বলে দিন যে এই মডেলের জন্য কোন ফ্যাক্টরি ব্যবহার করতে হবে
-        return PlanFactory::new();
+        return $this->belongsTo(PickupType::class, 'pickup_type_id');
     }
 
-    // Relationships
-    public function pickupType(): BelongsTo
+    /**
+     * Get the IoT devices for the plan.
+     */
+    public function iotDevices()
     {
-        return $this->belongsTo(PickupType::class);
+        return $this->hasMany(PlanIotDevice::class);
     }
 
-    public function subscriptions(): HasMany
+    /**
+     * Get the IoT devices (through pivot table) for the plan.
+     */
+    public function devices()
+    {
+        return $this->belongsToMany(IotDevice::class, 'plan_iot_devices', 'plan_id', 'iot_device_id')
+            ->withPivot('is_included', 'extra_price');
+    }
+
+    /**
+     * Get the subscriptions for the plan.
+     */
+    public function subscriptions()
     {
         return $this->hasMany(Subscription::class);
     }
 
-    public function activeSubscriptions(): HasMany
+    /**
+     * Get the active subscriptions for the plan.
+     */
+    public function activeSubscriptions()
     {
-        return $this->subscriptions()->active();
+        return $this->subscriptions()->where('status', 'active');
     }
 
-    // Accessors
-    public function getFormattedPriceAttribute(): string
+    /**
+     * Get the formatted price attribute.
+     */
+    public function getFormattedPriceAttribute()
     {
         return $this->currency . ' ' . number_format($this->price, 2);
     }
 
-    public function getFormattedSellPriceAttribute(): string
+    /**
+     * Get the formatted sell price attribute.
+     */
+    public function getFormattedSellPriceAttribute()
     {
         return $this->currency . ' ' . number_format($this->sell_price, 2);
     }
 
-    public function getIntervalDisplayAttribute(): string
+    /**
+     * Get the formatted hardware price attribute.
+     */
+    public function getFormattedHardwarePriceAttribute()
     {
-        $interval = Str::plural($this->interval, $this->interval_count);
-        return $this->interval_count > 1
-            ? "Every {$this->interval_count} {$interval}"
-            : "Every {$interval}";
+        return $this->currency . ' ' . number_format($this->hardware_price, 2);
     }
 
-    public function getSubscriptionsCountAttribute(): int
+    /**
+     * Get the interval display attribute.
+     */
+    public function getIntervalDisplayAttribute()
+    {
+        $interval = ucfirst($this->interval);
+        if ($this->interval_count > 1) {
+            $interval .= 's';
+        }
+        return $this->interval_count . ' ' . $interval;
+    }
+
+    /**
+     * Get the features string attribute.
+     */
+    public function getFeaturesStringAttribute()
+    {
+        if (is_array($this->features)) {
+            return implode(', ', $this->features);
+        }
+
+        if (is_string($this->features)) {
+            $features = json_decode($this->features, true);
+            if (is_array($features)) {
+                return implode(', ', $features);
+            }
+            return $this->features;
+        }
+
+        return '';
+    }
+
+    /**
+     * Get the subscriptions count attribute.
+     */
+    public function getSubscriptionsCountAttribute()
     {
         return $this->subscriptions()->count();
     }
 
-    public function getActiveSubscriptionsCountAttribute(): int
+    /**
+     * Get the active subscriptions count attribute.
+     */
+    public function getActiveSubscriptionsCountAttribute()
     {
         return $this->activeSubscriptions()->count();
     }
 
-    // Methods
-    public function getPriceInCents(): int
-    {
-        return (int) ($this->sell_price * 100);
-    }
-
-    public static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($plan) {
-            if (empty($plan->slug)) {
-                $plan->slug = Str::slug($plan->name);
-            }
-        });
-
-        static::updating(function ($plan) {
-            if ($plan->isDirty('name') && empty($plan->slug)) {
-                $plan->slug = Str::slug($plan->name);
-            }
-        });
-    }
-
-    // Scopes
+    /**
+     * Scope a query to only include active plans.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
     }
 
+    /**
+     * Scope a query to only include inactive plans.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function scopeInactive($query)
     {
         return $query->where('status', 'inactive');
-    }
-
-    public function scopeByPickupType($query, $pickupTypeId)
-    {
-        return $query->where('pickup_type_id', $pickupTypeId);
-    }
-
-    public function scopeOrderBySort($query)
-    {
-        return $query->orderBy('sort_order')->orderBy('name');
     }
 }

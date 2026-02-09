@@ -241,14 +241,63 @@ class PlanController extends Controller
     {
         try {
             $trashed = $request->boolean('trashed', false);
-            $plans = $this->planRepository->getDataTableData($trashed);
 
-            $html = view('subscription::plan.row', compact('plans'))->render();
+            // Get plans with relationships
+            $query = Plan::with(['pickupType', 'iotDevices']);
+
+            if ($trashed) {
+                $query->onlyTrashed();
+            }
+
+            $plans = $query->latest()->get();
+
+            // Transform the data for DataTable
+            $transformedPlans = $plans->map(function ($plan) {
+                $features = is_array($plan->features) ? $plan->features : json_decode($plan->features, true);
+
+                return [
+                    'id' => $plan->id,
+                    'name' => $plan->name,
+                    'slug' => $plan->slug,
+                    'description' => $plan->description,
+                    'price' => $plan->price,
+                    'sell_price' => $plan->sell_price,
+                    'formatted_price' => $plan->currency . ' ' . number_format($plan->price, 2),
+                    'formatted_sell_price' => $plan->currency . ' ' . number_format($plan->sell_price, 2),
+                    'currency' => $plan->currency,
+                    'interval' => $plan->interval,
+                    'interval_count' => $plan->interval_count,
+                    'interval_display' => $plan->interval_count . ' ' . ucfirst($plan->interval) . ($plan->interval_count > 1 ? 's' : ''),
+                    'features' => $features,
+                    'plan_tier' => $plan->plan_tier,
+                    'iot_level' => $plan->iot_level,
+                    'includes_hardware' => $plan->includes_hardware,
+                    'hardware_price' => $plan->hardware_price,
+                    'formatted_hardware_price' => $plan->includes_hardware ? $plan->currency . ' ' . number_format($plan->hardware_price, 2) : null,
+                    'status' => $plan->status,
+                    'sort_order' => $plan->sort_order,
+                    'pickup_type' => $plan->pickupType ? [
+                        'id' => $plan->pickupType->id,
+                        'name' => $plan->pickupType->name
+                    ] : null,
+                    'iot_devices' => $plan->iotDevices->map(function ($device) {
+                        return [
+                            'id' => $device->id,
+                            'iot_device_id' => $device->iot_device_id,
+                            'is_included' => $device->is_included,
+                            'extra_price' => $device->extra_price,
+                        ];
+                    }),
+                    'subscriptions_count' => $plan->subscriptions_count ?? 0,
+                    'active_subscriptions_count' => $plan->active_subscriptions_count ?? 0,
+                    'trashed' => $plan->trashed(),
+                    'actions' => view('subscription::plan.actions', ['plan' => $plan])->render()
+                ];
+            });
 
             return response()->json([
                 'success' => true,
-                'html' => $html,
-                'data' => new PlanCollection($plans)
+                'data' => $transformedPlans
             ]);
 
         } catch (\Exception $e) {

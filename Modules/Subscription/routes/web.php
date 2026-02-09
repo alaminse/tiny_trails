@@ -7,26 +7,43 @@ use Modules\Subscription\app\Http\Controllers\SubscriptionController;
 use Modules\Subscription\app\Http\Controllers\SubscriptionHelperController;
 
 Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
-    Route::controller(PlanController::class)
-        ->prefix('plans')
-        ->as('plans.')
-        ->group(function () {
-                Route::get('/', 'index')->name('index');
-                Route::post('/store', 'store')->name('store');
-                Route::get('/edit/{plan}', 'edit')->name('edit');
-                Route::get('/show/{plan}', 'show')->name('show');
-                Route::put('/update/{plan}', 'update')->name('update');
-                Route::delete('/delete/{plan}','destroy')->name('delete');
-                Route::post('/restore/{plan}','restore')->name('restore');
-                Route::delete('/force-delete/{plan}','forceDelete')->name('forceDelete');
-                Route::get('/get/data', 'getData')->name('data');
-                Route::get('states/by-country/{country}', 'stateGet');
-                Route::get('cities/by-state/{state}', 'cityGet');
-                Route::post('/duplicate/{plan}','duplicate')->name('duplicate');
-                Route::get('/stats', 'getStats')->name('stats');
-            });
+    // Route::controller(PlanController::class)
+    //     ->prefix('plans')
+    //     ->as('plans.')
+    //     ->group(function () {
+            //     Route::get('/', 'index')->name('index');
+            //     Route::post('/store', 'store')->name('store');
+            //     Route::get('/edit/{plan}', 'edit')->name('edit');
+            //     Route::get('/show/{plan}', 'show')->name('show');
+            //     Route::put('/update/{plan}', 'update')->name('update');
+            //     Route::delete('/delete/{plan}','destroy')->name('delete');
+            //     Route::post('/restore/{plan}','restore')->name('restore');
+            //     Route::delete('/force-delete/{plan}','forceDelete')->name('forceDelete');
+            //     Route::get('/get/data', 'getData')->name('data');
+            //     Route::get('states/by-country/{country}', 'stateGet');
+            //     Route::get('cities/by-state/{state}', 'cityGet');
+            //     Route::post('/duplicate/{plan}','duplicate')->name('duplicate');
+            //     Route::get('/stats', 'getStats')->name('stats');
+            // });
+    // Plan routes
+    Route::get('plans', [PlanController::class, 'index'])->name('plans.index');
+    Route::get('plans/getData', [PlanController::class, 'getData'])->name('plans.getData');
+    Route::get('plans/select', [PlanController::class, 'getSelectData'])->name('plans.select');
+    Route::get('plans/search', [PlanController::class, 'search'])->name('plans.search');
+    Route::get('plans/stats', [PlanController::class, 'getStats'])->name('plans.stats');
+    Route::get('plans/revenue-stats', [PlanController::class, 'getRevenueStats'])->name('plans.revenueStats');
+    Route::get('plans/subscription-stats', [PlanController::class, 'getSubscriptionStats'])->name('plans.subscriptionStats');
 
-            
+    Route::post('plans', [PlanController::class, 'store'])->name('plans.store');
+    Route::get('plans/{id}', [PlanController::class, 'show'])->name('plans.show');
+    Route::get('plans/{id}/edit', [PlanController::class, 'edit'])->name('plans.edit');
+    Route::put('plans/{id}', [PlanController::class, 'update'])->name('plans.update');
+    Route::delete('plans/{id}', [PlanController::class, 'destroy'])->name('plans.destroy');
+    Route::post('plans/{id}/restore', [PlanController::class, 'restore'])->name('plans.restore');
+    Route::delete('plans/{id}/force-delete', [PlanController::class, 'forceDelete'])->name('plans.forceDelete');
+    Route::post('plans/{id}/duplicate', [PlanController::class, 'duplicate'])->name('plans.duplicate');
+    Route::put('plans/sort-order', [PlanController::class, 'updateSortOrder'])->name('plans.updateSortOrder');
+
 
     Route::controller(SubscriptionController::class)
         ->prefix('subscriptions')

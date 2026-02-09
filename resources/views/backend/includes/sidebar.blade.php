@@ -44,7 +44,7 @@
                         <li class="nav-item">
                             <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.index') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
-                                <p>User Lists</p>
+                                <p>BOH</p>
                             </a>
                         </li>
                         <li class="nav-item">

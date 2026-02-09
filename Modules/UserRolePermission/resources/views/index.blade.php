@@ -48,8 +48,8 @@
 
 
     <!-- Modal -->
-    @include('userrolepermission::components.user_modal')
-    @include('userrolepermission::components.user_show_modal')
+    @include('userrolepermission::components.user_modal', ['role_name' => ucfirst($roleName)])
+    @include('userrolepermission::components.user_show_modal', ['role_name' => ucfirst($roleName)])
 
     @push('scripts')
         <script src="{{ asset('backend/js/jquery.dataTables.min.js') }}"></script>
@@ -72,15 +72,8 @@
                     if (roleValue) {
                         if (roleValue.toLowerCase() === 'driver') {
                             $('#driverFields').slideDown();
-                        } else if (roleValue.toLowerCase() === 'parent') {
-                            $('#driverFields').slideUp();
-                            // Hide weight and height fields for parent
-                            $('#height_cm').closest('.col-md-4').slideUp();
-                            $('#weight_kg').closest('.col-md-4').slideUp();
                         } else {
                             $('#driverFields').slideUp();
-                            $('#height_cm').closest('.col-md-4').slideDown();
-                            $('#weight_kg').closest('.col-md-4').slideDown();
                         }
                     }
                 });

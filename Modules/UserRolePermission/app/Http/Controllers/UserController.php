@@ -24,17 +24,21 @@ class UserController extends Controller
     {
         if (request()->routeIs('admin.drivers.index')) {
             $this->roleName = 'driver';
+            $roles = Role::where('name', 'driver')->get();
         } elseif (request()->routeIs('admin.parents.index')) {
             $this->roleName = 'parent';
+            $roles = Role::where('name', 'parent')->get();
+        } else {
+            $this->roleName = 'BOH';
+            $roles = Role::where('name', 'LIKE', 'boh_%')->get();
         }
 
         $countries = Country::where('status', 'active')->get();
-        $roles = Role::get();
 
         return view('userrolepermission::index', [
                     'countries' => $countries,
-                    'roles' => $roles,
-                    'roleName' => $this->roleName,
+                    'roles'     => $roles,
+                    'roleName'  => $this->roleName,
                 ]);
 
     }
@@ -353,9 +357,17 @@ class UserController extends Controller
         if (!empty($request->role) && $request->role !== 'null') {
             $role = $request->role;
 
-            $query = $query->whereHas('roles', function ($q) use ($role) {
-                $q->where('name', $role);
-            });
+            if($role == 'BOH')
+            {
+                $query = $query->whereHas('roles', function ($q) use ($role) {
+                    $q->where('name', 'LIKE', 'BOH_%');
+                });
+
+            } else {
+                $query = $query->whereHas('roles', function ($q) use ($role) {
+                    $q->where('name', $role);
+                });
+            }
         }
 
         $data = $query->get();

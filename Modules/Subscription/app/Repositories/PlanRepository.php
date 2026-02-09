@@ -60,6 +60,13 @@ class PlanRepository
      */
     public function create(array $data): Plan
     {
+        // Handle features field
+        if (isset($data['features']) && is_string($data['features'])) {
+            $features = explode(',', $data['features']);
+            $features = array_map('trim', $features);
+            $data['features'] = $features;
+        }
+
         return $this->model->create($data);
     }
 
@@ -72,6 +79,14 @@ class PlanRepository
         if (!$plan) {
             return false;
         }
+
+        // Handle features field
+        if (isset($data['features']) && is_string($data['features'])) {
+            $features = explode(',', $data['features']);
+            $features = array_map('trim', $features);
+            $data['features'] = $features;
+        }
+
         return $plan->update($data);
     }
 
@@ -164,8 +179,8 @@ class PlanRepository
     public function getDataTableData(bool $trashed = false): Collection
     {
         $query = $trashed ? $this->model->onlyTrashed() : $this->model->whereNull('deleted_at');
-        
-        return $query->with(['pickupType'])
+
+        return $query->with(['pickupType', 'iotDevices'])
             ->orderBy('sort_order')
             ->get();
     }
@@ -194,11 +209,11 @@ class PlanRepository
 
         $newPlanData = $plan->toArray();
         unset($newPlanData['id'], $newPlanData['created_at'], $newPlanData['updated_at'], $newPlanData['deleted_at']);
-        
+
         // Add suffix to name and slug
         $newPlanData['name'] = $newPlanData['name'] . ' (Copy)';
         $newPlanData['slug'] = $newPlanData['slug'] . '-copy';
-        
+
         // Make slug unique
         $counter = 1;
         while ($this->slugExists($newPlanData['slug'])) {
@@ -211,7 +226,6 @@ class PlanRepository
 
         return $this->create($newPlanData);
     }
-
 
     /**
      * Get plan statistics
@@ -226,6 +240,11 @@ class PlanRepository
             'yearly_plans' => $this->model->where('interval', 'year')->count(),
             'free_plans' => $this->model->where('price', 0)->count(),
             'paid_plans' => $this->model->where('price', '>', 0)->count(),
+            'plans_with_hardware' => $this->model->where('includes_hardware', true)->count(),
+            'plans_by_tier' => $this->model->selectRaw('plan_tier, COUNT(*) as count')
+                ->groupBy('plan_tier')
+                ->pluck('count', 'plan_tier')
+                ->toArray(),
         ];
     }
 
@@ -235,14 +254,16 @@ class PlanRepository
     public function getRevenueStats(): array
     {
         $activePlans = $this->model->active()->get();
-        
+
         $monthlyPlansRevenue = $activePlans->where('interval', 'month')->sum('price');
         $yearlyPlansRevenue = $activePlans->where('interval', 'year')->sum('price');
-        
+        $hardwareRevenue = $activePlans->where('includes_hardware', true)->sum('hardware_price');
+
         return [
             'monthly_plans_revenue' => $monthlyPlansRevenue,
             'yearly_plans_revenue' => $yearlyPlansRevenue,
-            'total_plans_value' => $monthlyPlansRevenue + $yearlyPlansRevenue,
+            'hardware_revenue' => $hardwareRevenue,
+            'total_plans_value' => $monthlyPlansRevenue + $yearlyPlansRevenue + $hardwareRevenue,
             'average_plan_price' => $activePlans->avg('price'),
             'highest_priced_plan' => $activePlans->max('price'),
             'lowest_priced_plan' => $activePlans->where('price', '>', 0)->min('price'),
@@ -255,7 +276,7 @@ class PlanRepository
     public function getPlanSubscriptionStats(): array
     {
         $plans = $this->model->withCount(['subscriptions', 'activeSubscriptions'])->get();
-        
+
         return [
             'most_popular_plan' => $plans->sortByDesc('active_subscriptions_count')->first(),
             'least_popular_plan' => $plans->sortBy('active_subscriptions_count')->first(),

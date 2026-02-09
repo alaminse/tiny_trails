@@ -41,6 +41,11 @@ class PlanCollection extends ResourceCollection
                     'interval_count' => $plan->interval_count,
                     'billing_period' => $this->formatBillingPeriod($plan->interval_count, $plan->interval),
                     'features' => $plan->features ? json_decode($plan->features, true) : [],
+                    'plan_tier' => $plan->plan_tier,
+                    'iot_level' => $plan->iot_level,
+                    'includes_hardware' => $plan->includes_hardware,
+                    'hardware_price' => (float) $plan->hardware_price,
+                    'formatted_hardware_price' => $plan->includes_hardware ? $this->formatPrice($plan->hardware_price, $plan->currency) : null,
                     'status' => $plan->status,
                     'is_active' => $plan->status === 'active',
                     'sort_order' => $plan->sort_order,
@@ -52,6 +57,8 @@ class PlanCollection extends ResourceCollection
                 'total' => $this->collection->count(),
                 'active_count' => $this->collection->where('status', 'active')->count(),
                 'inactive_count' => $this->collection->where('status', 'inactive')->count(),
+                'plans_with_hardware' => $this->collection->where('includes_hardware', true)->count(),
+                'plans_by_tier' => $this->collection->groupBy('plan_tier')->map->count(),
             ]
         ];
     }
@@ -93,15 +100,4 @@ class PlanCollection extends ResourceCollection
 
         return 'every ' . $count . ' ' . $plural;
     }
-    // public function toArray(Request $request): array
-    // {
-    //     return [
-    //         'data' => $this->collection,
-    //         'meta' => [
-    //             'total' => $this->collection->count(),
-    //             'active' => $this->collection->where('status', 'active')->count(),
-    //             'inactive' => $this->collection->where('status', 'inactive')->count(),
-    //         ],
-    //     ];
-    // }
 }

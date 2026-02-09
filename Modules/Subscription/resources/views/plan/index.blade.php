@@ -184,15 +184,33 @@
                     ]
                 });
 
-                // Handle edit button click
-                $(document).on("click", `.editBtn`, function (e) {
-                    modalOpen();
-                });
-
-                // Handle add button click
-                $('#addPlanBtn').on('click', function() {
-                    $('#planModal').modal('show');
-                    modalOpen();
+                // Initialize DataTable
+                const dataTable = $('#datatable-responsive').DataTable({
+                    responsive: true,
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: '/plans/getData',
+                        type: 'GET',
+                        data: function(d) {
+                            d.trashed = $('#showTrashed').hasClass('active');
+                        }
+                    },
+                    columns: [
+                        { data: null, name: 'id', orderable: false, searchable: false,
+                          render: function(data, type, row, meta) {
+                              return meta.row + meta.settings._iDisplayStart + 1;
+                          }
+                        },
+                        { data: 'name', name: 'name' },
+                        { data: 'price', name: 'price' },
+                        { data: 'currency', name: 'currency' },
+                        { data: 'interval', name: 'interval' },
+                        { data: 'pickup_type.name', name: 'pickup_type.name' },
+                        { data: 'status', name: 'status' },
+                        { data: 'actions', name: 'actions', orderable: false, searchable: false }
+                    ],
+                    order: [[0, 'asc']]
                 });
 
                 // Handle show modal data population
@@ -200,7 +218,7 @@
                     const id = $(this).data('id');
 
                     $.ajax({
-                        url: `admin/plans/show/${id}`,
+                        url: `/plans/${id}`,
                         method: 'GET',
                         success: function(response) {
                             const plan = response.data;
@@ -272,8 +290,7 @@
                                 success: function(response) {
                                     Swal.fire('Duplicated!', response.message, 'success');
                                     // Reload the data table
-                                    // getData();
-                                    plansCrud.getData();
+                                    dataTable.ajax.reload();
                                 },
                                 error: function() {
                                     Swal.fire('Error!', 'Failed to duplicate the plan.', 'error');
@@ -283,93 +300,26 @@
                     });
                 });
 
+                // Handle trashed button
+                $('#showTrashed').on('click', function() {
+                    $(this).toggleClass('active');
+                    dataTable.ajax.reload();
+                });
+
                 // Update statistics periodically
                 function updateStats() {
-                    $.get('/admin/plans/stats', function(data) {
+                    $.get('/plans/stats', function(data) {
                         if (data.success) {
-                            $('#total-plans').text(data.data.total || 0);
-                            $('#active-plans').text(data.data.active || 0);
-                            $('#inactive-plans').text(data.data.inactive || 0);
-                            $('#total-subscriptions').text(data.data.subscriptions || 0);
+                            $('#total-plans').text(data.data.plan_stats.total || 0);
+                            $('#active-plans').text(data.data.plan_stats.active || 0);
+                            $('#inactive-plans').text(data.data.plan_stats.inactive || 0);
+                            $('#total-subscriptions').text(data.data.plan_stats.subscriptions || 0);
                         }
                     });
                 }
 
                 // Update stats every 30 seconds
                 setInterval(updateStats, 30000);
-
-                // Search functionality
-                $('#searchInput').on('keyup', function() {
-                    const searchTerm = $(this).val();
-                    if (searchTerm.length >= 3 || searchTerm.length === 0) {
-                        searchPlans(searchTerm);
-                    }
-                });
-
-                function searchPlans(term) {
-                    $.ajax({
-                        url: 'admin/plans/search',
-                        method: 'GET',
-                        data: { term: term },
-                        success: function(response) {
-                            if (response.success) {
-                                const html = generateTableRows(response.data.data);
-                                $('#datatable-responsive tbody').html(html);
-                            }
-                        }
-                    });
-                }
-
-                function generateTableRows(plans) {
-                    let html = '';
-                    plans.forEach((plan, index) => {
-                        const statusBadge = plan.status === 'active'
-                            ? '<span class="badge bg-success">Active</span>'
-                            : '<span class="badge bg-secondary">Inactive</span>';
-
-                        const pickupTypeBadge = plan.pickup_type
-                            ? `<span class="badge bg-info">${plan.pickup_type.name}</span>`
-                            : '<span class="text-muted">N/A</span>';
-
-                        html += `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>
-                                    <div>
-                                        <strong>${plan.name}</strong><br>
-                                        <small class="text-muted">${plan.slug}</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    ${plan.price !== plan.sell_price ?
-                                        `<span class="text-muted text-decoration-line-through">${plan.formatted_price}</span><br>` : ''}
-                                    <strong class="text-primary">${plan.formatted_sell_price}</strong>
-                                </td>
-                                <td>${plan.currency}</td>
-                                <td><span class="badge">${plan.interval_display}</span></td>
-                                <td>${pickupTypeBadge}</td>
-                                <td>${statusBadge}</td>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        <button class="btn btn-gradient-primary btn-sm editBtn" data-id="${plan.id}" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-gradient-info btn-sm showBtn" data-id="${plan.id}" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-gradient-warning btn-sm duplicateBtn" data-id="${plan.id}" title="Duplicate">
-                                            <i class="fas fa-copy"></i>
-                                        </button>
-                                        <button class="btn btn-gradient-danger btn-sm deleteBtn" data-id="${plan.id}" title="Move to Trash">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                    return html;
-                }
             });
         </script>
     @endpush

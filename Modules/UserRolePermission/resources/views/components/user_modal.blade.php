@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content border border-primary">
             <div class="modal-header btn-gradient-primary">
-                <h5 class="modal-title" id="userModalLabel">Create / Edit {{ $roleName ??  'User' }}</h5>
+                <h5 class="modal-title" id="userModalLabel">Create / Edit {{ $roleName }}</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
             </div>
@@ -54,16 +54,18 @@
                                 <option value="other">Other</option>
                             </select>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="height_cm">Height (cm)</label>
-                            <input type="number" name="height_cm" id="height_cm" class="form-control" min="0"
-                                step="any">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="weight_kg">Weight (kg)</label>
-                            <input type="number" name="weight_kg" id="weight_kg" class="form-control" min="0"
-                                step="any">
-                        </div>
+                        @if ($roleName == 'parent')
+                            <div class="col-md-4 mb-3">
+                                <label for="height_cm">Height (cm)</label>
+                                <input type="number" name="height_cm" id="height_cm" class="form-control" min="0"
+                                    step="any">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="weight_kg">Weight (kg)</label>
+                                <input type="number" name="weight_kg" id="weight_kg" class="form-control" min="0"
+                                    step="any">
+                            </div>
+                        @endif
                         <div class="col-md-4 mb-3">
                             <label for="country_id">Country</label>
                             <select name="country_id" id="country_id" class="form-control select_option" data-selected="">
@@ -107,7 +109,7 @@
                                 <select name="role" id="role" class="form-control select2 select2-danger"
                                     data-dropdown-css-class="select2-danger" style="width: 100%;" required>
                                     @foreach ($roles as $role)
-                                        <option value="{{ $role->name }}">{{ ucfirst($role->name) }}</option>
+                                        <option value="{{ $role->name }}" {{ $role->name == $roleName ? 'selected' : '' }}>{{ ucfirst($role->name) }}</option>
                                     @endforeach
                                 </select>
                             </div>

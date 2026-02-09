@@ -20,8 +20,9 @@
     </td>
     <td>{{ $plan->currency }}</td>
     <td>
-        <span class="badge {{ $plan->interval_display }} text-dark">
-            {{ $plan->interval_display }}
+        <span class="badge bg-info">
+            {{ $plan->interval_count }} {{ ucfirst($plan->interval) }}
+            @if($plan->interval_count > 1){{ 's' }}@endif
         </span>
     </td>
     <td>
