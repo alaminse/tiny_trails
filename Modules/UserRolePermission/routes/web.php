@@ -1,13 +1,21 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\UserRolePermission\app\Http\Controllers\KidController;
-use Modules\UserRolePermission\app\Http\Controllers\UserController;
-use Modules\UserRolePermission\app\Http\Controllers\RoleController;
-use Modules\UserRolePermission\app\Http\Controllers\PermissionController;
 use Spatie\Permission\Models\Permission;
+use App\Http\Controllers\PayrollController;
+use Modules\UserRolePermission\app\Http\Controllers\KidController;
+use Modules\UserRolePermission\app\Http\Controllers\RoleController;
+use Modules\UserRolePermission\app\Http\Controllers\UserController;
+use Modules\UserRolePermission\app\Http\Controllers\PermissionController;
 
 Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
+
+    Route::prefix('payroll')->group(function () {
+        Route::post('/drivers/{driver}/generate', [PayrollController::class, 'generatePayroll']);
+        Route::post('/records/{payrollRecord}/process', [PayrollController::class, 'processPayroll']);
+        Route::get('/drivers/{driver}/records', [PayrollController::class, 'getDriverPayrollRecords']);
+    });
+
     Route::controller(UserController::class)
         ->prefix('users')
         ->as('users.')

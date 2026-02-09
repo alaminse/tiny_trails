@@ -29,7 +29,6 @@ class KidRepository
 
     public function create(array $data)
     {
-        
         if(isset($data['photo']) && $data['photo'])
         {
             $data['photo'] = $this->uploadFile($data['photo'], 'kid/'.$data['user_id']);

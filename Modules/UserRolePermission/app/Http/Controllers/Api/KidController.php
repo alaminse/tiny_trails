@@ -2,14 +2,15 @@
 
 namespace Modules\UserRolePermission\app\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use Exception;
+use App\Traits\Upload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Modules\UserRolePermission\app\Http\Requests\KidRequest;
-use Modules\UserRolePermission\app\Models\Kid;
-use App\Traits\Upload;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Modules\Subscription\app\Models\Location;
+use Modules\UserRolePermission\app\Models\Kid;
+use Modules\UserRolePermission\app\Http\Requests\KidRequest;
 use Modules\UserRolePermission\app\Http\Resources\KidResource;
 use Modules\UserRolePermission\app\Repositories\KidRepository;
 
@@ -30,39 +31,98 @@ class KidController extends Controller
         $user = Auth::user();
         $user->load('kids');
 
-        // Return collection of kids
         return response()->json(
             KidResource::collection($user->kids),
             200
         );
     }
 
+    /**
+     * Helper function to create or update a location.
+     * This avoids code duplication.
+     */
+    private function createOrUpdateLocation(array $data, string $type): Location
+    {
+        $locationField = $type . '_location';
+        $latField = $type . '_latitude';
+        $lngField = $type . '_longitude';
+        $street1Field = $type . '_street1';
+        $street2Field = $type . '_street2';
+        $cityField = $type . '_city';
+        $stateField = $type . '_state';
+        $postalField = $type . '_postal_code';
+        $countryField = $type . '_country_code';
+
+        return Location::updateOrCreate(
+            [
+                'address' => $data[$locationField],
+                'type' => $type,
+            ],
+            [
+                'address' => $data[$locationField],
+                // FIX: Explicitly cast to float to prevent decimal casting errors
+                'latitude' => (float) $data[$latField],
+                'longitude' => (float) $data[$lngField],
+                'street1' => !empty($data[$street1Field]) ? trim($data[$street1Field]) : trim($data[$locationField]),
+                'street2' => !empty($data[$street2Field]) ? trim($data[$street2Field]) : null,
+                'city' => !empty($data[$cityField]) ? trim($data[$cityField]) : null,
+                'state' => !empty($data[$stateField]) ? trim($data[$stateField]) : null,
+                'postal_code' => !empty($data[$postalField]) ? trim($data[$postalField]) : null,
+                'country_code' => !empty($data[$countryField]) ? trim($data[$countryField]) : 'AU',
+                'type' => $type,
+            ]
+        );
+    }
+
     public function store(KidRequest $request)
     {
-        // return $request;
         try {
             $data = $request->validated();
-            
             /** @var \App\Models\User $user */
             $user = Auth::user();
             $data['user_id'] = $user->id;
+
+            if (isset($data['emergency_contacts']) && is_array($data['emergency_contacts'])) {
+                $data['emergency_contacts'] = json_encode($data['emergency_contacts']);
+            }
+
+            // Validate coordinates
+            if (!isset($data['pickup_latitude']) || !isset($data['pickup_longitude'])) {
+                return response()->json(['message' => 'Pickup location coordinates are required.'], 422);
+            }
+            if (!isset($data['dropoff_latitude']) || !isset($data['dropoff_longitude'])) {
+                return response()->json(['message' => 'Dropoff location coordinates are required.'], 422);
+            }
+
+            // Create locations using the helper function
+            $pickupLocation = $this->createOrUpdateLocation($data, 'pickup');
+            $data['pickup_location_id'] = $pickupLocation->id;
+
+            $dropoffLocation = $this->createOrUpdateLocation($data, 'dropoff');
+            $data['dropoff_location_id'] = $dropoffLocation->id;
+
+            // Calculate distance
+            $data['distance_between_locations'] = $this->calculateDistance(
+                $pickupLocation->latitude,
+                $pickupLocation->longitude,
+                $dropoffLocation->latitude,
+                $dropoffLocation->longitude
+            );
+
             $kid = $this->kidRepository->create($data);
 
             return response()->json(new KidResource($kid), 201);
 
         } catch (Exception $e) {
             Log::error('Kid creation failed: '.$e->getMessage());
-
-            return response()->json([
-                'message' => 'Failed to create kid',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(['message' => 'Failed to create kid', 'error' => $e->getMessage()], 500);
         }
     }
 
     public function edit(Kid $kid)
     {
-        $kid->load('parent');
+        $kid->load('parent', 'pickupLocation', 'dropoffLocation');
+
         return response()->json(new KidResource($kid));
     }
 
@@ -70,22 +130,69 @@ class KidController extends Controller
     {
         try {
             $data = $request->validated();
-            
             /** @var \App\Models\User $user */
             $user = Auth::user();
             $data['user_id'] = $user->id;
+
+            if (isset($data['emergency_contacts']) && is_array($data['emergency_contacts'])) {
+                $data['emergency_contacts'] = json_encode($data['emergency_contacts']);
+            }
+
+            // Update locations if they are provided
+            if (isset($data['pickup_location']) && !empty($data['pickup_location'])) {
+                if (!isset($data['pickup_latitude']) || !isset($data['pickup_longitude'])) {
+                    return response()->json(['message' => 'Pickup location coordinates are required.'], 422);
+                }
+                $pickupLocation = $this->createOrUpdateLocation($data, 'pickup');
+                $data['pickup_location_id'] = $pickupLocation->id;
+            }
+
+            if (isset($data['dropoff_location']) && !empty($data['dropoff_location'])) {
+                if (!isset($data['dropoff_latitude']) || !isset($data['dropoff_longitude'])) {
+                    return response()->json(['message' => 'Dropoff location coordinates are required.'], 422);
+                }
+                $dropoffLocation = $this->createOrUpdateLocation($data, 'dropoff');
+                $data['dropoff_location_id'] = $dropoffLocation->id;
+            }
+
+            // Calculate distance if both locations are available
+            if (isset($data['pickup_location_id']) && isset($data['dropoff_location_id'])) {
+                $pickupLoc = Location::find($data['pickup_location_id']);
+                $dropoffLoc = Location::find($data['dropoff_location_id']);
+                if ($pickupLoc && $dropoffLoc) {
+                    $data['distance_between_locations'] = $this->calculateDistance(
+                        $pickupLoc->latitude,
+                        $pickupLoc->longitude,
+                        $dropoffLoc->latitude,
+                        $dropoffLoc->longitude
+                    );
+                }
+            }
+
             $kid = $this->kidRepository->update($kid->id, $data);
 
             return response()->json(new KidResource($kid), 200);
 
         } catch (Exception $e) {
             Log::error('Kid update failed: ' . $e->getMessage());
-
-            return response()->json([
-                'message' => 'Failed to update kid',
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(['message' => 'Failed to update kid', 'error' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Helper function to calculate distance.
+     */
+    private function calculateDistance($lat1, $lng1, $lat2, $lng2): float
+    {
+        $earthRadius = 6371; // Earth's radius in kilometers
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lng2 - $lng1);
+
+        $a = sin($dLat/2) * sin($dLat/2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon/2) * sin($dLon/2);
+        $c = 2 * asin(sqrt($a));
+
+        return round($earthRadius * $c, 2);
     }
 
     public function show(Kid $kid)
@@ -93,7 +200,6 @@ class KidController extends Controller
         return response()->json(new KidResource($kid));
     }
 
-    // Soft delete a kid
     public function destroy(Kid $kid)
     {
         try {

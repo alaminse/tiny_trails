@@ -1,36 +1,61 @@
 <?php
 
-namespace Modules\UserRolePermission\App\Models;
+// in Modules/UserRolePermission/app/Models/Kid.php
 
-use App\Models\User;
+namespace Modules\UserRolePermission\app\Models;
+
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\UserRolePermission\database\factories\KidFactory;
-
+use Brick\Math\BigDecimal;
+use Modules\Subscription\app\Models\Location; // Make sure to import the Location model
 
 class Kid extends Model
 {
-    use HasFactory, SoftDeletes;
+    protected $fillable = [
+        'user_id',
+        'first_name',
+        'middle_name',
+        'last_name',
+        'dob',
+        'gender',
+        'height_cm',
+        'weight_kg',
+        'school_name',
+        'school_address',
+        'pickup_location',
+        'dropoff_location',
+        'hair_color',
+        'eye_color',
+        'birthmarks',
+        'emergency_contacts',
+        'photo',
+        'pickup_location_id', // <-- ADD THIS
+        'dropoff_location_id', // <-- ADD THIS
+        'distance_between_locations',
+    ];
+
+    protected $casts = [
+        'dob' => 'date',
+        'emergency_contacts' => 'array',
+        'distance_between_locations' => 'decimal:2',
+    ];
 
     /**
-     * The attributes that are mass assignable.
+     * Fix for Laravel BigDecimal error where scale is passed as a string.
      */
-    protected $guarded = ['id'];
-
-    public function parent(): BelongsTo
+    protected function asDecimal($value, $decimals)
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return (string) BigDecimal::of($value)->toScale((int) $decimals);
     }
 
-    public function getParentNameAttribute()
+    // Define the relationships
+    public function pickupLocation(): BelongsTo
     {
-        return $this->parent ? $this->parent->first_name. ' ' .$this->parent->last_name  : null;
+        return $this->belongsTo(Location::class, 'pickup_location_id');
     }
 
-    protected static function newFactory()
+    public function dropoffLocation(): BelongsTo
     {
-        return KidFactory::new();
+        return $this->belongsTo(Location::class, 'dropoff_location_id');
     }
 }
