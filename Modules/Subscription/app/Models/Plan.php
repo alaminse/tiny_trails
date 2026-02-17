@@ -2,10 +2,11 @@
 
 namespace Modules\Subscription\app\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\PickUpType\app\Models\PickupType;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\UserRolePermission\Entities\KidWage;
 
 class Plan extends Model
 {
@@ -184,5 +185,13 @@ class Plan extends Model
     public function scopeInactive($query)
     {
         return $query->where('status', 'inactive');
+    }
+
+    /**
+     * Get the wages for the plan.
+     */
+    public function wages()
+    {
+        return $this->hasMany(KidWage::class);
     }
 }

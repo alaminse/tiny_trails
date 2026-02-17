@@ -43,6 +43,7 @@ class KidResource extends JsonResource
 
             // FIX: Use the new LocationResource to safely load related location data.
             // This prevents errors if the relationships are not loaded.
+            'parent' => new UserResource($this->whenLoaded('parent')),
             'pickup_location_details' => new LocationResource($this->whenLoaded('pickupLocation')),
             'dropoff_location_details' => new LocationResource($this->whenLoaded('dropoffLocation')),
         ];

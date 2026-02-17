@@ -11,9 +11,9 @@ use Modules\UserRolePermission\app\Http\Controllers\PermissionController;
 Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
 
     Route::prefix('payroll')->group(function () {
-        Route::post('/drivers/{driver}/generate', [PayrollController::class, 'generatePayroll']);
-        Route::post('/records/{payrollRecord}/process', [PayrollController::class, 'processPayroll']);
-        Route::get('/drivers/{driver}/records', [PayrollController::class, 'getDriverPayrollRecords']);
+        // Route::post('/drivers/{driver}/generate', [PayrollController::class, 'generatePayroll']);
+        // Route::post('/records/{payrollRecord}/process', [PayrollController::class, 'processPayroll']);
+        // Route::get('/drivers/{driver}/records', [PayrollController::class, 'getDriverPayrollRecords']);
     });
 
     Route::controller(UserController::class)
@@ -84,44 +84,7 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
             Route::delete('/force-delete/{kid}','forceDelete')->name('forceDelete');
             Route::get('/get/data', 'getData')->name('data');
             Route::get('/parents', 'parents')->name('parents');
+            Route::get('/wage/{kid}', 'wage')->name('wage');
+            Route::post('/{kid}/wage/store', 'storeWage')->name('wage.store');
         });
 });
-
-
-// Route::get('/create/permissions', function(){
-//         $modules = [
-//             'users',
-//             'roles',
-//             'permissions',
-//             'kids',
-//             'drivers',
-//             'parents',
-//             'pickup',
-//             'country',
-//             'state',
-//             'city',
-//             'plan',
-//             'subscription',
-//             'rideassign',
-//             'rides',
-//         ];
-
-//         $actions = [
-//             'create',
-//             'edit',
-//             'delete',
-//             'view',
-//             'list',
-//         ];
-
-//         foreach ($modules as $module) {
-//             foreach ($actions as $action) {
-//                 Permission::create([
-//                     'name' => $action . '-' . $module,
-//                     'guard_name' => 'web',
-//                 ]);
-//             }
-//         }
-
-//         return 'Permissions seeded successfully!. Total permissions created: ' . (count($modules) * count($actions));
-// });

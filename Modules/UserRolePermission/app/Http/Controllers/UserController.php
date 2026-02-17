@@ -45,14 +45,21 @@ class UserController extends Controller
 
     public function store(UserRequest $request)
     {
-        try {
-            DB::beginTransaction();
+
+        // return $request;
+        // try {
+        //     DB::beginTransaction();
 
             $data = $request->validated(); // ✅ safer than manually pulling fields
 
-            if($request->file('photo'))
-            {
-                $data['photo'] = $this->uploadFile($request->file('photo'), 'user');
+            $allFiles = $request->allFiles();
+
+            // Log for debugging: Check what files we received
+            Log::info('Files received at the start of the request:', array_keys($allFiles));
+
+            // Handle the main photo using the files array, NOT the request object
+            if (isset($allFiles['photo']) && $allFiles['photo'] instanceof \Illuminate\Http\UploadedFile) {
+                $data['photo'] = $this->uploadFile($allFiles['photo'], 'user');
             }
 
             // Create user
@@ -78,28 +85,7 @@ class UserController extends Controller
 
             // If driver, store extra fields
             if ($data['role'] === 'driver') {
-
-                // Store uploaded images
-                if($request->file('driving_license_image'))
-                {
-                    $data['driving_license_image'] = $this->uploadFile($request->file('driving_license_image'), 'driver/'. $user->id);
-                }
-                if($request->file('car_image'))
-                {
-                    $data['car_image'] = $this->uploadFile($request->file('car_image'), 'driver/'. $user->id);
-                }
-
-                $user->driver()->create([
-                    'driving_license_number' => $data['driving_license_number'],
-                    'driving_license_expiry' => $data['driving_license_expiry'],
-                    'driving_license_image'  => $data['driving_license_image'] ?? '',
-                    'car_model'              => $data['car_model'],
-                    'car_make'               => $data['car_make'],
-                    'car_year'               => $data['car_year'],
-                    'car_color'              => $data['car_color'],
-                    'car_plate_number'       => $data['car_plate_number'],
-                    'car_image'              => $data['car_image'] ?? '',
-                ]);
+                $this->handleDriverData($user, $data, false, $allFiles);
             }
 
             DB::commit();
@@ -109,15 +95,15 @@ class UserController extends Controller
                 'user' => $user->load('driver') // if applicable
             ], 201);
 
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error('User creation failed: ' . $e->getMessage());
+        // } catch (Exception $e) {
+        //     DB::rollBack();
+        //     Log::error('User creation failed: ' . $e->getMessage());
 
-            return response()->json([
-                'message' => 'Failed to create user',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        //     return response()->json([
+        //         'message' => 'Failed to create user',
+        //         'error' => $e->getMessage()
+        //     ], 500);
+        // }
     }
 
     public function edit(User $user)
@@ -147,15 +133,41 @@ class UserController extends Controller
         if ($role === 'driver') {
             $driver = $user->driver;
             $data = array_merge($data, [
+                // --- License Details ---
                 'driving_license_number'  => $driver->driving_license_number,
+                'licence_card_number'     => $driver->licence_card_number,
+                'licence_type'            => $driver->licence_type,
                 'driving_license_expiry'  => $driver->driving_license_expiry,
                 'driving_license_image'   => $driver->driving_license_image ? asset($driver->driving_license_image) : null,
-                'car_model'               => $driver->car_model,
-                'car_make'                => $driver->car_make,
-                'car_year'                => $driver->car_year,
-                'car_color'               => $driver->car_color,
-                'car_plate_number'        => $driver->car_plate_number,
-                'car_image'               => $driver->car_image ? asset($driver->car_image) : null,
+
+                // --- License Address ---
+                'licence_address_line_1' => $driver->licence_address_line_1,
+                'licence_address_line_2' => $driver->licence_address_line_2,
+                'licence_city'           => $driver->licence_city,
+                'licence_state'          => $driver->licence_state,
+                'licence_postal_code'    => $driver->licence_postal_code,
+                'licence_country'        => $driver->licence_country,
+
+                // --- Car Details ---
+                'car_make'         => $driver->car_make,
+                'car_model'        => $driver->car_model,
+                'car_year'         => $driver->car_year,
+                'car_color'        => $driver->car_color,
+                'car_plate_number' => $driver->car_plate_number,
+                'car_image'        => $driver->car_image ? asset($driver->car_image) : null,
+
+                // --- Other Qualifications & Documents ---
+                'wwc_card_number'        => $driver->wwc_card_number,
+                'wwc_expiry_date'        => $driver->wwc_expiry_date,
+                'wwc_card_image'         => $driver->wwc_card_image ? asset($driver->wwc_card_image) : null,
+                'police_clearance_ref'   => $driver->police_clearance_ref,
+                'police_clearance_image' => $driver->police_clearance_image ? asset($driver->police_clearance_image) : null,
+                'other_qualifications'   => $driver->other_qualifications,
+                'face_image'             => $driver->face_image ? asset($driver->face_image) : null,
+
+                // --- Driver Status ---
+                'is_verified'   => $driver->is_verified,
+                'driver_status' => $driver->driver_status,
             ]);
         }
 
@@ -189,15 +201,41 @@ class UserController extends Controller
         if ($role === 'driver') {
             $driver = $user->driver;
             $data = array_merge($data, [
+                // --- License Details ---
                 'driving_license_number'  => $driver->driving_license_number,
+                'licence_card_number'     => $driver->licence_card_number,
+                'licence_type'            => $driver->licence_type,
                 'driving_license_expiry'  => $driver->driving_license_expiry,
                 'driving_license_image'   => $driver->driving_license_image ? asset($driver->driving_license_image) : null,
-                'car_model'               => $driver->car_model,
-                'car_make'                => $driver->car_make,
-                'car_year'                => $driver->car_year,
-                'car_color'               => $driver->car_color,
-                'car_plate_number'        => $driver->car_plate_number,
-                'car_image'               => $driver->car_image ? asset($driver->car_image) : null,
+
+                // --- License Address ---
+                'licence_address_line_1' => $driver->licence_address_line_1,
+                'licence_address_line_2' => $driver->licence_address_line_2,
+                'licence_city'           => $driver->licence_city,
+                'licence_state'          => $driver->licence_state,
+                'licence_postal_code'    => $driver->licence_postal_code,
+                'licence_country'        => $driver->licence_country,
+
+                // --- Car Details ---
+                'car_make'         => $driver->car_make,
+                'car_model'        => $driver->car_model,
+                'car_year'         => $driver->car_year,
+                'car_color'        => $driver->car_color,
+                'car_plate_number' => $driver->car_plate_number,
+                'car_image'        => $driver->car_image ? asset($driver->car_image) : null,
+
+                // --- Other Qualifications & Documents ---
+                'wwc_card_number'        => $driver->wwc_card_number,
+                'wwc_expiry_date'        => $driver->wwc_expiry_date,
+                'wwc_card_image'         => $driver->wwc_card_image ? asset($driver->wwc_card_image) : null,
+                'police_clearance_ref'   => $driver->police_clearance_ref,
+                'police_clearance_image' => $driver->police_clearance_image ? asset($driver->police_clearance_image) : null,
+                'other_qualifications'   => $driver->other_qualifications,
+                'face_image'             => $driver->face_image ? asset($driver->face_image) : null,
+
+                // --- Driver Status ---
+                'is_verified'   => $driver->is_verified,
+                'driver_status' => $driver->driver_status,
             ]);
         }
 
@@ -233,10 +271,16 @@ class UserController extends Controller
             DB::beginTransaction();
 
             $data = $request->validated();
-
+            $allFiles = $request->allFiles();
             // Upload new profile photo if provided
             if ($request->file('photo')) {
                 $data['photo'] = $this->uploadFile($request->file('photo'), 'user');
+                if($user->photo) $this->deleteFile($user->photo);
+            }
+
+             // Handle the main photo using the files array, NOT the request object
+            if (isset($allFiles['photo']) && $allFiles['photo'] instanceof \Illuminate\Http\UploadedFile) {
+                $data['photo'] = $this->uploadFile($allFiles['photo'], 'user');
                 if($user->photo) $this->deleteFile($user->photo);
             }
 
@@ -269,26 +313,28 @@ class UserController extends Controller
 
             // If driver, update or create driver info
             if ($data['role'] === 'driver') {
-                if ($request->file('driving_license_image')) {
-                    $data['driving_license_image'] = $this->uploadFile($request->file('driving_license_image'), 'driver/' . $user->id);
-                    if($user->driver?->driving_license_image) $this->deleteFile($user->driver?->driving_license_image);
-                }
-                if ($request->file('car_image')) {
-                    $data['car_image'] = $this->uploadFile($request->file('car_image'), 'driver/' . $user->id);
-                    if($user->driver?->car_image) $this->deleteFile($user->driver?->car_image);
-                }
+                $this->handleDriverData($user, $data, true, $allFiles);
 
-                $user->driver()->updateOrCreate([], [
-                    'driving_license_number' => $data['driving_license_number'],
-                    'driving_license_expiry' => $data['driving_license_expiry'],
-                    'driving_license_image'  => $data['driving_license_image'] ?? $user->driver->driving_license_image ?? '',
-                    'car_model'              => $data['car_model'],
-                    'car_make'               => $data['car_make'],
-                    'car_year'               => $data['car_year'],
-                    'car_color'              => $data['car_color'],
-                    'car_plate_number'       => $data['car_plate_number'],
-                    'car_image'              => $data['car_image'] ?? $user->driver->car_image ?? '',
-                ]);
+                // if ($request->file('driving_license_image')) {
+                //     $data['driving_license_image'] = $this->uploadFile($request->file('driving_license_image'), 'driver/' . $user->id);
+                //     if($user->driver?->driving_license_image) $this->deleteFile($user->driver?->driving_license_image);
+                // }
+                // if ($request->file('car_image')) {
+                //     $data['car_image'] = $this->uploadFile($request->file('car_image'), 'driver/' . $user->id);
+                //     if($user->driver?->car_image) $this->deleteFile($user->driver?->car_image);
+                // }
+
+                // $user->driver()->updateOrCreate([], [
+                //     'driving_license_number' => $data['driving_license_number'],
+                //     'driving_license_expiry' => $data['driving_license_expiry'],
+                //     'driving_license_image'  => $data['driving_license_image'] ?? $user->driver->driving_license_image ?? '',
+                //     'car_model'              => $data['car_model'],
+                //     'car_make'               => $data['car_make'],
+                //     'car_year'               => $data['car_year'],
+                //     'car_color'              => $data['car_color'],
+                //     'car_plate_number'       => $data['car_plate_number'],
+                //     'car_image'              => $data['car_image'] ?? $user->driver->car_image ?? '',
+                // ]);
             }
 
             DB::commit();
@@ -306,6 +352,61 @@ class UserController extends Controller
                 'message' => 'Failed to update user',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * @param \App\Models\User $user
+     * @param array $data
+     * @param bool $isUpdate
+     * @param \Illuminate\Http\UploadedFile[] $files // The array of files from the controller
+     */
+    private function handleDriverData(User $user, array $data, bool $isUpdate = false, array $files)
+    {
+        $driverData = [];
+        $driverFields = [
+            'driving_license_number', 'licence_card_number', 'licence_type', 'driving_license_expiry',
+            'car_make', 'car_model', 'car_year', 'car_color', 'car_plate_number',
+            'wwc_card_number', 'wwc_expiry_date', 'police_clearance_ref', 'other_qualifications',
+            'is_verified', 'driver_status', 'licence_address_line_1', 'licence_address_line_2',
+            'licence_city', 'licence_state', 'licence_postal_code', 'licence_country'
+        ];
+
+        foreach ($driverFields as $field) {
+            if (array_key_exists($field, $data)) {
+                $driverData[$field] = $data[$field];
+            }
+        }
+
+        // Handle driver-specific file uploads from the PASSED ARRAY
+        $driverImages = ['driving_license_image', 'car_image', 'wwc_card_image', 'police_clearance_image', 'face_image'];
+
+        foreach ($driverImages as $image) {
+            // Check if the file exists in the array we passed from the controller
+            if (isset($files[$image]) && $files[$image] instanceof \Illuminate\Http\UploadedFile) {
+                $file = $files[$image];
+
+                // Log for debugging
+                Log::info("Processing driver image: $image", [
+                    'original_name' => $file->getClientOriginalName(),
+                    'temp_path' => $file->getPathname(),
+                    'exists' => file_exists($file->getPathname())
+                ]);
+
+                // If updating, delete the old file first
+                if ($isUpdate && $user->driver?->$image) {
+                    $this->deleteFile($user->driver->$image);
+                }
+
+                // Upload the new file
+                $driverData[$image] = $this->uploadFile($file, 'driver/' . $user->id);
+            }
+        }
+
+        if ($isUpdate) {
+            $user->driver()->update($driverData);
+        } else {
+            $user->driver()->create($driverData);
         }
     }
 

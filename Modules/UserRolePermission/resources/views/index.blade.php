@@ -20,7 +20,7 @@
                             </div>
 
                             <div class="p-2">
-                                <a href="#" class="btn btn-sm btn-gradient-success" id="addUserBtn">Add User</a>
+                                <a href="#" class="btn btn-sm btn-gradient-success" id="addUserBtn">Add {{ ucfirst($roleName) ?? 'User' }}</a>
                             </div>
                         </div>
                         <div class="table-responsive pt-3">
@@ -57,6 +57,7 @@
         <script src="{{ asset('backend/js/dataTables.responsive.min.js') }}"></script>
         <script src="{{ asset('backend/js/responsive.bootstrap.js') }}"></script>
 
+        <script src="{{ asset('backend/js/module-crud.js') }}"></script>
         <script src="{{ asset('backend/js/image-preview.js') }}"></script>
         <script>
             $(document).ready(function() {
@@ -91,15 +92,15 @@
                     baseUrl: '/users',
                     routeRole: window.routeRole,
                     fields: [
+                        // --- Core User Information ---
                         'first_name',
                         'last_name',
+                        'middle_name',
                         'email',
                         'password',
                         'phone',
                         'dob',
                         'gender',
-                        'height_cm',
-                        'weight_kg',
                         'photo',
                         'address',
                         'country_id',
@@ -107,16 +108,64 @@
                         'city_id',
                         'status',
                         'role',
+
+                        // --- Parent-Specific Fields ---
+                        'height_cm',
+                        'weight_kg',
+
+                        // --- Driver-Specific Fields ---
                         'driving_license_number',
+                        'licence_card_number',
+                        'licence_type',
                         'driving_license_expiry',
+                        'licence_address_line_1',
+                        'licence_address_line_2',
+                        'licence_city',
+                        'licence_state',
+                        'licence_postal_code',
+                        'licence_country',
                         'driving_license_image',
-                        'car_model',
                         'car_make',
+                        'car_model',
                         'car_year',
                         'car_color',
                         'car_plate_number',
                         'car_image',
+                        'wwc_card_number',
+                        'wwc_expiry_date',
+                        'wwc_card_image',
+                        'police_clearance_ref',
+                        'police_clearance_image',
+                        'other_qualifications',
                     ],
+                    // fields: [
+                    //     'first_name',
+                    //     'last_name',
+                    //     'middle_name',
+                    //     'email',
+                    //     'password',
+                    //     'phone',
+                    //     'dob',
+                    //     'gender',
+                    //     'height_cm',
+                    //     'weight_kg',
+                    //     'photo',
+                    //     'address',
+                    //     'country_id',
+                    //     'state_id',
+                    //     'city_id',
+                    //     'status',
+                    //     'role',
+                    //     'driving_license_number',
+                    //     'driving_license_expiry',
+                    //     'driving_license_image',
+                    //     'car_model',
+                    //     'car_make',
+                    //     'car_year',
+                    //     'car_color',
+                    //     'car_plate_number',
+                    //     'car_image',
+                    // ],
                 });
             });
 
@@ -200,6 +249,5 @@
     }
   });
         </script>
-        <script src="{{ asset('backend/js/module-crud.js') }}"></script>
     @endpush
 @endsection

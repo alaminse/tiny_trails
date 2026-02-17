@@ -16,6 +16,10 @@
                 <i class="fas fa-trash-alt"></i>
             </button>
         @else
+
+            <a href="{{ route('admin.kids.wage', $kid->id) }}" class="btn btn-gradient-primary btn-sm" title="Add Wage">
+                <i class="fas fa-money-check"></i>
+            </a>
             <a href="#" class="btn btn-gradient-primary btn-sm editBtn" data-id="{{ $kid->id }}" title="Edit">
                 <i class="fas fa-edit"></i>
             </a>

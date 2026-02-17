@@ -79,6 +79,7 @@
                         'id',
                         'user_id',
                         'first_name',
+                        'middle_name',
                         'last_name',
                         'dob',
                         'gender',
@@ -87,7 +88,12 @@
                         'photo',
                         'school_name',
                         'school_address',
-                        'emergency_contact',
+                        'birthmarks',
+                        'eye_color',
+                        'hair_color',
+                        'distance_between_locations',
+                        'pickup_location',
+                        'dropoff_location',
                     ]
                 });
             });

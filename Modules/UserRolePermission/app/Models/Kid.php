@@ -5,9 +5,9 @@ namespace Modules\UserRolePermission\app\Models;
 use App\Models\User;
 use Brick\Math\BigDecimal;
 use Illuminate\Database\Eloquent\Model;
-use Modules\Subscription\app\Models\Location;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes; // <-- 1. IMPORT THE TRAIT
+use Modules\Subscription\app\Models\Location;
 
 class Kid extends Model
 {
@@ -75,5 +75,27 @@ class Kid extends Model
     public function dropoffLocation(): BelongsTo
     {
         return $this->belongsTo(Location::class, 'dropoff_location_id');
+    }
+
+    /**
+     * Get the wages for the kid.
+     */
+    public function wages()
+    {
+        return $this->hasMany(KidWage::class);
+    }
+
+    /**
+     * Get the active wage for the kid.
+     */
+    public function activeWage()
+    {
+        return $this->hasOne(KidWage::class)
+                    // ->where('status', 'active')
+                    ->where('start_date', '<=', now())
+                    ->where(function($query) {
+                        $query->whereNull('end_date')
+                            ->orWhere('end_date', '>=', now());
+                    });
     }
 }

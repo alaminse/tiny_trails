@@ -20,13 +20,41 @@ class Driver extends Model
         protected $fillable = [
             'user_id', 'driving_license_number', 'driving_license_expiry', 'driving_license_image',
             'car_model', 'car_make', 'car_year', 'car_color', 'car_plate_number', 'car_image',
-            'face_embedding', 'face_image', 'is_verified', 'device_token', 'status'
+            'face_embedding', 'face_image', 'is_verified', 'device_token', 'status',
+
+            // --- NEW Licence Details ---
+            'licence_card_number',
+            'licence_type',
+
+            // --- NEW Licence Address ---
+            'licence_address_line_1',
+            'licence_address_line_2',
+            'licence_city',
+            'licence_state',
+            'licence_postal_code',
+            'licence_country',
+
+            // --- NEW Compliance Documents ---
+            'wwc_card_number',
+            'wwc_expiry_date',
+            'wwc_card_image',
+            'police_clearance_ref',
+            'police_clearance_image',
+            'other_qualifications',
         ];
 
         protected $casts = [
             'driving_license_expiry' => 'date',
             'car_year' => 'integer',
             'is_verified' => 'boolean',
+
+
+            // --- NEW Casts ---
+            'wwc_expiry_date' => 'date',
+            'other_qualifications' => 'array', // Casts JSON to an array
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'deleted_at' => 'datetime',
         ];
 
         // এই মেথডটি খুবই গুরুত্বপূর্ণ

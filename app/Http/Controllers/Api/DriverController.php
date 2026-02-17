@@ -2,17 +2,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\RideResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Modules\RideAssignment\app\Models\RideAssign;
-use Modules\Subscription\app\Models\Subscription;
 use Modules\RideAssignment\app\Models\Ride;
 use App\Traits\Upload;
 use Modules\UserRolePermission\app\Models\Driver;
 use Illuminate\Support\Facades\File;
-
 class DriverController extends Controller
 {
     use Upload;
@@ -22,7 +18,7 @@ class DriverController extends Controller
     public function dashboard(Request $request): JsonResponse
     {
         $driver = $request->user();
-        
+
         if (!$driver->hasRole('driver')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
@@ -157,11 +153,11 @@ class DriverController extends Controller
                         'ride_type' => $ride->ride_type,
                         'status' => $ride->status,
                         'date' => $ride->date,
-                        'parent' => $ride->parent ? 
-                            $ride->parent->first_name . ' ' . $ride->parent->last_name : 
+                        'parent' => $ride->parent ?
+                            $ride->parent->first_name . ' ' . $ride->parent->last_name :
                             null,
-                        'commission' => $ride->rideAssign ? 
-                            $ride->rideAssign->driver_commission : 
+                        'commission' => $ride->rideAssign ?
+                            $ride->rideAssign->driver_commission :
                             null,
                         'created_at' => $ride->created_at,
                     ];
@@ -176,7 +172,7 @@ class DriverController extends Controller
     public function rides(Request $request): JsonResponse
     {
         $driver = $request->user();
-        
+
         if (!$driver->hasRole('driver')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
@@ -251,7 +247,7 @@ class DriverController extends Controller
     public function earnings(Request $request): JsonResponse
     {
         $driver = $request->user();
-        
+
         if (!$driver->hasRole('driver')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
@@ -301,70 +297,70 @@ class DriverController extends Controller
                 'total' => number_format($totalEarnings, 2),
                 'comparison' => [
                     'difference' => number_format($thisMonthEarnings - $lastMonthEarnings, 2),
-                    'percentage' => $lastMonthEarnings > 0 
+                    'percentage' => $lastMonthEarnings > 0
                         ? round((($thisMonthEarnings - $lastMonthEarnings) / $lastMonthEarnings) * 100, 2)
                         : 0,
                 ],
             ]
         ]);
     }
-    
+
     public function updateFaceVerification(Request $request)
-    {   
+    {
         $request->validate([
             'face_embedding' => 'required|string',
             'faceImage'      => 'required|string', // base64 string
             'is_verified'    => 'required|numeric',
         ]);
-    
+
         try {
             $user = $request->user();
-        
+
             if (!$user->hasRole('driver')) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
-            
+
             $driver = Driver::where('user_id', $user->id)->first();
-        
+
             $imageName = '';
-        
+
             // Decode base64 image and save to public folder
             if ($request->faceImage) {
                 $imageData = base64_decode($request->faceImage);
                 $imageName = 'face_' . $driver->id . '_' . time() . '.jpg';
                 $path = public_path('parent/verification/' . $driver->id);
-            
+
                 // Create directory if not exists
                 if (!File::exists($path)) {
                     File::makeDirectory($path, 0755, true);
                 }
-            
+
                 // Save file
                 file_put_contents($path . '/' . $imageName, $imageData);
-            
+
                 // Delete old image if exists
                 if ($driver->faceImage && File::exists(public_path($driver->faceImage))) {
                     File::delete(public_path($driver->faceImage));
                 }
-            
+
                 $imageName = 'uploads/driver/verification/' . $driver->id . '/' . $imageName;
             }
-        
+
             $data = [
                 'face_embedding' => $request->face_embedding,
                 'faceImage'      => $imageName,
                 'is_verified'    => $request->is_verified,
             ];
-        
+
             // Update driver
             $driver->update($data);
-        
+
             return response()->json([
                 'success' => true,
                 'message' => 'Face verification data updated successfully',
                 'data' => $driver
             ], 200);
-        
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
