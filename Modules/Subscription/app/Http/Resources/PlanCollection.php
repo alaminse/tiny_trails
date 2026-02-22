@@ -7,93 +7,112 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class PlanCollection extends ResourceCollection
 {
-    /**
-     * Transform the resource collection into an array.
-     *
-     * @return array<int|string, mixed>
-     */
-
     public function toArray(Request $request): array
     {
         return [
             'data' => $this->collection->map(function ($plan) {
                 return [
-                    'id' => $plan->id,
+                    'id'             => $plan->id,
                     'pickup_type_id' => $plan->pickup_type_id,
-                    'pickup_type' => $plan->pickupType ? [
-                        'id' => $plan->pickupType->id,
-                        'name' => $plan->pickupType->name,
-                    ] : null,
-                    'name' => $plan->name,
-                    'slug' => $plan->slug,
-                    'description' => $plan->description,
-                    'price' => (float) $plan->price,
-                    'sell_price' => (float) $plan->sell_price,
-                    'display_price' => $plan->sell_price > 0 ? (float) $plan->sell_price : (float) $plan->price,
-                    'currency' => $plan->currency,
-                    'formatted_price' => $this->formatPrice($plan->price, $plan->currency),
-                    'formatted_sell_price' => $plan->sell_price > 0 ? $this->formatPrice($plan->sell_price, $plan->currency) : null,
+                    'name'           => $plan->name,
+                    'slug'           => $plan->slug,
+                    'description'    => $plan->description,
+
+                    // Pricing
+                    'price'                   => (float) $plan->price,
+                    'sell_price'              => (float) $plan->sell_price,
+                    'display_price'           => $plan->sell_price > 0 ? (float) $plan->sell_price : (float) $plan->price,
+                    'currency'                => 'AUD',
+                    'formatted_price'         => $this->formatPrice($plan->price),
+                    'formatted_sell_price'    => $plan->sell_price > 0
+                                                    ? $this->formatPrice($plan->sell_price)
+                                                    : null,
                     'formatted_display_price' => $this->formatPrice(
-                        $plan->sell_price > 0 ? $plan->sell_price : $plan->price,
-                        $plan->currency
-                    ),
-                    'interval' => $plan->interval,
+                                                    $plan->sell_price > 0 ? $plan->sell_price : $plan->price
+                                                ),
+
+                    // Billing
+                    'interval'       => $plan->interval,
                     'interval_count' => $plan->interval_count,
                     'billing_period' => $this->formatBillingPeriod($plan->interval_count, $plan->interval),
-                    'features' => $plan->features ? json_decode($plan->features, true) : [],
+
+                    // Features & Tier
+                    'features' => $plan->features ?? [],
                     'plan_tier' => $plan->plan_tier,
                     'iot_level' => $plan->iot_level,
-                    'includes_hardware' => $plan->includes_hardware,
-                    'hardware_price' => (float) $plan->hardware_price,
-                    'formatted_hardware_price' => $plan->includes_hardware ? $this->formatPrice($plan->hardware_price, $plan->currency) : null,
-                    'status' => $plan->status,
-                    'is_active' => $plan->status === 'active',
+
+                    // Hardware
+                    'includes_hardware'        => (bool) $plan->includes_hardware,
+
+                    'hardware_price' => $plan->includes_hardware ? (float) ($plan->hardware_price ?? 0) : null,
+                    'formatted_hardware_price' => $plan->includes_hardware
+                        ? $this->formatPrice($plan->hardware_price ?? 0)
+                        : null,
+
+                    // Status
+                    'status'     => $plan->status,
+                    'is_active'  => $plan->status === 'active',
                     'sort_order' => $plan->sort_order,
-                    'created_at' => $plan->created_at?->toISOString(),
-                    'updated_at' => $plan->updated_at?->toISOString(),
+
+                    // Pickup Type
+                    'pickup_type' => $plan->pickupType ? [
+                        'id'                            => $plan->pickupType->id,
+                        'name'                          => $plan->pickupType->name,
+                        'amount'                        => (float) $plan->pickupType->amount,
+                        'min_notice_minutes'            => (int) $plan->pickupType->min_notice_minutes,
+                        'requires_instant_notification' => (bool) $plan->pickupType->requires_instant_notification,
+                        'status'                        => $plan->pickupType->status,
+                    ] : null,
                 ];
             }),
+
             'meta' => [
-                'total' => $this->collection->count(),
-                'active_count' => $this->collection->where('status', 'active')->count(),
-                'inactive_count' => $this->collection->where('status', 'inactive')->count(),
+                'total'               => $this->collection->count(),
+                'active_count'        => $this->collection->where('status', 'active')->count(),
+                'inactive_count'      => $this->collection->where('status', 'inactive')->count(),
                 'plans_with_hardware' => $this->collection->where('includes_hardware', true)->count(),
-                'plans_by_tier' => $this->collection->groupBy('plan_tier')->map->count(),
-            ]
+                'plans_by_tier'       => $this->collection->groupBy('plan_tier')->map->count(),
+            ],
         ];
     }
 
-    /**
-     * Format price with currency symbol
-     */
-    private function formatPrice($price, $currency = 'AUD')
+    private function formatPrice($price): string
     {
-        $symbols = [
-            'AUD' => '$',
-            'USD' => '$',
-            'EUR' => '€',
-            'GBP' => '£',
-        ];
-
-        $symbol = $symbols[$currency] ?? $currency . ' ';
-
-        return $symbol . number_format($price, 2);
+        return '$' . number_format((float) $price, 2);
     }
 
-    /**
-     * Format billing period for display
-     */
-    private function formatBillingPeriod($count, $interval)
+    private function formatBillingPeriod($count, $interval): string
     {
+        // Handle trip interval
+        if ($interval === 'trip') {
+            return $count == 1 ? 'per trip' : 'every ' . $count . ' trips';
+        }
+
         if ($count == 1) {
             return 'per ' . $interval;
         }
 
+        // Named periods
+        $namedPeriods = [
+            'month' => [
+                3  => 'per quarter',
+                6  => 'per half year',
+                12 => 'per year',
+            ],
+            'week' => [
+                2 => 'every fortnight',
+            ],
+        ];
+
+        if (isset($namedPeriods[$interval][$count])) {
+            return $namedPeriods[$interval][$count];
+        }
+
         $pluralIntervals = [
-            'day' => 'days',
-            'week' => 'weeks',
+            'day'   => 'days',
+            'week'  => 'weeks',
             'month' => 'months',
-            'year' => 'years',
+            'year'  => 'years',
         ];
 
         $plural = $pluralIntervals[$interval] ?? $interval . 's';

@@ -22,6 +22,8 @@ Route::middleware(['auth:sanctum'])->prefix('users')->group(function () {
             Route::post('/update/{kid}', 'update');
             Route::get('/show/{kid}', 'show');
             Route::delete('/delete/{kid}','destroy');
+            Route::get('/ride/pricing/{kid}', 'ridePricing');
+            Route::post('/{kid}/wage/respond', 'respondToWage');
         });
 });
 

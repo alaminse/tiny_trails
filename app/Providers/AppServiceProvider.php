@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Observers\RideObserver;
 use Illuminate\Support\ServiceProvider;
+use Modules\RideAssignment\app\Models\Ride;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,6 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Ride::observe(RideObserver::class);
     }
 }

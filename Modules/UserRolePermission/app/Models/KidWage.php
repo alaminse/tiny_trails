@@ -11,6 +11,7 @@ class KidWage extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'kid_wages';
     protected $fillable = [
         'kid_id',
         'plan_id',

@@ -209,4 +209,75 @@ class KidController extends Controller
             return response()->json(['message' => 'Failed to delete kid.', 'error' => $e->getMessage()], 500);
         }
     }
+
+
+    public function ridePricing(Kid $kid)
+    {
+        try {
+            if ($kid->user_id !== Auth::id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized.',
+                ], 403);
+            }
+
+            $data = $this->kidRepository->ridePricing($kid->id);
+
+            return response()->json([
+                'success' => true,        // ← add success flag
+                'message' => 'Kid ride pricing info.',
+                'data'    => $data,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something is wrong. Try Again.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function respondToWage(Request $request, Kid $kid)
+    {
+        try {
+            if ($kid->user_id !== Auth::id()) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+            }
+
+            $request->validate([
+                'action'     => 'required|in:accept,reject',
+                'start_date' => 'required_if:action,accept|nullable|date|after_or_equal:today',
+                'end_date'   => 'required_if:action,accept|nullable|date|after:start_date',
+            ]);
+
+            $pendingWage = $kid->pendingWage;
+
+            if (!$pendingWage) {
+                return response()->json(['success' => false, 'message' => 'No pending wage found.'], 404);
+            }
+
+            if ($pendingWage->status !== 'pending') {
+                return response()->json(['success' => false, 'message' => 'This pricing has already been responded to.'], 422);
+            }
+
+            $pendingWage->update([
+                'status'     => $request->action === 'accept' ? 'active' : 'inactive',
+                'start_date' => $request->action === 'accept' ? $request->start_date : $pendingWage->start_date,
+                'end_date'   => $request->action === 'accept' ? $request->end_date : $pendingWage->end_date,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => $request->action === 'accept'
+                    ? 'Pricing accepted successfully.'
+                    : 'Pricing rejected.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

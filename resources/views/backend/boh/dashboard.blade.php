@@ -1,0 +1,344 @@
+{{-- resources/views/backend/boh/dashboard.blade.php --}}
+@extends('backend.app')
+@section('title', 'BoH Live Dashboard')
+
+@section('css')
+<style>
+    .driver-status-card {
+        border-left: 4px solid #dee2e6;
+        transition: all 0.2s;
+    }
+    .driver-status-card.on-trip    { border-left-color: #0d6efd; }
+    .driver-status-card.ready      { border-left-color: #198754; }
+    .driver-status-card.delayed    { border-left-color: #dc3545; }
+    .driver-status-card.next-batch { border-left-color: #0dcaf0; }
+    .driver-status-card.offline    { border-left-color: #6c757d; opacity: 0.7; }
+
+    .capacity-bar { height: 8px; border-radius: 4px; background: #e9ecef; overflow: hidden; }
+    .capacity-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+    .capacity-fill.low  { background: #198754; }
+    .capacity-fill.mid  { background: #ffc107; }
+    .capacity-fill.full { background: #dc3545; }
+
+    .live-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #198754;
+        font-weight: 600;
+    }
+    .live-dot {
+        width: 8px; height: 8px;
+        background: #198754;
+        border-radius: 50%;
+        animation: livePulse 1.5s infinite;
+    }
+    @keyframes livePulse {
+        0%,100% { opacity:1; transform:scale(1); }
+        50%      { opacity:0.4; transform:scale(1.4); }
+    }
+
+    .timeline { position: relative; padding-left: 20px; }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 6px; top: 0; bottom: 0;
+        width: 1px; background: #dee2e6;
+    }
+    .timeline-item { position: relative; padding-bottom: 16px; }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -17px; top: 5px;
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 2px solid #fff;
+    }
+    .timeline-item.success::before { background: #198754; }
+    .timeline-item.warning::before { background: #ffc107; }
+    .timeline-item.danger::before  { background: #dc3545; }
+    .timeline-time { font-size: 11px; color: #6c757d; font-family: monospace; }
+</style>
+@endsection
+
+@section('content')
+    @include('backend.includes.header', ['mainTitle' => 'BoH Live Dashboard'])
+
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card card-primary card-outline mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h3 class="card-title">Live Operations Centre</h3>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="live-indicator">
+                                    <span class="live-dot"></span> LIVE
+                                </span>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="refreshDashboard()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+
+                            {{-- ── ALERT BANNER ── --}}
+                            <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <div>
+                                    Driver <strong>James O.</strong> has been "On Trip" for 45 mins —
+                                    expected drop-off was 7:45 AM.
+                                    <a href="#" class="alert-link ms-2">Manual check →</a>
+                                </div>
+                            </div>
+
+                            {{-- ── STAT CARDS ── --}}
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-3">
+                                    <div class="card bg-primary text-white shadow-sm border-0">
+                                        <div class="card-body">
+                                            <div class="text-uppercase small fw-semibold opacity-75 mb-1">Active Drivers</div>
+                                            <div class="fs-2 fw-bold">{{ $activeDrivers ?? 12 }}</div>
+                                            <div class="small opacity-75">3 on trip right now</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-success text-white shadow-sm border-0">
+                                        <div class="card-body">
+                                            <div class="text-uppercase small fw-semibold opacity-75 mb-1">Rides Today</div>
+                                            <div class="fs-2 fw-bold">{{ $ridesToday ?? 47 }}</div>
+                                            <div class="small opacity-75">↑ 6 from yesterday</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-warning text-dark shadow-sm border-0">
+                                        <div class="card-body">
+                                            <div class="text-uppercase small fw-semibold opacity-75 mb-1">Pending Broadcasts</div>
+                                            <div class="fs-2 fw-bold">{{ $pendingBroadcasts ?? 5 }}</div>
+                                            <div class="small opacity-75">2 expiring soon</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-danger text-white shadow-sm border-0">
+                                        <div class="card-body">
+                                            <div class="text-uppercase small fw-semibold opacity-75 mb-1">Delayed Drivers</div>
+                                            <div class="fs-2 fw-bold">{{ $delayedDrivers ?? 2 }}</div>
+                                            <div class="small opacity-75">Manual check needed</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- ── DRIVER STATUS GRID ── --}}
+                            <h5 class="fw-bold mb-3">Live Driver Status</h5>
+                            <div class="row g-3 mb-4">
+                                @forelse($drivers ?? [] as $driver)
+                                    @php
+                                        $statusClass = match($driver->availability_status) {
+                                            'on_trip'        => 'on-trip',
+                                            'ready_next_batch' => 'next-batch',
+                                            'delayed'        => 'delayed',
+                                            'available'      => 'ready',
+                                            default          => 'offline',
+                                        };
+                                        $statusBadge = match($driver->availability_status) {
+                                            'on_trip'          => '<span class="badge bg-primary">🔵 On Trip</span>',
+                                            'ready_next_batch' => '<span class="badge bg-info text-dark">⚡ Next Batch</span>',
+                                            'delayed'          => '<span class="badge bg-danger">🔴 Delayed</span>',
+                                            'available'        => '<span class="badge bg-success">✅ Ready</span>',
+                                            default            => '<span class="badge bg-secondary">⚫ Offline</span>',
+                                        };
+                                        $usedCapacity = $driver->today_rides_count ?? 0;
+                                        $maxCapacity  = $driver->vehicleType->max_capacity ?? 1;
+                                        $pct          = $maxCapacity > 0 ? ($usedCapacity / $maxCapacity) * 100 : 0;
+                                        $barClass     = $pct >= 100 ? 'full' : ($pct >= 60 ? 'mid' : 'low');
+                                    @endphp
+                                    <div class="col-md-4">
+                                        <div class="card driver-status-card {{ $statusClass }} shadow-sm">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div>
+                                                        <div class="fw-bold">{{ $driver->user->first_name }} {{ $driver->user->last_name }}</div>
+                                                        <div class="small text-muted">
+                                                            🚐 {{ $driver->vehicleType->name ?? 'No Vehicle' }} · {{ $driver->car_plate_number }}
+                                                        </div>
+                                                    </div>
+                                                    {!! $statusBadge !!}
+                                                </div>
+                                                <div class="mb-1">
+                                                    <div class="d-flex justify-content-between small text-muted mb-1">
+                                                        <span>Capacity</span>
+                                                        <span>{{ $usedCapacity }} / {{ $maxCapacity }} kids</span>
+                                                    </div>
+                                                    <div class="capacity-bar">
+                                                        <div class="capacity-fill {{ $barClass }}" style="width: {{ $pct }}%"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex gap-2 flex-wrap mt-2">
+                                                    @if($driver->isFaceVerified())
+                                                        <span class="badge bg-success-subtle text-success border border-success-subtle">✅ Face Verified</span>
+                                                    @else
+                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">❌ Not Verified</span>
+                                                    @endif
+                                                </div>
+                                                <div class="d-flex gap-2 mt-3">
+                                                    <button class="btn btn-sm btn-outline-secondary">📍 Track</button>
+                                                    @if(in_array($driver->availability_status, ['on_trip','delayed']))
+                                                        <button class="btn btn-sm btn-danger">📞 Call</button>
+                                                    @else
+                                                        <a href="{{ route('admin.ride.assign.create', ['driver' => $driver->id]) }}"
+                                                           class="btn btn-sm btn-primary">📋 Assign</a>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @empty
+                                    {{-- Static demo cards when no data --}}
+                                    <div class="col-md-4">
+                                        <div class="card driver-status-card on-trip shadow-sm">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div>
+                                                        <div class="fw-bold">James O.</div>
+                                                        <div class="small text-muted">🚐 7-Seater Van · VIC-4821</div>
+                                                    </div>
+                                                    <span class="badge bg-primary">🔵 On Trip</span>
+                                                </div>
+                                                <div class="mb-1">
+                                                    <div class="d-flex justify-content-between small text-muted mb-1">
+                                                        <span>Capacity</span><span>5 / 6 kids</span>
+                                                    </div>
+                                                    <div class="capacity-bar">
+                                                        <div class="capacity-fill full" style="width:83%"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex gap-2 flex-wrap mt-2">
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle">✅ Face Verified</span>
+                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">⚠️ 45 min elapsed</span>
+                                                </div>
+                                                <div class="d-flex gap-2 mt-3">
+                                                    <button class="btn btn-sm btn-outline-secondary">📍 Track</button>
+                                                    <button class="btn btn-sm btn-danger">📞 Call</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card driver-status-card ready shadow-sm">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div>
+                                                        <div class="fw-bold">Sarah K.</div>
+                                                        <div class="small text-muted">🚗 4-Seater Sedan · VIC-3310</div>
+                                                    </div>
+                                                    <span class="badge bg-success">✅ Ready</span>
+                                                </div>
+                                                <div class="mb-1">
+                                                    <div class="d-flex justify-content-between small text-muted mb-1">
+                                                        <span>Capacity</span><span>2 / 3 kids</span>
+                                                    </div>
+                                                    <div class="capacity-bar">
+                                                        <div class="capacity-fill mid" style="width:66%"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex gap-2 flex-wrap mt-2">
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle">✅ Face Verified</span>
+                                                </div>
+                                                <div class="d-flex gap-2 mt-3">
+                                                    <button class="btn btn-sm btn-outline-secondary">📍 Track</button>
+                                                    <button class="btn btn-sm btn-primary">📋 Assign</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card driver-status-card delayed shadow-sm">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div>
+                                                        <div class="fw-bold">Mike R.</div>
+                                                        <div class="small text-muted">🚐 7-Seater Van · VIC-9920</div>
+                                                    </div>
+                                                    <span class="badge bg-danger">🔴 Delayed</span>
+                                                </div>
+                                                <div class="mb-1">
+                                                    <div class="d-flex justify-content-between small text-muted mb-1">
+                                                        <span>Capacity</span><span>6 / 6 kids</span>
+                                                    </div>
+                                                    <div class="capacity-bar">
+                                                        <div class="capacity-fill full" style="width:100%"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex gap-2 flex-wrap mt-2">
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle">✅ Face Verified</span>
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Buffer overdue</span>
+                                                </div>
+                                                <div class="d-flex gap-2 mt-3">
+                                                    <button class="btn btn-sm btn-outline-secondary">📍 Track</button>
+                                                    <button class="btn btn-sm btn-danger">📞 Call</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforelse
+                            </div>
+
+                            {{-- ── ACTIVITY FEED ── --}}
+                            <div class="card shadow-sm border-0">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0 fw-bold">Activity Feed</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="timeline">
+                                        <div class="timeline-item success">
+                                            <div class="timeline-time">08:42 AM</div>
+                                            <div class="small">Sarah K. signalled <strong>Ready for Next Batch</strong></div>
+                                        </div>
+                                        <div class="timeline-item">
+                                            <div class="timeline-time">08:31 AM</div>
+                                            <div class="small">Ride #1042 marked <strong>Completed</strong> by Chen L. — Timesheet auto-created</div>
+                                        </div>
+                                        <div class="timeline-item warning">
+                                            <div class="timeline-time">08:15 AM</div>
+                                            <div class="small">Mike R. status changed to <strong>Delayed</strong> — buffer time exceeded</div>
+                                        </div>
+                                        <div class="timeline-item">
+                                            <div class="timeline-time">07:55 AM</div>
+                                            <div class="small">Broadcast #B-221 accepted by <strong>Priya M.</strong></div>
+                                        </div>
+                                        <div class="timeline-item danger">
+                                            <div class="timeline-time">07:30 AM</div>
+                                            <div class="small">Broadcast #B-220 <strong>expired</strong> — no driver accepted within 60 min</div>
+                                        </div>
+                                        <div class="timeline-item success">
+                                            <div class="timeline-time">06:58 AM</div>
+                                            <div class="small">James O. face verified ✅ — valid until 11:58 AM</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>{{-- /card-body --}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+    <script>
+        function refreshDashboard() {
+            location.reload();
+        }
+        // Auto-refresh every 30 seconds
+        setTimeout(() => location.reload(), 30000);
+    </script>
+    @endpush
+@endsection

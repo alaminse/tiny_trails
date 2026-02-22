@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\PickUpType\app\Models\PickupType;
-use Modules\UserRolePermission\Entities\KidWage;
+use Modules\UserRolePermission\app\Models\KidWage;
 
 class Plan extends Model
 {

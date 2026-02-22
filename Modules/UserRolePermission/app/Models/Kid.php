@@ -80,9 +80,14 @@ class Kid extends Model
     /**
      * Get the wages for the kid.
      */
-    public function wages()
+    public function kidWages()
     {
         return $this->hasMany(KidWage::class);
+    }
+
+    public function pendingWage()
+    {
+        return $this->hasOne(KidWage::class)->where('status', 'pending')->latest();
     }
 
     /**

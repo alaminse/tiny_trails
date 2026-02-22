@@ -48,7 +48,6 @@ class SubscriptionController extends Controller
         return view('subscription::subscription.index', compact('stats', 'revenueStats', 'users', 'plans'));
     }
 
-
     public function plans()
     {
         try {
@@ -84,31 +83,6 @@ class SubscriptionController extends Controller
 
         return view('subscription::subscription.create', compact('users', 'plans'));
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    // public function store(SubscriptionRequest $request): JsonResponse
-    // {
-    //     try {
-    //         $data = $request->validated();
-
-    //         $subscription = $this->subscriptionRepository->create($data);
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Subscription created successfully.',
-    //             'data' => new SubscriptionResource($subscription->load(['user', 'plan']))
-    //         ], 201);
-
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Failed to create subscription.',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
 
     public function show(Subscription $subscription): JsonResponse
     {
@@ -732,12 +706,12 @@ class SubscriptionController extends Controller
             ], 500);
         }
     }
-    
+
     public function getKids(Request $request): JsonResponse
     {
         try {
-            $user = auth()->user();
-            
+            $user = auth::user();
+
             // Get all kids belonging to the authenticated user
             $kids = Kid::where('user_id', $user->id)
                 ->select('id', 'first_name', 'last_name')

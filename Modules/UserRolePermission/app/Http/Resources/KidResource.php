@@ -32,20 +32,34 @@ class KidResource extends JsonResource
             'eye_color' => $this->eye_color,
             'birthmarks' => $this->birthmarks,
             'emergency_contacts' => $this->when(isset($this->emergency_contacts), is_string($this->emergency_contacts) ? json_decode($this->emergency_contacts, true) : $this->emergency_contacts),
-
-            // FIX: Handle the photo URL safely.
-            // This assumes 'photo' is a string column in your database.
             'photo' => $this->photo ? getImageUrl($this->photo) : null,
-
-            'distance_between_locations' => $this->distance_between_locations,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-
-            // FIX: Use the new LocationResource to safely load related location data.
-            // This prevents errors if the relationships are not loaded.
+            'distance_between_locations' => $this->distance_between_locations,
             'parent' => new UserResource($this->whenLoaded('parent')),
             'pickup_location_details' => new LocationResource($this->whenLoaded('pickupLocation')),
             'dropoff_location_details' => new LocationResource($this->whenLoaded('dropoffLocation')),
+            'has_pending_wage' => $this->kidWages()->where('status', 'pending')->exists(),
+            'pending_wage' => $this->whenLoaded('pendingWage', function () {
+                return $this->pendingWage ? [
+                    'id' => $this->pendingWage->id,
+                    'plan_id' => $this->pendingWage->plan_id,
+                    'price' => (float) $this->pendingWage->price,
+                    'sell_price' => (float) $this->pendingWage->sell_price,
+                    'start_date' => $this->pendingWage->start_date,
+                    'end_date' => $this->pendingWage->end_date,
+                    'status' => $this->pendingWage->status,
+                    'notes' => $this->pendingWage->notes,
+                    'plan' => $this->pendingWage->plan ? [  // ← added
+                        'id' => $this->pendingWage->plan->id,
+                        'name' => $this->pendingWage->plan->name,
+                        'billing_period' => $this->pendingWage->plan->billing_period,
+                        'interval' => $this->pendingWage->plan->interval,
+                        'interval_count' => $this->pendingWage->plan->interval_count,
+                    ] : null,
+                ] : null;
+            }),
         ];
     }
 }
+

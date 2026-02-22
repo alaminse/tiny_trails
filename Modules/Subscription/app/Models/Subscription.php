@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\Subscription\database\factories\SubscriptionFactory;
+use Modules\UserRolePermission\app\Models\KidWage;
 
 class Subscription extends Model
 {
@@ -19,6 +20,7 @@ class Subscription extends Model
         'user_id',
         'plan_id',
         'kid_id',
+        'wage_id',
         'name',
         'payway_customer_id',
         'payway_subscription_id',
@@ -69,6 +71,11 @@ class Subscription extends Model
     public function kid(): BelongsTo
     {
         return $this->belongsTo(Kid::class);
+    }
+
+    public function kid_wage(): BelongsTo
+    {
+        return $this->belongsTo(KidWage::class, 'wage_id');
     }
 
     /**

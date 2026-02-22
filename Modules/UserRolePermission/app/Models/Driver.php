@@ -3,9 +3,11 @@
 namespace Modules\UserRolePermission\app\Models;
 
 use App\Models\User;
+use App\Models\VehicleType;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Modules\RideAssignment\app\Models\Ride;
 use Modules\UserRolePermission\database\factories\DriverFactory;
 
 class Driver extends Model
@@ -41,6 +43,12 @@ class Driver extends Model
             'police_clearance_ref',
             'police_clearance_image',
             'other_qualifications',
+
+            // ... existing fields ...
+            'vehicle_type_id',
+            'availability_status',
+            'face_verified_at',
+            'face_verified_until',
         ];
 
         protected $casts = [
@@ -55,6 +63,9 @@ class Driver extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'deleted_at' => 'datetime',
+
+            'face_verified_at'    => 'datetime',
+            'face_verified_until' => 'datetime',
         ];
 
         // এই মেথডটি খুবই গুরুত্বপূর্ণ
@@ -87,5 +98,31 @@ class Driver extends Model
     public function getDriverNameAttribute()
     {
         return $this->driver ? $this->driver->first_name. ' ' .$this->driver->last_name  : null;
+    }
+
+    // Relationship
+    public function vehicleType()
+    {
+        return $this->belongsTo(VehicleType::class);
+    }
+
+    // Helper: check if face verification is still valid
+    public function isFaceVerified(): bool
+    {
+        return $this->face_verified_until && $this->face_verified_until->isFuture();
+    }
+
+    // Helper: check if driver is at capacity for a given timeslot
+    public function isAtCapacityFor(string $date, string $pickupTime): bool
+    {
+        if (!$this->vehicleType) return false;
+
+        $activeRidesCount = Ride::where('driver_id', $this->id)
+            ->where('date', $date)
+            ->where('pickup', $pickupTime)
+            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->count();
+
+        return $activeRidesCount >= $this->vehicleType->max_capacity;
     }
 }

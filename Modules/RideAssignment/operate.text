@@ -1,0 +1,193 @@
+# drivers table এ যোগ হবে:
+# vehicle_type_id, availability_status, face_verified_at, face_verified_until
+php artisan migrate
+```
+
+---
+
+## 📋 Day-to-Day Operation Flow
+
+---
+
+## ১. Vehicle Type সেটআপ করুন
+**`Admin Panel → Vehicle Types`**
+```
+➡ "Add Vehicle Type" বাটনে ক্লিক
+➡ Name: "7-Seater Van"
+➡ Max Capacity: 6
+➡ Save
+```
+
+তারপর প্রতিটি Driver কে Vehicle assign করুন:
+```
+➡ নিচের table এ Driver এর পাশে "Assign Vehicle" ক্লিক
+➡ Vehicle Type select করুন
+➡ Save
+```
+
+---
+
+## ২. Driver Wage সেটআপ করুন
+**`Admin Panel → Driver Wages`** *(Super Admin only)*
+```
+➡ "Set Wage" বাটনে ক্লিক
+➡ Driver select করুন
+➡ Rate Type: Daily বা Hourly
+➡ Amount: $180
+➡ Effective From: আজকের তারিখ
+➡ Save
+```
+
+> ⚠️ Driver নিজে এই wage দেখতে পাবে না
+
+---
+
+## ৩. Subscription থেকে Ride Assign করুন
+**`Admin Panel → Ride Assignment → Create`**
+```
+➡ Subscription select করুন
+➡ Calendar থেকে dates select করুন
+   (Kid Wage period এর ভেতরে শুধু weekdays select হবে)
+➡ প্রতিটি date এর জন্য:
+   - Driver select করুন
+   - Pickup time দিন
+   → Badge দেখাবে: ✅ 2/6 seats used (real-time AJAX)
+   - Dropoff time দিন
+   - Return pickup time দিন
+   - Return home time দিন
+➡ Submit
+```
+
+**System automatically check করবে:**
+- Driver capacity (vehicle max কি পূর্ণ?)
+- 10 min time buffer (আগের drop-off এর পর)
+
+**Submit হলে automatically তৈরি হবে:**
+- Morning Ride record
+- Afternoon Ride record
+- Subscription status → `assigned`
+
+---
+
+## ৪. Shift Broadcast করুন (Optional)
+**`Admin Panel → Shift Broadcasts`**
+
+Driver manually assign না করে broadcast করলে:
+```
+➡ "New Broadcast" বাটনে ক্লিক
+➡ Unassigned ride select করুন
+➡ Broadcast area: "Oakleigh, VIC"
+➡ Expires in: 60 minutes
+➡ Send Broadcast
+```
+
+**Driver App এ:**
+```
+➡ Driver notification পাবে
+➡ "Accept" বাটনে ক্লিক
+➡ প্রথম driver যে accept করবে সে ride পাবে
+➡ অন্য driver চেষ্টা করলে: "Already taken" error
+```
+
+**Broadcast status:**
+- 🟡 Open — কেউ নেয়নি
+- 🟢 Filled — driver নিয়েছে
+- 🔴 Expired — সময় শেষ, কেউ নেয়নি
+
+---
+
+## ৫. Driver Face Verification (Shift শুরুতে)
+**Driver App এ:**
+```
+➡ Shift শুরুর আগে driver selfie তোলে
+➡ System stored photo এর সাথে match করে
+➡ ✅ Match হলে: 5 ঘণ্টার জন্য verified
+➡ ❌ Match না হলে: shift accept করতে পারবে না
+```
+
+**Admin এ দেখুন:**
+```
+Admin Panel → Face Verification
+```
+- ✅ Active — verified, সময় আছে
+- ⚠️ Expiring — ৩০ মিনিটের কম
+- ❌ Expired — আবার verify করতে হবে
+- ⚫ None — আজকে verify করেনি
+
+> ℹ️ Verify হলে shift নিতে পারবে। Session expire হলে চলমান ride বাধাগ্রস্ত হবে না — শুধু নতুন shift নিতে পারবে না।
+
+---
+
+## ৬. BoH Live Dashboard দেখুন
+**`Admin Panel → BoH Live Dashboard`**
+```
+Real-time দেখতে পাবেন:
+✅ কোন driver কোথায় আছে
+🔵 On Trip — ride চলছে
+✅ Ready — পরের ride নিতে পারবে
+⚡ Next Batch — নিজে ready signal দিয়েছে
+🔴 Delayed — সময়মতো শেষ হয়নি
+⚫ Offline — active না
+
+প্রতিটি driver card এ:
+- Vehicle capacity bar (5/6 kids)
+- Face verification status
+- Track বাটন
+- Call বাটন (delayed হলে)
+```
+
+> Page **30 সেকেন্ড** পর পর auto-refresh হয়
+
+---
+
+## ৭. Ride Complete হলে Timesheet তৈরি
+**Automatic — manual কিছু করতে হবে না**
+```
+Ride status → "completed"
+        ↓
+Timesheet automatically তৈরি হয় (status: pending)
+        ↓
+Admin Panel → Timesheets এ দেখা যাবে
+```
+
+---
+
+## ৮. Timesheet Approve/Reject করুন
+**`Admin Panel → Timesheets`** *(Super Admin only)*
+```
+➡ Pending timesheets দেখুন
+➡ "✓ Approve" — payroll এ যাবে
+➡ "✕ Reject" — reason লিখুন, driver notified হবে
+```
+
+**Filter করুন:**
+- Driver by name
+- Status: Pending / Approved / Rejected
+- Date range
+
+---
+
+## 🔄 Complete Daily Flow Summary
+```
+Morning শুরু
+    │
+    ▼
+Driver Face Verify করে (App)
+    │
+    ▼
+BOH → Ride Assign / Broadcast করে (Admin Panel)
+    │
+    ▼
+Driver Ride Accept করে (App)
+    │
+    ▼
+BoH Dashboard এ Live Track করে (Admin Panel)
+    │
+    ▼
+Ride Complete হয় → Timesheet auto-created
+    │
+    ▼
+Super Admin Timesheet Approve করে (Admin Panel)
+    │
+    ▼
+Payroll process হয়

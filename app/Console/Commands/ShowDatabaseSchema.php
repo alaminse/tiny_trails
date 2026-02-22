@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Schema;
 
 class ShowDatabaseSchema extends Command
 {
+    // php artisan db:schema
     protected $signature = 'db:schema';
     protected $description = 'Show all tables and their columns';
 
