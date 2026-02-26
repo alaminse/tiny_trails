@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\FaceVerificationController;
 use App\Http\Controllers\Admin\ShiftBroadcastController;
 use App\Http\Controllers\Admin\TimesheetController;
 use App\Http\Controllers\Admin\VehicleTypeController;
+use App\Http\Controllers\Admin\DriverShiftController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
@@ -96,6 +97,25 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
     Route::middleware('can:list-face-verification')->group(function () {
         Route::get('face-verification', [FaceVerificationController::class, 'index'])
             ->name('face.verification.index');
+    });
+
+
+    Route::prefix('driver-shifts')->name('driver.shifts.')->group(function () {
+
+        Route::get('/',                             [DriverShiftController::class, 'index'])        ->name('index');
+        Route::get('/create',                       [DriverShiftController::class, 'create'])       ->name('create');
+        Route::post('/',                            [DriverShiftController::class, 'store'])        ->name('store');
+        Route::get('/{shift}',                      [DriverShiftController::class, 'show'])         ->name('show');
+        Route::post('/{shift}/confirm',             [DriverShiftController::class, 'confirm'])      ->name('confirm');
+        Route::delete('/{shift}',                   [DriverShiftController::class, 'destroy'])      ->name('destroy');
+
+        // Ride assignment
+        Route::post('/{shift}/assign-ride',         [DriverShiftController::class, 'assignRide'])   ->name('assignRide');
+        Route::delete('/{shift}/remove-ride/{ride}',[DriverShiftController::class, 'removeRide'])   ->name('removeRide');
+
+        // Driver management on shift
+        Route::post('/{shift}/add-driver',          [DriverShiftController::class, 'addDriver'])    ->name('addDriver');
+        Route::delete('/{shift}/remove-driver/{driver}', [DriverShiftController::class, 'removeDriver'])->name('removeDriver');
     });
 });
 // ── API Routes (Driver App) ─────────────────────────────────────────

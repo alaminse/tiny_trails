@@ -14,7 +14,7 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
                 Route::get('/subscriptions', 'subscriptions')->name('subscriptions');
                 Route::get('/get/subscriptions', 'getSubscriptions')->name('get.subscriptions');
                 Route::get('/create/{subscription}', 'create')->name('create');
-                Route::post('/store/{subscription}', 'store')->name('store');
+                // Route::post('/store/{subscription}', 'store')->name('store');
                 Route::get('/edit/{subscription}', 'edit')->name('edit');
                 Route::get('/show/{subscription}', 'show')->name('show');
 

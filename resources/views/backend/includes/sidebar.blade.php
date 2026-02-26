@@ -203,7 +203,7 @@
                 ══════════════════════════════════════ --}}
 
                 {{-- ── SHIFT BROADCASTS ── --}}
-                @can('list-shift-broadcast')
+                {{-- @can('list-shift-broadcast')
                 <li class="nav-item">
                     <a href="{{ route('admin.shift.broadcast.index') }}"
                         class="nav-link {{ request()->routeIs('admin.shift.broadcast.*') ? 'active' : '' }}">
@@ -211,7 +211,7 @@
                         <p>Shift Broadcasts</p>
                     </a>
                 </li>
-                @endcan
+                @endcan --}}
 
                 {{-- ── TIMESHEETS ── --}}
                 @can('list-timesheets')
@@ -245,6 +245,13 @@
                     </a>
                 </li>
                 @endcan
+                <li class="nav-item">
+                    <a href="{{ route('admin.driver.shifts.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.driver.shifts.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-bus-front"></i>
+                        <p>Driver Shifts</p>
+                    </a>
+                </li>
 
                 {{-- ── FACE VERIFICATION ── --}}
                 {{-- @can('list-face-verification')
