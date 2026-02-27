@@ -15,7 +15,6 @@ return new class extends Migration
             $table->enum('status', ['assigned', 'confirmed', 'completed', 'absent'])->default('assigned');
             $table->text('notes')->nullable();
             $table->timestamps();
-
             $table->unique(['driver_shift_id', 'driver_id'], 'uniq_shift_driver');
         });
     }
