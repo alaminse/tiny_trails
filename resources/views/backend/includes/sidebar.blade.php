@@ -214,7 +214,7 @@
                 @endcan --}}
 
                 {{-- ── TIMESHEETS ── --}}
-                {{-- @can('list-timesheets') --}}
+                @can('list-timesheets')
                 <li class="nav-item">
                     <a href="{{ route('admin.timesheets.index') }}"
                         class="nav-link {{ request()->routeIs('admin.timesheets.*') ? 'active' : '' }}">
@@ -222,10 +222,10 @@
                         <p>Timesheets</p>
                     </a>
                 </li>
-                {{-- @endcan --}}
+                @endcan
 
                 {{-- ── DRIVER WAGES ── --}}
-                {{-- @can('list-driver-wages') --}}
+                @can('list-driver-wages')
                 <li class="nav-item">
                     <a href="{{ route('admin.driver.wages.index') }}"
                         class="nav-link {{ request()->routeIs('admin.driver.wages.*') ? 'active' : '' }}">
@@ -233,10 +233,10 @@
                         <p>Driver Wages</p>
                     </a>
                 </li>
-                {{-- @endcan --}}
+                @endcan
 
                 {{-- ── VEHICLE TYPES ── --}}
-                {{-- @can('list-vehicle-types') --}}
+                @can('list-vehicle-types')
                 <li class="nav-item">
                     <a href="{{ route('admin.vehicle.types.index') }}"
                         class="nav-link {{ request()->routeIs('admin.vehicle.types.*') ? 'active' : '' }}">
@@ -244,8 +244,8 @@
                         <p>Vehicle Types</p>
                     </a>
                 </li>
-                {{-- @endcan
-                @can('list-driver-shifts') --}}
+                @endcan
+                @can('list-driver-shifts')
                 <li class="nav-item">
                     <a href="{{ route('admin.driver.shifts.index') }}"
                         class="nav-link {{ request()->routeIs('admin.driver.shifts.*') ? 'active' : '' }}">
@@ -253,7 +253,7 @@
                         <p>Driver Shifts</p>
                     </a>
                 </li>
-                {{-- @endcan --}}
+                @endcan
 
                 {{-- ── FACE VERIFICATION ── --}}
                 {{-- @can('list-face-verification')

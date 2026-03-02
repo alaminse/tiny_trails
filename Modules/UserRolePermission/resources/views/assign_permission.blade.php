@@ -61,79 +61,13 @@
                                 </div>
 
                                 @php
-                                    $groupedPermissions = $permissions->groupBy(function ($permission) {
-                                        $nameParts = explode('-', $permission->name);
-
-                                        // যদি dash না থাকে
-                                        if (count($nameParts) < 2) {
-                                            return 'other';
-                                        }
-
-                                        // প্রথম অংশ (action) বাদ
-                                        return implode('-', array_slice($nameParts, 1));
-                                    });
-
-                                    $rolePermissions = $role->permissions->pluck('name')->toArray();
-                                @endphp
-
-                                @foreach($groupedPermissions as $module => $modulePermissions)
-<div class="permission-card">
-    <div class="permission-header">
-        <span class="module-name">
-            {{ ucfirst(str_replace('-', ' ', $module)) }}
-        </span>
-    </div>
-
-    <div class="permission-body">
-        <div class="row">
-            @foreach($modulePermissions as $permission)
-            <div class="col-md-3 col-sm-6 mb-2">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox"
-                        class="custom-control-input permission-checkbox module-{{ $module }}"
-                        name="permissions[]"
-                        value="{{ $permission->id }}"
-                        id="permission_{{ $permission->id }}"
-                        {{ in_array($permission->name, $rolePermissions) ? 'checked' : '' }}>
-
-                    <label class="custom-control-label"
-                        for="permission_{{ $permission->id }}">
-                        {{ ucfirst(explode('-', $permission->name)[0]) }}
-                    </label>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</div>
-@endforeach
-
-
-
-                                {{-- @php
-                                    $groupedPermissions = $permissions->groupBy(function($permission) {
-                                        $parts = explode('-', $permission->name);
-
-                                        // যদি শুধু একটা অংশ থাকে (যেমন: boh-dashboard)
-                                        if(count($parts) <= 1) {
-                                            return 'other';
-                                        }
-
-                                        // প্রথম অংশ বাদ দিয়ে বাকি অংশগুলো জোড়া লাগাই
-                                        array_shift($parts);
-                                        return implode('-', $parts);
-                                    });
-
-                                    $rolePermissions = $role->permissions->pluck('name')->toArray();
-                                @endphp --}}
-                                {{-- @php
                                     $groupedPermissions = $permissions->groupBy(function($permission) {
                                         return explode('-', $permission->name)[1] ?? 'other';
                                     });
                                     $rolePermissions = $role->permissions->pluck('name')->toArray();
-                                @endphp --}}
+                                @endphp
 
-                                {{-- @foreach($groupedPermissions as $module => $modulePermissions)
+                                @foreach($groupedPermissions as $module => $modulePermissions)
                                 <div class="permission-card">
                                     <div class="permission-header">
                                         <span class="module-name">
@@ -167,7 +101,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                @endforeach --}}
+                                @endforeach
 
                                 <div class="mt-4">
                                     <button type="submit" class="btn btn-gradient-primary btn-sm">
