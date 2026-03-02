@@ -1,4 +1,3 @@
-{{-- resources/views/backend/driver-shifts/index.blade.php --}}
 @extends('backend.app')
 @section('title', 'Driver Shifts')
 

@@ -307,65 +307,58 @@ class DriverController extends Controller
 
     public function updateFaceVerification(Request $request)
     {
-        $request->validate([
-            'face_embedding' => 'required|string',
-            'faceImage'      => 'required|string', // base64 string
-            'is_verified'    => 'required|numeric',
-        ]);
-
         try {
             $user = $request->user();
 
-            if (!$user->hasRole('driver')) {
-                return response()->json(['error' => 'Unauthorized'], 403);
+            $validated = $request->validate([
+                'face_embedding' => 'required|string',
+                'face_image'     => 'nullable|string', // base64
+            ]);
+
+            $driver = $user->driver;
+
+            if (!$driver) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Driver profile not found',
+                ], 404);
             }
 
-            $driver = Driver::where('user_id', $user->id)->first();
+            // Face image save করো
+            $faceImagePath = $driver->face_image; // আগেরটা রাখো
+            if (!empty($validated['face_image'])) {
+                $imageData = base64_decode($validated['face_image']);
+                $fileName  = 'face_' . $user->id . '_' . time() . '.jpg';
+                $directory = public_path('uploads/driver/' . $user->id);
 
-            $imageName = '';
-
-            // Decode base64 image and save to public folder
-            if ($request->faceImage) {
-                $imageData = base64_decode($request->faceImage);
-                $imageName = 'face_' . $driver->id . '_' . time() . '.jpg';
-                $path = public_path('parent/verification/' . $driver->id);
-
-                // Create directory if not exists
-                if (!File::exists($path)) {
-                    File::makeDirectory($path, 0755, true);
+                if (!file_exists($directory)) {
+                    mkdir($directory, 0755, true);
                 }
 
-                // Save file
-                file_put_contents($path . '/' . $imageName, $imageData);
-
-                // Delete old image if exists
-                if ($driver->faceImage && File::exists(public_path($driver->faceImage))) {
-                    File::delete(public_path($driver->faceImage));
-                }
-
-                $imageName = 'uploads/driver/verification/' . $driver->id . '/' . $imageName;
+                file_put_contents($directory . '/' . $fileName, $imageData);
+                $faceImagePath = url('uploads/driver/' . $user->id . '/' . $fileName);
             }
 
-            $data = [
-                'face_embedding' => $request->face_embedding,
-                'faceImage'      => $imageName,
-                'is_verified'    => $request->is_verified,
-            ];
-
-            // Update driver
-            $driver->update($data);
+            // শুধু face_embedding আর face_image update করো
+            $driver->update([
+                'face_embedding' => $validated['face_embedding'],
+                'face_image'     => $faceImagePath,
+                'is_verified'    => true, // embedding save হলে verified
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Face verification data updated successfully',
-                'data' => $driver
+                'message' => 'Face registered successfully',
+                'data'    => [
+                    'is_verified' => $driver->is_verified,
+                    'face_image'  => $driver->face_image,
+                ],
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update face verification',
-                'error' => $e->getMessage()
+                'message' => 'Failed: ' . $e->getMessage(),
             ], 500);
         }
     }
