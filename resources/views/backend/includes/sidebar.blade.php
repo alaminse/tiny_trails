@@ -245,6 +245,7 @@
                     </a>
                 </li>
                 @endcan
+                @can('list-driver-shifts')
                 <li class="nav-item">
                     <a href="{{ route('admin.driver.shifts.index') }}"
                         class="nav-link {{ request()->routeIs('admin.driver.shifts.*') ? 'active' : '' }}">
@@ -252,6 +253,7 @@
                         <p>Driver Shifts</p>
                     </a>
                 </li>
+                @endcan
 
                 {{-- ── FACE VERIFICATION ── --}}
                 {{-- @can('list-face-verification')

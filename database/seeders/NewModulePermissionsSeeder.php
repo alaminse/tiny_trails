@@ -58,7 +58,7 @@ class NewModulePermissionsSeeder extends Seeder
         }
 
         // ── Assign subset to Admin/BOH role ─────────────────────────
-        $admin = Role::where('name', 'BOH_ Support')->first();
+        $admin = Role::where('name', 'BOH_support')->first();
         if ($admin) {
             $admin->givePermissionTo([
                 'boh-dashboard',
@@ -70,6 +70,7 @@ class NewModulePermissionsSeeder extends Seeder
                 'reject-timesheets',
                 'list-vehicle-types',
                 'list-face-verification',
+                'list-driver-shifts',
                 // Note: wages NOT included for admin — super-admin only
             ]);
         }
