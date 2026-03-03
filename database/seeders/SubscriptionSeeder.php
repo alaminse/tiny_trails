@@ -92,7 +92,8 @@ class SubscriptionSeeder extends Seeder
 
             // Attach IoT device if plan has hardware
             if ($plan->iot_level !== 'none' && $plan->includes_hardware) {
-                $plan->iotDevices()->attach($deviceId, [
+                $plan->devices()->attach($deviceId, [
+                    'is_included' => $plan->includes_hardware,
                     'extra_price' => $plan->hardware_price,
                     'created_at' => now(),
                     'updated_at' => now(),
