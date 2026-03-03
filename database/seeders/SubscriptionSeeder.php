@@ -4,20 +4,35 @@ namespace Modules\Subscription\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SubscriptionSeeder extends Seeder
 {
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
+
+        // ✅ Child table first
+        DB::table('plan_iot_devices')->truncate();
         DB::table('plans')->truncate();
         DB::table('iot_devices')->truncate();
-        DB::table('plan_iot_devices')->truncate();
 
-        // Fetch Pickup Type IDs dynamically
-        $standardId = DB::table('pickup_types')->where('name', 'Standard')->value('id');
-        $expressId = DB::table('pickup_types')->where('name', 'Express')->value('id');
+        Schema::enableForeignKeyConstraints();
 
-        // Insert IoT Device
+        // ✅ Fetch Pickup Type IDs safely
+        $standardId = DB::table('pickup_types')
+            ->where('name', 'Standard')
+            ->value('id');
+
+        $expressId = DB::table('pickup_types')
+            ->where('name', 'Express')
+            ->value('id');
+
+        if (!$standardId || !$expressId) {
+            throw new \Exception('Pickup types not found. Run PickupTypeSeeder first.');
+        }
+
+        // ✅ Insert IoT Device
         $deviceId = DB::table('iot_devices')->insertGetId([
             'name' => 'TinyTrails GPS Tracker',
             'model' => 'TT-GPS-ADV-01',
@@ -29,7 +44,7 @@ class SubscriptionSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // Insert Plans
+        // ✅ Insert Plans
         $plans = [
             [
                 'pickup_type_id' => $standardId,
@@ -44,6 +59,7 @@ class SubscriptionSeeder extends Seeder
                 'plan_tier' => 'per_trip',
                 'iot_level' => 'none',
                 'includes_hardware' => false,
+                'hardware_price' => null,
                 'status' => 1,
                 'sort_order' => 1,
                 'created_at' => now(),
@@ -78,6 +94,7 @@ class SubscriptionSeeder extends Seeder
                     'plan_id' => $planId,
                     'iot_device_id' => $deviceId,
                     'is_included' => $plan['includes_hardware'],
+                    'extra_price' => $plan['hardware_price'],
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
