@@ -9,7 +9,6 @@ use Database\Seeders\PermissionSeeder;
 use Modules\PickUpType\database\seeders\PickupTypeSeeder;
 use Modules\LocationManagement\database\seeders\CitySeeder;
 use Modules\LocationManagement\database\seeders\StateSeeder;
-use Modules\Subscription\database\seeders\SubscriptionSeeder;
 use Modules\LocationManagement\database\seeders\CountrySeeder;
 
 class DatabaseSeeder extends Seeder
