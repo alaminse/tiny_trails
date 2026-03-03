@@ -5,6 +5,7 @@ namespace Modules\Subscription\Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Modules\Subscription\app\Models\Plan;
 
 class SubscriptionSeeder extends Seeder
 {
@@ -28,7 +29,7 @@ class SubscriptionSeeder extends Seeder
             ->where('name', 'Express')
             ->value('id');
 
-        if (!$standardId || !$expressId) {
+        if (! $standardId || ! $expressId) {
             throw new \Exception('Pickup types not found. Run PickupTypeSeeder first.');
         }
 
@@ -44,7 +45,6 @@ class SubscriptionSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // ✅ Insert Plans
         $plans = [
             [
                 'pickup_type_id' => $standardId,
@@ -55,15 +55,13 @@ class SubscriptionSeeder extends Seeder
                 'currency' => 'USD',
                 'interval' => 'trip',
                 'interval_count' => 1,
-                'features' => json_encode(['Transport only','Verified driver']),
+                'features' => ['Transport only', 'Verified driver'],
                 'plan_tier' => 'per_trip',
                 'iot_level' => 'none',
                 'includes_hardware' => false,
                 'hardware_price' => null,
                 'status' => 1,
                 'sort_order' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'pickup_type_id' => $expressId,
@@ -74,27 +72,28 @@ class SubscriptionSeeder extends Seeder
                 'currency' => 'USD',
                 'interval' => 'year',
                 'interval_count' => 1,
-                'features' => json_encode(['Live GPS','SOS','Geofence']),
+                'features' => ['Live GPS', 'SOS', 'Geofence'],
                 'plan_tier' => 'safety_plus',
                 'iot_level' => 'advanced',
                 'includes_hardware' => true,
                 'hardware_price' => 0,
                 'status' => 1,
                 'sort_order' => 2,
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
         ];
 
-        foreach ($plans as $plan) {
-            $planId = DB::table('plans')->insertGetId($plan);
+        foreach ($plans as $planData) {
+            // Convert features array to JSON if your DB column expects JSON
+            if (is_array($planData['features'])) {
+                $planData['features'] = json_encode($planData['features']);
+            }
 
-            if ($plan['iot_level'] !== 'none') {
-                DB::table('plan_iot_devices')->insert([
-                    'plan_id' => $planId,
-                    'iot_device_id' => $deviceId,
-                    'is_included' => $plan['includes_hardware'],
-                    'extra_price' => $plan['hardware_price'],
+            $plan = Plan::create($planData);
+
+            // Attach IoT device if plan has hardware
+            if ($plan->iot_level !== 'none' && $plan->includes_hardware) {
+                $plan->iotDevices()->attach($deviceId, [
+                    'extra_price' => $plan->hardware_price,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
