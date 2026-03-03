@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\UserSeeder;
-use Database\Seeders\LocationSeeder;
 use Database\Seeders\PermissionSeeder;
 use Modules\Subscription\database\seeders\PlanSeeder;
 use Modules\RideAssignment\database\seeders\RideSeeder;
@@ -38,33 +37,11 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RoleSeeder::class,
             PickupTypeSeeder::class,
-            PlanSeeder::class,
+            SubscriptionSeeder::class,
+            // PlanSeeder::class,
+            UserSeeder::class,
         ]);
         $this->command->info('Static data seeded.');
-
-        // User and Driver data
-        $this->command->info('Seeding users and drivers...');
-        $this->call([
-            UserSeeder::class,
-            DriverSeeder::class,
-        ]);
-        $this->command->info('Users and drivers seeded.');
-
-        // Location data
-        $this->command->info('Seeding locations...');
-        LocationSeeder::class; // You can create a simple seeder for this if needed
-        $this->command->info('Locations seeded.');
-
-        // Core application data
-        $this->command->info('Seeding core application data...');
-        $this->call([
-            KidSeeder::class, // You can create a simple seeder for this
-            SubscriptionSeeder::class,
-            RideAssignSeeder::class, // You can create a simple seeder for this
-            RideSeeder::class, // You can create a simple seeder for this
-        ]);
-        $this->command->info('Core application data seeded.');
-
         $this->command->info('Database seeding completed successfully!');
     }
 }

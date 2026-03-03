@@ -1,15 +1,14 @@
 <?php
 
-namespace Modules\PickUpType\database\seeders;
+namespace Modules\PickUpType\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class PickupTypeSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        DB::table('pickup_types')->delete();
 
         $pickupTypes = [
             [
@@ -17,22 +16,29 @@ class PickupTypeSeeder extends Seeder
                 'amount' => 5.00,
                 'min_notice_minutes' => 60,
                 'requires_instant_notification' => 0,
-                'status' => 'active',
+                'status' => 1,
             ],
             [
                 'name' => 'Express',
                 'amount' => 10.00,
                 'min_notice_minutes' => 15,
                 'requires_instant_notification' => 1,
-                'status' => 'active',
+                'status' => 1,
+            ],
+            [
+                'name' => 'Recurring',
+                'amount' => 0,
+                'min_notice_minutes' => 120,
+                'requires_instant_notification' => 1,
+                'status' => 1,
             ],
         ];
 
-        DB::table('pickup_types')->insert(array_map(function ($type) {
-            return array_merge($type, [
+        DB::table('pickup_types')->insert(
+            array_map(fn($type) => array_merge($type, [
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]);
-        }, $pickupTypes));
+            ]), $pickupTypes)
+        );
     }
 }

@@ -81,7 +81,36 @@ class PermissionSeeder extends Seeder
             'delete-rides',
             'view-rides',
             'list-rides',
-            'unassigned-subscription'
+            'unassigned-subscription',
+
+            'boh-dashboard',
+
+            // Shift Broadcasts
+            'list-shift-broadcast',
+            'create-shift-broadcast',
+            'cancel-shift-broadcast',
+
+            // Timesheets
+            'list-timesheets',
+            'approve-timesheets',
+            'reject-timesheets',
+
+            // Driver Wages  (Super Admin only)
+            'list-driver-wages',
+            'create-driver-wages',
+            'edit-driver-wages',
+            'delete-driver-wages',
+
+            // Vehicle Types
+            'list-vehicle-types',
+            'create-vehicle-types',
+            'edit-vehicle-types',
+            'delete-vehicle-types',
+            'assign-vehicle-types',
+
+            // Face Verification  (view only in admin)
+            'list-face-verification',
+            'list-driver-shifts',
         ];
 
         foreach ($permissions as $permission) {

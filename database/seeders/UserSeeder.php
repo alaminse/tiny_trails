@@ -21,13 +21,5 @@ class UserSeeder extends Seeder
             'status' => 'active',
             'email_verified_at' => now(),
         ])->assignRole('admin');
-
-        // Create 10 random parents
-        User::factory()
-            ->count(10)
-            ->create()
-            ->each(function ($user) {
-                $user->assignRole('parent');
-            });
     }
 }
