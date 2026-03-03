@@ -48,6 +48,40 @@ return new class extends Migration
             $table->unique(['plan_id','iot_device_id']);
         });
 
+        $pickupTypeIds = [];
+
+        $pickupTypes = [
+            [
+                'name' => 'One Way Pickup',
+                'amount' => 0,
+                'min_notice_minutes' => 30,
+                'requires_instant_notification' => 0,
+                'status' => 1,
+            ],
+            [
+                'name' => 'Round Trip',
+                'amount' => 0,
+                'min_notice_minutes' => 60,
+                'requires_instant_notification' => 0,
+                'status' => 1,
+            ],
+            [
+                'name' => 'Recurring Pickup',
+                'amount' => 0,
+                'min_notice_minutes' => 120,
+                'requires_instant_notification' => 1,
+                'status' => 1,
+            ],
+        ];
+
+        foreach ($pickupTypes as $type) {
+            $pickupTypeIds[] = DB::table('pickup_types')->insertGetId([
+                ...$type,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
         // -----------------------------
         // 4️⃣ Insert default IoT device
         // -----------------------------
