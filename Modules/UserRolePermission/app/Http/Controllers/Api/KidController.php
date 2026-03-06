@@ -75,89 +75,89 @@ class KidController extends Controller
     }
 
     public function store(KidRequest $request)
-{
-    try {
+    {
+        try {
 
-        Log::info('Kid create request start');
+            Log::info('Kid create request start');
 
-        $data = $request->validated();
-        Log::info('Validated Data', $data);
+            $data = $request->validated();
+            Log::info('Validated Data', $data);
 
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $data['user_id'] = $user->id;
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            $data['user_id'] = $user->id;
 
-        Log::info('User ID', ['user_id' => $user->id]);
+            Log::info('User ID', ['user_id' => $user->id]);
 
-        if (isset($data['emergency_contacts']) && is_array($data['emergency_contacts'])) {
-            $data['emergency_contacts'] = json_encode($data['emergency_contacts']);
+            if (isset($data['emergency_contacts']) && is_array($data['emergency_contacts'])) {
+                $data['emergency_contacts'] = json_encode($data['emergency_contacts']);
+            }
+
+            // Validate coordinates
+            if (!isset($data['pickup_latitude']) || !isset($data['pickup_longitude'])) {
+                return response()->json(['message' => 'Pickup location coordinates are required.'], 422);
+            }
+
+            if (!isset($data['dropoff_latitude']) || !isset($data['dropoff_longitude'])) {
+                return response()->json(['message' => 'Dropoff location coordinates are required.'], 422);
+            }
+
+            Log::info('Coordinates', [
+                'pickup_lat' => $data['pickup_latitude'],
+                'pickup_lng' => $data['pickup_longitude'],
+                'drop_lat' => $data['dropoff_latitude'],
+                'drop_lng' => $data['dropoff_longitude']
+            ]);
+
+            // Create pickup location
+            $pickupLocation = $this->createOrUpdateLocation($data, 'pickup');
+            Log::info('Pickup Location', $pickupLocation->toArray());
+
+            $data['pickup_location_id'] = $pickupLocation->id;
+
+            // Create dropoff location
+            $dropoffLocation = $this->createOrUpdateLocation($data, 'dropoff');
+            Log::info('Dropoff Location', $dropoffLocation->toArray());
+
+            $data['dropoff_location_id'] = $dropoffLocation->id;
+
+            // Calculate distance
+            $distance = $this->calculateDistance(
+                $pickupLocation->latitude,
+                $pickupLocation->longitude,
+                $dropoffLocation->latitude,
+                $dropoffLocation->longitude
+            );
+
+            Log::info('Calculated Distance Raw', ['distance' => $distance]);
+
+            $data['distance_between_locations'] = round($distance, 2);
+
+            Log::info('Distance After Round', [
+                'distance_between_locations' => $data['distance_between_locations']
+            ]);
+
+            Log::info('Final Data Before Save', $data);
+
+            $kid = $this->kidRepository->create($data);
+
+            Log::info('Kid Created', $kid->toArray());
+
+            return response()->json(new KidResource($kid), 201);
+
+        } catch (Exception $e) {
+
+            Log::error('Kid creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to create kid',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // Validate coordinates
-        if (!isset($data['pickup_latitude']) || !isset($data['pickup_longitude'])) {
-            return response()->json(['message' => 'Pickup location coordinates are required.'], 422);
-        }
-
-        if (!isset($data['dropoff_latitude']) || !isset($data['dropoff_longitude'])) {
-            return response()->json(['message' => 'Dropoff location coordinates are required.'], 422);
-        }
-
-        Log::info('Coordinates', [
-            'pickup_lat' => $data['pickup_latitude'],
-            'pickup_lng' => $data['pickup_longitude'],
-            'drop_lat' => $data['dropoff_latitude'],
-            'drop_lng' => $data['dropoff_longitude']
-        ]);
-
-        // Create pickup location
-        $pickupLocation = $this->createOrUpdateLocation($data, 'pickup');
-        Log::info('Pickup Location', $pickupLocation->toArray());
-
-        $data['pickup_location_id'] = $pickupLocation->id;
-
-        // Create dropoff location
-        $dropoffLocation = $this->createOrUpdateLocation($data, 'dropoff');
-        Log::info('Dropoff Location', $dropoffLocation->toArray());
-
-        $data['dropoff_location_id'] = $dropoffLocation->id;
-
-        // Calculate distance
-        $distance = $this->calculateDistance(
-            $pickupLocation->latitude,
-            $pickupLocation->longitude,
-            $dropoffLocation->latitude,
-            $dropoffLocation->longitude
-        );
-
-        Log::info('Calculated Distance Raw', ['distance' => $distance]);
-
-        $data['distance_between_locations'] = round($distance, 2);
-
-        Log::info('Distance After Round', [
-            'distance_between_locations' => $data['distance_between_locations']
-        ]);
-
-        Log::info('Final Data Before Save', $data);
-
-        $kid = $this->kidRepository->create($data);
-
-        Log::info('Kid Created', $kid->toArray());
-
-        return response()->json(new KidResource($kid), 201);
-
-    } catch (Exception $e) {
-
-        Log::error('Kid creation failed', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-
-        return response()->json([
-            'message' => 'Failed to create kid',
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
 
     public function edit(Kid $kid)
     {

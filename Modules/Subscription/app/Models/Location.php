@@ -25,8 +25,10 @@ class Location extends Model
     ];
 
     protected $casts = [
-        'latitude' => 'decimal:8',
-        'longitude' => 'decimal:8',
+        // 'latitude' => 'decimal:8',
+        // 'longitude' => 'decimal:8',
+        'latitude' => 'float',
+        'longitude' => 'float',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
