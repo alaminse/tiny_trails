@@ -101,14 +101,16 @@ class KidController extends Controller
             $dropoffLocation = $this->createOrUpdateLocation($data, 'dropoff');
             $data['dropoff_location_id'] = $dropoffLocation->id;
 
-            // Calculate distance
-            $data['distance_between_locations'] = $this->calculateDistance(
-                $pickupLocation->latitude,
-                $pickupLocation->longitude,
-                $dropoffLocation->latitude,
-                $dropoffLocation->longitude
+            // Calculate
+            $data['distance_between_locations'] = round(
+                $this->calculateDistance(
+                    $pickupLocation->latitude,
+                    $pickupLocation->longitude,
+                    $dropoffLocation->latitude,
+                    $dropoffLocation->longitude
+                ),
+                2
             );
-
             $kid = $this->kidRepository->create($data);
 
             return response()->json(new KidResource($kid), 201);
