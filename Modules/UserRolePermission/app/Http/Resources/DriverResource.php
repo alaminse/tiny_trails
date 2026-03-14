@@ -21,7 +21,7 @@ class DriverResource extends JsonResource
             'car_plate_number'         => $this->car_plate_number,
             'car_image'                => getImageUrl($this->car_image),
             'face_embedding'           => $this->face_embedding,
-            'is_verified'              => $this->is_verified,
+            'is_verified'              => (int) $this->is_verified,  // true→1, false→0
             'device_token'             => $this->device_token,
             'status'                   => $this->status,
         ];

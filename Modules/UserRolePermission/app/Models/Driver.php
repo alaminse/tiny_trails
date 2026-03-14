@@ -53,16 +53,15 @@ class Driver extends Model
 
     protected $casts = [
         'driving_license_expiry' => 'date',
-        'car_year' => 'integer',
-        'is_verified' => 'boolean',
+        'car_year'      => 'integer',
+        'is_verified'   => 'integer',
 
         // --- NEW Casts ---
-        'wwc_expiry_date' => 'date',
-        'other_qualifications' => 'array', // Casts JSON to an array
+        'wwc_expiry_date'       => 'date',
+        'other_qualifications'  => 'array', // Casts JSON to an array
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
-
         'face_embedding'      => 'array',
         'face_verified_at'    => 'datetime',
         'face_verified_until' => 'datetime',
