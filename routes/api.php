@@ -35,7 +35,7 @@ Route::prefix('auth')->group(function () {
         Route::post('/verify-email', 'verifyEmail');
         Route::post('/verify-pin', 'verifyPin');
     });
-    
+
     Route::get('get/countries', [AuthController::class, 'getCountries']);
     Route::get('get/states', [AuthController::class, 'allStates']);
     Route::get('get/cities', [AuthController::class, 'allCities']);
@@ -53,6 +53,9 @@ Route::prefix('auth')->group(function () {
 
         Route::post('/face/store', [FaceRecognitionController::class, 'store']);
         Route::get('/face/my-face', [FaceRecognitionController::class, 'getMyFace']);
+        Route::post('face-verify',         [FaceRecognitionController::class, 'verify']);
+        Route::get('face-verify/status',   [FaceRecognitionController::class, 'status']);
+
     });
 });
 
@@ -64,7 +67,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->group(function () {
             Route::get('/dashboard','dashboard');
             Route::patch('/face-verification', 'updateFaceVerification');
-
         });
     // Parent Mobile API Routes
     Route::controller(ParentApiController::class)
