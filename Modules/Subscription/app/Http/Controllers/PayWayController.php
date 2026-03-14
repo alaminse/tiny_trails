@@ -148,7 +148,7 @@ class PayWayController extends Controller
                 'street1' => trim($validated['billing_address']['street1']),
                 'cityName' => trim($validated['billing_address']['city']),
                 'state' => $validated['billing_address']['state'],
-                // 'state'             => $this->mapStateToPayWay($validated['billing_address']['state']),
+                'state'             => $this->mapStateToPayWay($validated['billing_address']['state']),
                 'postalCode' => trim($validated['billing_address']['postal_code']),
             ];
 
@@ -193,6 +193,26 @@ class PayWayController extends Controller
                 'message' => 'Customer creation failed: '.$e->getMessage(),
             ];
         }
+    }
+
+    private function mapStateToPayWay($state)
+    {
+        $stateMapping = [
+            'New South Wales'              => 'NSW',
+            'Victoria'                     => 'VIC',
+            'Queensland'                   => 'QLD',
+            'Western Australia'            => 'WA',
+            'South Australia'              => 'SA',
+            'Tasmania'                     => 'TAS',
+            'Northern Territory'           => 'NT',
+            'Australian Capital Territory' => 'ACT',
+            // abbreviation already passed করলেও handle করো
+            'NSW' => 'NSW', 'VIC' => 'VIC', 'QLD' => 'QLD',
+            'WA'  => 'WA',  'SA'  => 'SA',  'TAS' => 'TAS',
+            'NT'  => 'NT',  'ACT' => 'ACT',
+        ];
+
+        return $stateMapping[$state] ?? $state;
     }
 
     /**
