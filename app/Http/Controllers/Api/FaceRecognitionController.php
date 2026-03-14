@@ -179,6 +179,7 @@ class FaceRecognitionController extends Controller
     // ──────────────────────────────────────────────────────
     public function verify(Request $request)
     {
+        return 'test';
         $request->validate([
             'embeddings'   => 'required|array|min:32',
             'embeddings.*' => 'numeric',
