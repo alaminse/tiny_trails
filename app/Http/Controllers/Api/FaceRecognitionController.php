@@ -18,7 +18,7 @@ class FaceRecognitionController extends Controller
     // ── Helper: get Driver from sanctum user ──────────────
     private function getDriver(): ?Driver
     {
-        $user = Auth::user(); // sanctum user
+        $user = Auth::user();
         if (!$user) return null;
         return Driver::where('user_id', $user->id)->first();
     }
@@ -53,7 +53,6 @@ class FaceRecognitionController extends Controller
 
             $imagePath = null;
             if ($request->file('face_image')) {
-                // Delete old image
                 if ($driver->face_image) {
                     $this->deleteFile($driver->face_image);
                 }
@@ -153,7 +152,6 @@ class FaceRecognitionController extends Controller
             ]);
         }
 
-        // Check if face_verified_until is still in future
         $isVerified = false;
         if ($driver->face_verified_until) {
             $isVerified = Carbon::now()->lessThanOrEqualTo(
@@ -179,7 +177,6 @@ class FaceRecognitionController extends Controller
     // ──────────────────────────────────────────────────────
     public function verify(Request $request)
     {
-        return 'test';
         $request->validate([
             'embeddings'   => 'required|array|min:32',
             'embeddings.*' => 'numeric',
@@ -195,7 +192,6 @@ class FaceRecognitionController extends Controller
             ], 404);
         }
 
-        // ── Stored embedding ──────────────────────────────
         $storedRaw = $driver->face_embedding;
 
         if (empty($storedRaw)) {
@@ -208,7 +204,6 @@ class FaceRecognitionController extends Controller
 
         // Parse stored embedding — comma-separated OR JSON
         if (is_string($storedRaw) && str_contains($storedRaw, ',') && !str_starts_with(trim($storedRaw), '[')) {
-            // "0.123,-0.456,..." format
             $storedEmbedding = array_map('floatval', explode(',', $storedRaw));
         } elseif (is_string($storedRaw)) {
             $storedEmbedding = json_decode($storedRaw, true);
@@ -225,11 +220,9 @@ class FaceRecognitionController extends Controller
         }
 
         $liveEmbedding = array_map('floatval', $request->embeddings);
-
-        // ── Cosine similarity ─────────────────────────────
-        $similarity = $this->cosineSimilarity($storedEmbedding, $liveEmbedding);
-        $threshold  = 0.75;
-        $matched    = $similarity >= $threshold;
+        $similarity    = $this->cosineSimilarity($storedEmbedding, $liveEmbedding);
+        $threshold     = 0.75;
+        $matched       = $similarity >= $threshold;
 
         if (!$matched) {
             return response()->json([
@@ -240,7 +233,6 @@ class FaceRecognitionController extends Controller
             ], 422);
         }
 
-        // ── Set verified until end of today ──────────────
         $now           = Carbon::now();
         $verifiedUntil = $now->copy()->endOfDay();
 
