@@ -111,7 +111,9 @@ class ApiDriverController extends Controller
 
         $driver = Auth::user();
 
-        $ride = Ride::find($rideId);
+        $ride = Ride::where('id', $rideId)
+            ->where('driver_id', $driver->id)
+            ->first();
 
         if (!$ride) {
             return response()->json([
