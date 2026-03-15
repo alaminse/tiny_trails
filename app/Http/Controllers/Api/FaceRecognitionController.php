@@ -175,81 +175,92 @@ class FaceRecognitionController extends Controller
     // POST /api/auth/face-verify
     // Body: { embeddings: [...], distance: 0.9 }
     // ──────────────────────────────────────────────────────
-    public function verify(Request $request)
-    {
-        $request->validate([
-            'embeddings'   => 'required|array|min:32',
-            'embeddings.*' => 'numeric',
-        ]);
+public function verify(Request $request)
+{
+    $request->validate([
+        'embeddings'   => 'required|array|min:32',
+        'embeddings.*' => 'numeric',
+        'shift_end_time' => 'nullable|string', // e.g. "09:00:00"
+        'shift_date'     => 'nullable|date',   // e.g. "2026-03-15"
+    ]);
 
-        $driver = $this->getDriver();
+    $driver = $this->getDriver();
 
-        if (!$driver) {
-            return response()->json([
-                'success'     => false,
-                'is_verified' => false,
-                'message'     => 'Driver profile not found.',
-            ], 404);
-        }
-
-        $storedRaw = $driver->face_embedding;
-
-        if (empty($storedRaw)) {
-            return response()->json([
-                'success'     => false,
-                'is_verified' => false,
-                'message'     => 'No face registered. Please contact admin.',
-            ], 422);
-        }
-
-        // Parse stored embedding — comma-separated OR JSON
-        if (is_string($storedRaw) && str_contains($storedRaw, ',') && !str_starts_with(trim($storedRaw), '[')) {
-            $storedEmbedding = array_map('floatval', explode(',', $storedRaw));
-        } elseif (is_string($storedRaw)) {
-            $storedEmbedding = json_decode($storedRaw, true);
-        } else {
-            $storedEmbedding = (array) $storedRaw;
-        }
-
-        if (!is_array($storedEmbedding) || empty($storedEmbedding)) {
-            return response()->json([
-                'success'     => false,
-                'is_verified' => false,
-                'message'     => 'Stored face data is corrupted. Please contact admin.',
-            ], 422);
-        }
-
-        $liveEmbedding = array_map('floatval', $request->embeddings);
-        $similarity    = $this->cosineSimilarity($storedEmbedding, $liveEmbedding);
-        $threshold     = 0.75;
-        $matched       = $similarity >= $threshold;
-
-        if (!$matched) {
-            return response()->json([
-                'success'     => false,
-                'is_verified' => false,
-                'similarity'  => round($similarity, 4),
-                'message'     => 'Face does not match. Please try again.',
-            ], 422);
-        }
-
-        $now           = Carbon::now();
-        $verifiedUntil = $now->copy()->endOfDay();
-
-        $driver->update([
-            'face_verified_at'    => $now,
-            'face_verified_until' => $verifiedUntil,
-        ]);
-
+    if (!$driver) {
         return response()->json([
-            'success'             => true,
-            'is_verified'         => true,
-            'similarity'          => round($similarity, 4),
-            'face_verified_at'    => $now->toDateTimeString(),
-            'face_verified_until' => $verifiedUntil->toDateTimeString(),
-            'message'             => 'Face verified! Valid until ' . $verifiedUntil->format('h:i A'),
-        ]);
+            'success'     => false,
+            'is_verified' => false,
+            'message'     => 'Driver profile not found.',
+        ], 404);
     }
+
+    $storedRaw = $driver->face_embedding;
+
+    if (empty($storedRaw)) {
+        return response()->json([
+            'success'     => false,
+            'is_verified' => false,
+            'message'     => 'No face registered. Please contact admin.',
+        ], 422);
+    }
+
+    // Parse stored embedding
+    if (is_string($storedRaw) && str_contains($storedRaw, ',') && !str_starts_with(trim($storedRaw), '[')) {
+        $storedEmbedding = array_map('floatval', explode(',', $storedRaw));
+    } elseif (is_string($storedRaw)) {
+        $storedEmbedding = json_decode($storedRaw, true);
+    } else {
+        $storedEmbedding = (array) $storedRaw;
+    }
+
+    if (!is_array($storedEmbedding) || empty($storedEmbedding)) {
+        return response()->json([
+            'success'     => false,
+            'is_verified' => false,
+            'message'     => 'Stored face data is corrupted.',
+        ], 422);
+    }
+
+    $liveEmbedding = array_map('floatval', $request->embeddings);
+    $similarity    = $this->cosineSimilarity($storedEmbedding, $liveEmbedding);
+    $threshold     = 0.75;
+
+    if ($similarity < $threshold) {
+        return response()->json([
+            'success'     => false,
+            'is_verified' => false,
+            'similarity'  => round($similarity, 4),
+            'message'     => 'Face does not match. Please try again.',
+        ], 422);
+    }
+
+    $now = Carbon::now();
+
+    // ── Set verified_until to shift end time ──────────
+    if ($request->filled('shift_end_time') && $request->filled('shift_date')) {
+        // Verified until the end of the assigned shift
+        $verifiedUntil = Carbon::parse(
+            $request->shift_date . ' ' . $request->shift_end_time
+        );
+    } else {
+        // Fallback: end of today
+        $verifiedUntil = $now->copy()->endOfDay();
+    }
+
+    $driver->update([
+        'face_verified_at'    => $now,
+        'face_verified_until' => $verifiedUntil,
+    ]);
+
+    return response()->json([
+        'success'             => true,
+        'is_verified'         => true,
+        'similarity'          => round($similarity, 4),
+        'face_verified_at'    => $now->toDateTimeString(),
+        'face_verified_until' => $verifiedUntil->toDateTimeString(),
+        'message'             => 'Face verified! Valid until ' . $verifiedUntil->format('h:i A'),
+    ]);
+}
 
     // ──────────────────────────────────────────────────────
     // POST /api/auth/face/log-verification
