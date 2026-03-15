@@ -27,10 +27,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/schedule/date', 'getDriverDateSchedule');
             // Driver dashboard and earnings
             // Route::get('/dashboard', 'driverDashboard');
-            // Route::get('/earnings', 'driverEarnings');updateRideStatus
+            // Route::get('/earnings', 'driverEarnings');
 
             // Driver actions
-            Route::patch('/ride/{rideId}/status', '');
+            Route::patch('/ride/{rideId}/status', 'updateRideStatus');
             Route::post('/ride/{rideId}/upload-photo', 'uploadPhoto');
             Route::post('/fcm-token', 'updateFcmToken');
             Route::get('/notifications', 'getNotifications');
