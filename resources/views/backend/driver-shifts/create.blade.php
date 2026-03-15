@@ -69,36 +69,35 @@
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-light fw-bold d-flex justify-content-between align-items-center">
                 <span>② Configure Shift Windows
-                    <span class="text-muted fw-normal small ms-2">— 3 × 8-hour shifts</span>
+                    <span class="text-muted fw-normal small ms-2">— 3 shifts per day</span>
                 </span>
-                <span class="badge bg-success">06:00 → 14:00 → 22:00 → 06:00</span>
+                <span class="badge bg-success">00:00 → 08:00 → 14:00 → 23:59</span>
             </div>
             <div class="card-body">
 
                 @php
                 $shiftDefs = [
-                    1 => ['icon'=>'🌅','label'=>'Morning','start'=>'06:00','end'=>'14:00',
-                          'bg'=>'#fff8e1','border'=>'#f59e0b','bar'=>'#fbbf24','text'=>'#78350f'],
-                    2 => ['icon'=>'🌇','label'=>'Evening','start'=>'14:00','end'=>'22:00',
-                          'bg'=>'#fce4ec','border'=>'#e91e63','bar'=>'#f06292','text'=>'#880e4f'],
-                    3 => ['icon'=>'🌙','label'=>'Night',  'start'=>'22:00','end'=>'06:00',
+                    1 => ['icon'=>'🌙','label'=>'Night/Early', 'start'=>'00:00','end'=>'08:00',
                           'bg'=>'#e8eaf6','border'=>'#5c6bc0','bar'=>'#5c6bc0','text'=>'#1a237e'],
+                    2 => ['icon'=>'🌅','label'=>'Morning',     'start'=>'08:00','end'=>'14:00',
+                          'bg'=>'#fff8e1','border'=>'#f59e0b','bar'=>'#fbbf24','text'=>'#78350f'],
+                    3 => ['icon'=>'🌇','label'=>'Afternoon/Evening','start'=>'14:00','end'=>'23:59',
+                          'bg'=>'#fce4ec','border'=>'#e91e63','bar'=>'#f06292','text'=>'#880e4f'],
                 ];
                 @endphp
 
                 {{-- Timeline --}}
                 <div class="mb-4">
                     <div class="d-flex rounded overflow-hidden" style="height:30px;font-size:.72rem;font-weight:700;">
+                        <div class="d-flex align-items-center justify-content-center text-white"
+                             style="width:33.33%;background:#5c6bc0;">🌙 00:00–08:00</div>
                         <div class="d-flex align-items-center justify-content-center"
-                             style="width:33.33%;background:#fbbf24;color:#78350f;">🌅 06:00–14:00</div>
+                             style="width:33.34%;background:#fbbf24;color:#78350f;">🌅 08:00–14:00</div>
                         <div class="d-flex align-items-center justify-content-center text-white"
-                             style="width:33.34%;background:#f06292;">🌇 14:00–22:00</div>
-                        <div class="d-flex align-items-center justify-content-center text-white"
-                             style="width:33.33%;background:#5c6bc0;">🌙 22:00–06:00</div>
+                             style="width:33.33%;background:#f06292;">🌇 14:00–23:59</div>
                     </div>
                     <div class="d-flex justify-content-between text-muted px-1" style="font-size:.7rem;margin-top:3px;">
-                        <span>06:00</span><span>14:00</span><span>22:00</span>
-                        <span>06:00 <span class="text-danger">(+1 day)</span></span>
+                        <span>00:00</span><span>08:00</span><span>14:00</span><span>23:59</span>
                     </div>
                 </div>
 
@@ -114,9 +113,6 @@
                                   style="background:{{ $def['bar'] }};color:#fff;font-size:.72rem;">
                                 {{ $def['start'] }} – {{ $def['end'] }}
                             </span>
-                            @if($num===3)
-                                <span class="badge bg-dark ms-1" style="font-size:.68rem;">overnight</span>
-                            @endif
                         </div>
                         <div class="row g-3">
                             <div class="col-md-3">
@@ -131,7 +127,7 @@
                                        name="shifts[{{ $num }}][end_time]"
                                        value="{{ old("shifts.{$num}.end_time", $def['end']) }}" required>
                                 @if($num===3)
-                                    <div class="form-text text-danger fw-semibold">⚠ Next day 06:00</div>
+                                    <div class="form-text text-muted fw-semibold">End of day</div>
                                 @endif
                             </div>
                             <div class="col-md-3">
@@ -177,7 +173,7 @@
                     @endif>
                     {{ $existingShifts->isNotEmpty() ? '⚠ Delete & Recreate Shifts' : 'Create 3 Shifts →' }}
                 </button>
-                <div class="text-muted small mt-1">Morning (06–14) · Evening (14–22) · Night (22–06)</div>
+                <div class="text-muted small mt-1">Night/Early (00–08) · Morning (08–14) · Afternoon/Evening (14–23:59)</div>
             </div>
         </div>
 
