@@ -1,11 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DriverController;
+use App\Http\Controllers\Api\DriverShiftApiController;
+use App\Http\Controllers\Api\FaceRecognitionController;
 use App\Http\Controllers\Api\ParentApiController;
 use App\Http\Controllers\Api\VerificationController;
-use App\Http\Controllers\Api\FaceRecognitionController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,6 +69,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/dashboard','dashboard');
             Route::patch('/face-verification', 'updateFaceVerification');
         });
+    Route::controller(DriverShiftApiController::class)
+        ->prefix('driver')
+        ->group(function () {
+        Route::get('/schedule',      'schedule');
+        Route::get('/schedule/date', 'scheduleByDate');
+    });
     // Parent Mobile API Routes
     Route::controller(ParentApiController::class)
         ->prefix('parent')
