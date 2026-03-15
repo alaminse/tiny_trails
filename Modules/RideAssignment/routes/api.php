@@ -27,17 +27,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/schedule/date', 'getDriverDateSchedule');
             // Driver dashboard and earnings
             // Route::get('/dashboard', 'driverDashboard');
-            // Route::get('/earnings', 'driverEarnings');
+            // Route::get('/earnings', 'driverEarnings');updateRideStatus
 
             // Driver actions
-            Route::patch('/ride/{rideId}/status', 'updateRideStatus');
+            Route::patch('/ride/{rideId}/status', '');
             Route::post('/ride/{rideId}/upload-photo', 'uploadPhoto');
             Route::post('/fcm-token', 'updateFcmToken');
             Route::get('/notifications', 'getNotifications');
             Route::patch('/notifications/{notificationId}/read', 'markNotificationAsRead');
 
         });
-    
+
     Route::controller(RideLocationController::class)
         ->prefix('ride-locations')
         ->group(function () {
@@ -47,7 +47,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('/update', 'update');
             Route::get('/rides', 'getRides');
             Route::get('/ride/{ride_location}','getLiveRide');
-        
+
             // Custom routes
             // Route::get('/driver/{driverId}', 'getByDriver');
             // Route::get('/parent/{parentId}', 'getByParent');

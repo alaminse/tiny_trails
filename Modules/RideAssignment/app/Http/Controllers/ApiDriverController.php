@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ApiDriverController extends Controller
 {
-    
+
     use Upload;
     // Driver Schedule API - Get all upcoming schedule grouped by date
     public function schedule()
@@ -111,9 +111,7 @@ class ApiDriverController extends Controller
 
         $driver = Auth::user();
 
-        $ride = Ride::where('id', $rideId)
-            ->where('driver_id', $driver->id)
-            ->first();
+        $ride = Ride::find($rideId);
 
         if (!$ride) {
             return response()->json([
@@ -254,7 +252,7 @@ class ApiDriverController extends Controller
             'message' => 'Notification marked as read'
         ]);
     }
-    
+
     public function uploadPhoto(Request $request, $rideId)
     {
         try {
@@ -273,17 +271,17 @@ class ApiDriverController extends Controller
 
             $ride = Ride::findOrFail($rideId);
             $data = [];
-        
+
             if($request->file('photo'))
             {
                 $data['selfie'] = $this->uploadFile($request->file('photo'), 'ride/selfie');
             }
-            
+
             if($request->file('end_pic'))
             {
                 $data['end_pic'] = $this->uploadFile($request->file('end_pic'), 'ride/end_pic');
             }
-        
+
             $ride->update($data);
 
             return response()->json([
