@@ -109,11 +109,7 @@ class ApiDriverController extends Controller
             'status' => 'required|in:going_to_pickup,arrived_at_pickup,in_progress,completed,cancelled'
         ]);
 
-        $driver = Auth::user();
-
-        $ride = Ride::where('id', $rideId)
-            ->where('driver_id', $driver->id)
-            ->first();
+        $ride = Ride::find($rideId);
 
         if (!$ride) {
             return response()->json([
