@@ -111,7 +111,7 @@
 
         {{-- ══ FILTER BAR ══ --}}
         <div class="filter-bar">
-            <form method="GET" action="{{ route('admin.timesheet.index') }}" id="filterForm">
+            <form method="GET" action="{{ route('admin.timesheets.index') }}" id="filterForm">
                 <div class="row g-3 align-items-end">
                     <div class="col-md-3">
                         <label class="form-label small fw-semibold mb-1">Month</label>
@@ -144,7 +144,7 @@
                             <button type="submit" class="btn btn-sm btn-primary flex-grow-1">
                                 <i class="bi bi-search"></i> Filter
                             </button>
-                            <a href="{{ route('admin.timesheet.index') }}" class="btn btn-sm btn-outline-secondary">
+                            <a href="{{ route('admin.timesheets.index') }}" class="btn btn-sm btn-outline-secondary">
                                 <i class="bi bi-x"></i>
                             </a>
                         </div>
