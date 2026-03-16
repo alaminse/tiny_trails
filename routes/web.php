@@ -55,7 +55,7 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
     Route::post('ride-assign/check-capacity', [RideAssignController::class, 'checkCapacity'])
         ->name('ride.assign.check-capacity');
         // ── Timesheet ─────────────────────────────────────────
-    Route::prefix('timesheets')->name('timesheet.')->group(function () {
+    Route::prefix('timesheets')->name('timesheets.')->group(function () {
         Route::get('/',              [TimesheetController::class, 'index'])->name('index');
         Route::get('/export',        [TimesheetController::class, 'export'])->name('export');
         Route::get('/{id}/detail',   [TimesheetController::class, 'detail'])->name('detail');
