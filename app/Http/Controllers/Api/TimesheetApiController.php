@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Modules\UserRolePermission\app\Models\Driver;
 use Carbon\Carbon;
 
-class TimesheetController extends Controller
+class TimesheetApiController extends Controller
 {
     // ──────────────────────────────────────────────────────
     // GET /admin/timesheet
@@ -135,7 +135,7 @@ class TimesheetController extends Controller
 
         $drivers = Driver::with('user')->whereNull('deleted_at')->get();
 
-        return view('backend.timesheets.index', compact(
+        return view('backend.timesheet.index', compact(
             'timesheets', 'stats', 'drivers', 'month'
         ));
     }
@@ -182,7 +182,7 @@ class TimesheetController extends Controller
                 ];
             });
 
-        return view('backend.timesheets.partials.detail',
+        return view('backend.timesheet.partials.detail',
             compact('timesheet', 'shifts'));
     }
 

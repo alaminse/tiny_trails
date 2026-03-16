@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DriverShiftApiController;
 use App\Http\Controllers\Api\FaceRecognitionController;
 use App\Http\Controllers\Api\ParentApiController;
 use App\Http\Controllers\Api\VerificationController;
+use App\Http\Controllers\Api\TimesheetApiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -86,5 +87,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/kids','kids');
             Route::get('/subscription','subscription');
         });
+
+    Route::controller(TimesheetApiController::class)
+        ->prefix('driver')
+        ->group(function () {
+        Route::get('/timesheet',         'index');
+        Route::get('/timesheet/summary', 'summary');
+    });
+
 
 });

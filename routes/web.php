@@ -54,17 +54,13 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
     // Capacity check (AJAX — used in Ride Assign form)
     Route::post('ride-assign/check-capacity', [RideAssignController::class, 'checkCapacity'])
         ->name('ride.assign.check-capacity');
-
-    // ── Timesheets ──────────────────────────────────────────────────────
-    Route::middleware('can:list-timesheets')->group(function () {
-        Route::get('timesheets', [TimesheetController::class, 'index'])
-            ->name('timesheets.index');
-        Route::get('timesheets/{timesheet}', [TimesheetController::class, 'show'])
-            ->name('timesheets.show');
-        Route::patch('timesheets/{timesheet}/approve', [TimesheetController::class, 'approve'])
-            ->name('timesheets.approve');
-        Route::patch('timesheets/{timesheet}/reject', [TimesheetController::class, 'reject'])
-            ->name('timesheets.reject');
+        // ── Timesheet ─────────────────────────────────────────
+    Route::prefix('timesheets')->name('timesheet.')->group(function () {
+        Route::get('/',              [TimesheetController::class, 'index'])->name('index');
+        Route::get('/export',        [TimesheetController::class, 'export'])->name('export');
+        Route::get('/{id}/detail',   [TimesheetController::class, 'detail'])->name('detail');
+        Route::patch('/{id}/status', [TimesheetController::class, 'updateStatus'])->name('status');
+        Route::post('/approve-all',  [TimesheetController::class, 'approveAll'])->name('approve-all');
     });
 
     // ── Driver Wages ────────────────────────────────────────────────────
