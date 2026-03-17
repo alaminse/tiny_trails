@@ -189,14 +189,16 @@
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
                                              style="width:34px;height:34px;font-size:.75rem;font-weight:700;flex-shrink:0">
-                                            {{ strtoupper(substr($ts->driver?->user?->first_name ?? 'D', 0, 1)) }}{{ strtoupper(substr($ts->driver?->user?->last_name ?? '', 0, 1)) }}
+                                            {{ strtoupper(substr($ts->first_name ?? 'D', 0, 1)) }}{{ strtoupper(substr($ts->last_name ?? '', 0, 1)) }}
+
                                         </div>
                                         <div>
                                             <div class="fw-semibold" style="font-size:.85rem">
-                                                {{ $ts->driver?->user?->first_name }} {{ $ts->driver?->user?->last_name }}
+                                                {{ strtoupper(substr($ts->first_name)) }}{{ strtoupper(substr($ts->last_name)) }}
+
                                             </div>
                                             <div class="text-muted" style="font-size:.75rem">
-                                                {{ $ts->driver?->user?->phone }}
+                                                {{ $ts->phone }}
                                             </div>
                                         </div>
                                     </div>
