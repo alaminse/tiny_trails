@@ -341,7 +341,7 @@ $(function () {
         btn.prop('disabled', true).text('...');
 
         $.ajax({
-            url:    `{{ url('admin/timesheets') }}/${id}/status`,
+            url:    `{{ url('timesheets') }}/${id}/status`,
             method: 'PATCH',
             data:   { _token: '{{ csrf_token() }}', status: action },
             success: function (res) {
@@ -376,7 +376,7 @@ $(function () {
         if (!confirm('Approve all pending timesheets for this month?')) return;
         const month = $('[name="month"]').val() || '{{ now()->format("Y-m") }}';
         $.ajax({
-            url:    '{{ url("admin/timesheets/approve-all") }}',
+            url:    '{{ url("timesheets/approve-all") }}',
             method: 'POST',
             data:   { _token: '{{ csrf_token() }}', month: month },
             success: function (res) {
@@ -395,7 +395,7 @@ $(function () {
     $(document).on('click', '.btn-view', function () {
         const id = $(this).data('id');
         $('#tsDetailBody').html('<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>');
-        $.get(`{{ url('admin/timesheets') }}/${id}/detail`, function (html) {
+        $.get(`{{ url('timesheets') }}/${id}/detail`, function (html) {
             $('#tsDetailBody').html(html);
         }).fail(function (xhr) {
             $('#tsDetailBody').html('<div class="alert alert-danger">Failed to load: ' + xhr.responseText + '</div>');
