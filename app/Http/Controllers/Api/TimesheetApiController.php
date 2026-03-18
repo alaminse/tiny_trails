@@ -11,7 +11,6 @@ use Carbon\Carbon;
 
 class TimesheetApiController extends Controller
 {
-    // ── Helper ────────────────────────────────────────────
     private function getDriver(): ?Driver
     {
         $user = Auth::user();
@@ -21,9 +20,8 @@ class TimesheetApiController extends Controller
 
     // ──────────────────────────────────────────────────────
     // GET /api/driver/timesheet?month=2026-03
-    // timesheets table exact columns:
-    // id, driver_id, ride_id, date, shift_start, shift_end,
-    // hours_worked, status, approved_by, notes
+    //
+    // Present = face_verified_at date matches the shift date
     // ──────────────────────────────────────────────────────
     public function index(Request $request)
     {
@@ -38,13 +36,6 @@ class TimesheetApiController extends Controller
         $month = $request->input('month', Carbon::now()->format('Y-m'));
         $start = Carbon::parse($month . '-01')->startOfMonth()->toDateString();
         $end   = Carbon::parse($month . '-01')->endOfMonth()->toDateString();
-
-        // ── Get timesheets for this driver this month ─────
-        $timesheets = DB::table('timesheets')
-            ->where('driver_id', $driver->id)
-            ->whereBetween('date', [$start, $end])
-            ->orderBy('date')
-            ->get();
 
         // ── Get shifts for this driver this month ─────────
         $shifts = DB::table('driver_shifts as ds')
@@ -66,28 +57,52 @@ class TimesheetApiController extends Controller
             ->get()
             ->groupBy(fn($s) => Carbon::parse($s->date)->toDateString());
 
+        // ── Get rides per shift ───────────────────────────
+        $allShiftIds  = $shifts->flatten()->pluck('id');
+        $ridesByShift = DB::table('driver_shift_rides as dsr')
+            ->join('rides as r', 'r.id', '=', 'dsr.ride_id')
+            ->whereIn('dsr.driver_shift_id', $allShiftIds)
+            ->where('r.driver_id', $driver->id)
+            ->select('dsr.driver_shift_id', 'r.status')
+            ->get()
+            ->groupBy('driver_shift_id');
+
+        // ── Timesheets (for hours_worked history) ─────────
+        $timesheets = DB::table('timesheets')
+            ->where('driver_id', $driver->id)
+            ->whereBetween('date', [$start, $end])
+            ->get()
+            ->keyBy(fn($t) => Carbon::parse($t->date)->toDateString());
+
+        // ── Driver's current face_verified_at ─────────────
+        $faceVerifiedAt = $driver->face_verified_at
+            ? Carbon::parse($driver->face_verified_at)->toDateString()
+            : null;
+
         // ── Build daily records ───────────────────────────
-        $allDates = $shifts->keys()->merge(
-            $timesheets->pluck('date')->map(fn($d) => Carbon::parse($d)->toDateString())
-        )->unique()->sort()->values();
+        $records = $shifts->map(function ($dayShifts, $date) use (
+            $driver, $ridesByShift, $timesheets, $faceVerifiedAt
+        ) {
+            $ts = $timesheets->get($date);
 
-        $records = $allDates->map(function ($date) use ($driver, $timesheets, $shifts) {
+            // ── Present check: face verified on this date ─
+            $faceVerifiedOnDate = false;
 
-            // Timesheet row for this date (may not exist)
-            $ts = $timesheets->first(fn($t) =>
-                Carbon::parse($t->date)->toDateString() === $date
-            );
+            // Check timesheets shift_start (set when driver starts)
+            if ($ts && !empty($ts->shift_start)) {
+                $faceVerifiedOnDate = true;
+            }
+            // Check current face_verified_at date
+            elseif ($faceVerifiedAt === $date) {
+                $faceVerifiedOnDate = true;
+            }
 
-            // Shifts for this date
-            $dayShifts = $shifts->get($date, collect());
-
-            // Rides per shift
-            $dayShiftData = $dayShifts->map(function ($shift) use ($driver) {
-                $rides = DB::table('driver_shift_rides as dsr')
-                    ->join('rides as r', 'r.id', '=', 'dsr.ride_id')
-                    ->where('dsr.driver_shift_id', $shift->id)
-                    ->where('r.driver_id', $driver->id)
-                    ->pluck('r.status');
+            // ── Shifts detail ─────────────────────────────
+            $dayShiftData = $dayShifts->map(function ($shift) use ($ridesByShift) {
+                $rides     = $ridesByShift->get($shift->id, collect());
+                $total     = $rides->count();
+                $completed = $rides->where('status', 'completed')->count();
+                $cancelled = $rides->where('status', 'cancelled')->count();
 
                 return [
                     'shift_id'        => $shift->id,
@@ -96,52 +111,44 @@ class TimesheetApiController extends Controller
                     'start_time'      => $shift->start_time,
                     'end_time'        => $shift->end_time,
                     'status'          => $shift->status,
-                    'total_rides'     => $rides->count(),
-                    'completed_rides' => $rides->filter(fn($s) => $s === 'completed')->count(),
-                    'cancelled_rides' => $rides->filter(fn($s) => $s === 'cancelled')->count(),
+                    'total_rides'     => $total,
+                    'completed_rides' => $completed,
+                    'cancelled_rides' => $cancelled,
                 ];
             })->values()->toArray();
 
             $totalRides     = collect($dayShiftData)->sum('total_rides');
             $completedRides = collect($dayShiftData)->sum('completed_rides');
 
-            // Hours worked — from timesheet row OR calculate from shifts
+            // Hours from timesheets OR calculate from shifts
             $hoursWorked = 0;
             if ($ts && $ts->hours_worked > 0) {
                 $hoursWorked = (float) $ts->hours_worked;
             } else {
                 foreach ($dayShiftData as $s) {
                     try {
-                        $shiftStart = Carbon::parse('2000-01-01 ' . $s['start_time']);
-                        $shiftEnd   = Carbon::parse('2000-01-01 ' . $s['end_time']);
-                        if ($shiftEnd->lessThan($shiftStart)) $shiftEnd->addDay();
-                        $hoursWorked += $shiftStart->diffInMinutes($shiftEnd) / 60;
+                        $ss = Carbon::parse('2000-01-01 ' . $s['start_time']);
+                        $se = Carbon::parse('2000-01-01 ' . $s['end_time']);
+                        if ($se->lessThan($ss)) $se->addDay();
+                        $hoursWorked += $ss->diffInMinutes($se) / 60;
                     } catch (\Exception $e) {}
                 }
             }
 
-            // Attendance — present if any completed ride or hours > 0
-            $attendanceStatus = ($completedRides > 0 || $hoursWorked > 0)
-                ? 'present'
-                : (count($dayShiftData) > 0 ? 'absent' : 'no_shift');
-
             return [
                 'date'              => $date,
                 'day_name'          => Carbon::parse($date)->format('D'),
-                'day_number'        => Carbon::parse($date)->format('j'),
-                'attendance_status' => $attendanceStatus,
+                'day_number'        => (int) Carbon::parse($date)->format('j'),
+                // Present = face verified on this date
+                'attendance_status' => $faceVerifiedOnDate ? 'present' : 'absent',
+                'face_verified'     => $faceVerifiedOnDate,
                 'hours_worked'      => round($hoursWorked, 2),
                 'timesheet_status'  => $ts?->status ?? 'pending',
-                'approved_by'       => $ts?->approved_by,
-                'shift_start'       => $ts?->shift_start,
-                'shift_end'         => $ts?->shift_end,
-                'notes'             => $ts?->notes,
                 'shifts'            => $dayShiftData,
                 'total_rides'       => $totalRides,
                 'completed_rides'   => $completedRides,
             ];
-        })->filter(fn($r) => $r['attendance_status'] !== 'no_shift')
-          ->values();
+        })->values();
 
         // ── Summary ───────────────────────────────────────
         $presentDays    = $records->where('attendance_status', 'present')->count();
@@ -173,7 +180,7 @@ class TimesheetApiController extends Controller
 
     // ──────────────────────────────────────────────────────
     // GET /api/driver/timesheet/summary
-    // Last 6 months summary
+    // Last 6 months
     // ──────────────────────────────────────────────────────
     public function summary(Request $request)
     {
@@ -192,7 +199,7 @@ class TimesheetApiController extends Controller
             $start = $month->copy()->startOfMonth()->toDateString();
             $end   = $month->copy()->endOfMonth()->toDateString();
 
-            // Total shifts
+            // Total shifts assigned
             $totalShifts = DB::table('driver_shifts as ds')
                 ->join('shift_drivers as sd', 'sd.driver_shift_id', '=', 'ds.id')
                 ->where('sd.driver_id', $driver->id)
@@ -211,18 +218,18 @@ class TimesheetApiController extends Controller
                 ->whereBetween('ds.date', [$start, $end])
                 ->count();
 
-            // Hours from timesheets table
+            // Hours from timesheets
             $hoursWorked = (float) DB::table('timesheets')
                 ->where('driver_id', $driver->id)
                 ->whereBetween('date', [$start, $end])
                 ->sum('hours_worked');
 
-            // Present days (from timesheets)
+            // Present days = distinct dates where face was verified
+            // Using timesheets shift_start as proxy
             $presentDays = DB::table('timesheets')
                 ->where('driver_id', $driver->id)
                 ->whereBetween('date', [$start, $end])
-                ->where(fn($q) => $q->where('hours_worked', '>', 0)
-                    ->orWhereNotNull('shift_start'))
+                ->whereNotNull('shift_start')
                 ->count();
 
             $months->push([

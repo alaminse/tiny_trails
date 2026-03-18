@@ -1,12 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\BohDashboardController;
+use App\Http\Controllers\Admin\DriverShiftController;
 use App\Http\Controllers\Admin\DriverWageController;
 use App\Http\Controllers\Admin\FaceVerificationController;
 use App\Http\Controllers\Admin\ShiftBroadcastController;
 use App\Http\Controllers\Admin\TimesheetController;
 use App\Http\Controllers\Admin\VehicleTypeController;
-use App\Http\Controllers\Admin\DriverShiftController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
@@ -112,6 +113,13 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
         // Driver management on shift
         Route::post('/{shift}/add-driver',          [DriverShiftController::class, 'addDriver'])    ->name('addDriver');
         Route::delete('/{shift}/remove-driver/{driver}', [DriverShiftController::class, 'removeDriver'])->name('removeDriver');
+    });
+
+
+    Route::prefix('attendance')->name('attendance.')->group(function () {
+        Route::get('/',           [AttendanceController::class, 'index'])->name('index');
+        Route::get('/driver/{id}',[AttendanceController::class, 'driverDetail'])->name('driver');
+        Route::get('/export',     [AttendanceController::class, 'export'])->name('export');
     });
 });
 // ── API Routes (Driver App) ─────────────────────────────────────────
