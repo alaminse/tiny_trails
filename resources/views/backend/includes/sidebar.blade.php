@@ -222,6 +222,13 @@
                         <p>Timesheets</p>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.attendance.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.attendance.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-clock-history"></i>
+                        <p>Attendance</p>
+                    </a>
+                </li>
                 @endcan
 
                 {{-- ── DRIVER WAGES ── --}}

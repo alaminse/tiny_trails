@@ -194,7 +194,7 @@
                                         </div>
                                         <div>
                                             <div class="fw-semibold" style="font-size:.85rem">
-                                                {{ strtoupper(substr($ts->first_name)) }}{{ strtoupper(substr($ts->last_name)) }}
+                                            {{ strtoupper(substr($ts->first_name ?? 'D', 0, 1)) }}{{ strtoupper(substr($ts->last_name ?? '', 0, 1)) }}
 
                                             </div>
                                             <div class="text-muted" style="font-size:.75rem">
