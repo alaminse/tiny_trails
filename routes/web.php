@@ -57,11 +57,11 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
         ->name('ride.assign.check-capacity');
         // ── Timesheet ─────────────────────────────────────────
     Route::prefix('timesheets')->name('timesheets.')->group(function () {
-        Route::get('/',              [TimesheetController::class, 'index'])->name('index');
-        Route::get('/export',        [TimesheetController::class, 'export'])->name('export');
-        Route::get('/{id}/detail',   [TimesheetController::class, 'detail'])->name('detail');
-        Route::patch('/{id}/status', [TimesheetController::class, 'updateStatus'])->name('status');
-        Route::post('/approve-all',  [TimesheetController::class, 'approveAll'])->name('approve-all');
+        Route::get('/',               [TimesheetController::class, 'index'])->name('index');
+        Route::get('/export',         [TimesheetController::class, 'export'])->name('export');
+        Route::get('/{id}/detail',    [TimesheetController::class, 'detail'])->name('detail');
+        Route::patch('/{id}/status',  [TimesheetController::class, 'updateStatus'])->name('status');
+        Route::post('/approve-all',   [TimesheetController::class, 'approveAll'])->name('approve-all');
     });
 
     // ── Driver Wages ────────────────────────────────────────────────────
