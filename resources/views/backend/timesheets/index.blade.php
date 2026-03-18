@@ -294,11 +294,6 @@
                                         };
                                     @endphp
                                     <span class="badge {{ $tsClass }} px-2 py-1">{{ ucfirst($tsStatus) }}</span>
-                                    @if($ts->approved_at)
-                                        <div class="text-muted" style="font-size:.7rem">
-                                            {{ \Carbon\Carbon::parse($ts->approved_at)->format('d M H:i') }}
-                                        </div>
-                                    @endif
                                 </td>
 
                                 {{-- Actions --}}
