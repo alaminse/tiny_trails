@@ -79,10 +79,10 @@ class ApiRideAssignController extends Controller
                         : 'N/A',
 
                     'driver_name'   => $driver
-                        ? trim(($driver->first_name ?? '') . ' ' . ($driver->last_name ?? ''))
+                        ? trim(($driver->user?->first_name ?? '') . ' ' . ($driver->user?->last_name ?? ''))
                         : 'N/A',
 
-                    'driver_phone'  => $driver?->phone ?? null,
+                    'driver_phone'  => $driver?->user?->phone ?? null,
                     'status'        => $ride->status,
                 ];
             });
