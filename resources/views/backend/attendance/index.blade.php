@@ -61,16 +61,34 @@
 <div class="app-content">
     <div class="container-fluid">
 
+        @cannot('list-attendance')
+        {{-- ── Access Denied ──────────────────────────────────────── --}}
+        <div class="text-center py-5">
+            <div style="font-size:4rem">🔒</div>
+            <h4 class="mt-3 fw-bold">Access Denied</h4>
+            <p class="text-muted">You do not have permission to view attendance records.</p>
+            <a href="{{ route('admin.dashboard') }}" class="btn btn-primary btn-sm mt-2">
+                <i class="bi bi-house"></i> Back to Dashboard
+            </a>
+        </div>
+        @else
+        {{-- ═══════════════════════════════════════════════════════════
+             MAIN CONTENT — requires list-attendance
+        ═══════════════════════════════════════════════════════════ --}}
+
         {{-- ══ HEADER ══ --}}
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h4 class="mb-0 fw-bold">📅 Driver Attendance</h4>
                 <small class="text-muted">{{ \Carbon\Carbon::parse($month . '-01')->format('F Y') }}</small>
             </div>
+            {{-- Export: only roles with list-attendance (same gate as index) --}}
+            @can('list-attendance')
             <a href="{{ route('admin.attendance.export', request()->query()) }}"
                class="btn btn-sm btn-outline-success">
                 <i class="bi bi-download"></i> Export CSV
             </a>
+            @endcan
         </div>
 
         {{-- ══ STATS ══ --}}
@@ -143,7 +161,9 @@
             </form>
         </div>
 
-        {{-- ══ DATE WISE VIEW ══ --}}
+        {{-- ══════════════════════════════════════════════════════════
+             DATE WISE VIEW
+        ══════════════════════════════════════════════════════════ --}}
         @if($view === 'date')
             @forelse($byDate as $date => $records)
                 @php
@@ -163,10 +183,10 @@
                         </div>
                         <div class="d-flex gap-2">
                             <span class="badge bg-success">
-                                {{ $records->where('attendance_status','present')->count() }} Present
+                                {{ $records->where('attendance_status', 'present')->count() }} Present
                             </span>
                             <span class="badge bg-danger">
-                                {{ $records->where('attendance_status','absent')->count() }} Absent
+                                {{ $records->where('attendance_status', 'absent')->count() }} Absent
                             </span>
                         </div>
                     </div>
@@ -202,7 +222,7 @@
                                 @if($rec['total_rides'] > 0)
                                     <div class="ride-bar">
                                         <div class="ride-bar-fill"
-                                             style="width:{{ $rec['total_rides'] > 0 ? round($rec['completed_rides']/$rec['total_rides']*100) : 0 }}%">
+                                             style="width:{{ round($rec['completed_rides'] / $rec['total_rides'] * 100) }}%">
                                         </div>
                                     </div>
                                 @endif
@@ -224,9 +244,9 @@
                                             {{ $shift['shift_label'] }}
                                         </span>
                                         <span class="text-muted small">
-                                            {{ \Carbon\Carbon::parse('2000-01-01 '.$shift['start_time'])->format('h:i A') }}
+                                            {{ \Carbon\Carbon::parse('2000-01-01 ' . $shift['start_time'])->format('h:i A') }}
                                             –
-                                            {{ \Carbon\Carbon::parse('2000-01-01 '.$shift['end_time'])->format('h:i A') }}
+                                            {{ \Carbon\Carbon::parse('2000-01-01 ' . $shift['end_time'])->format('h:i A') }}
                                         </span>
                                         <span class="{{ $shift['completed_rides'] > 0 ? 'text-success' : 'text-muted' }} small fw-semibold">
                                             {{ $shift['completed_rides'] }}/{{ $shift['total_rides'] }}
@@ -234,12 +254,16 @@
                                     </div>
                                 @endforeach
 
+                                {{-- "View Details" only for roles with view-attendance --}}
+                                @can('view-attendance')
                                 <div class="mt-2 text-end">
                                     <a href="{{ route('admin.attendance.driver', ['id' => $rec['driver_id'], 'month' => request('month')]) }}"
-                                       class="btn btn-xs btn-outline-primary" style="font-size:.72rem; padding:2px 8px;">
+                                       class="btn btn-xs btn-outline-primary"
+                                       style="font-size:.72rem; padding:2px 8px;">
                                         View Details →
                                     </a>
                                 </div>
+                                @endcan
                             </div>
                         </div>
                         @endforeach
@@ -252,7 +276,9 @@
                 </div>
             @endforelse
 
-        {{-- ══ DRIVER WISE VIEW ══ --}}
+        {{-- ══════════════════════════════════════════════════════════
+             DRIVER WISE VIEW
+        ══════════════════════════════════════════════════════════ --}}
         @elseif($view === 'driver')
             <div class="row g-3">
                 @forelse($byDriver as $driverId => $records)
@@ -265,8 +291,13 @@
                                     <div class="fw-bold">{{ $first['driver_name'] }}</div>
                                     <div class="text-muted small">{{ $first['driver_phone'] }}</div>
                                 </div>
+                                {{-- Details button — view-attendance only --}}
+                                @can('view-attendance')
                                 <a href="{{ route('admin.attendance.driver', ['id' => $driverId, 'month' => request('month')]) }}"
-                                   class="btn btn-sm btn-outline-primary ms-auto">Details</a>
+                                   class="btn btn-sm btn-outline-primary ms-auto">
+                                    Details
+                                </a>
+                                @endcan
                             </div>
                             <div class="card-body p-3">
                                 {{-- Summary --}}
@@ -274,7 +305,7 @@
                                     <div class="col-4">
                                         <div class="p-2 bg-success bg-opacity-10 rounded-3">
                                             <div class="fw-bold text-success fs-5">
-                                                {{ $records->where('attendance_status','present')->count() }}
+                                                {{ $records->where('attendance_status', 'present')->count() }}
                                             </div>
                                             <div class="text-muted" style="font-size:.7rem">Present</div>
                                         </div>
@@ -282,7 +313,7 @@
                                     <div class="col-4">
                                         <div class="p-2 bg-danger bg-opacity-10 rounded-3">
                                             <div class="fw-bold text-danger fs-5">
-                                                {{ $records->where('attendance_status','absent')->count() }}
+                                                {{ $records->where('attendance_status', 'absent')->count() }}
                                             </div>
                                             <div class="text-muted" style="font-size:.7rem">Absent</div>
                                         </div>
@@ -303,8 +334,8 @@
                                         <div title="{{ \Carbon\Carbon::parse($rec['date'])->format('d M') }} — {{ $rec['attendance_status'] }}"
                                              style="width:28px;height:28px;border-radius:6px;font-size:.7rem;font-weight:700;
                                                     display:flex;align-items:center;justify-content:center;cursor:default;
-                                                    background:{{ $rec['attendance_status']==='present' ? '#d1e7dd' : '#f8d7da' }};
-                                                    color:{{ $rec['attendance_status']==='present' ? '#0a3622' : '#58151c' }}">
+                                                    background:{{ $rec['attendance_status'] === 'present' ? '#d1e7dd' : '#f8d7da' }};
+                                                    color:{{ $rec['attendance_status'] === 'present' ? '#0a3622' : '#58151c' }}">
                                             {{ \Carbon\Carbon::parse($rec['date'])->format('j') }}
                                         </div>
                                     @endforeach
@@ -317,7 +348,9 @@
                 @endforelse
             </div>
 
-        {{-- ══ GRID VIEW ══ --}}
+        {{-- ══════════════════════════════════════════════════════════
+             GRID VIEW
+        ══════════════════════════════════════════════════════════ --}}
         @else
             <div class="card border-0 shadow-sm rounded-3">
                 <div class="card-body p-0">
@@ -328,8 +361,8 @@
                                     <th style="min-width:160px">Driver</th>
                                     @foreach($gridDates as $date)
                                         @php
-                                            $dow = \Carbon\Carbon::parse($date)->dayOfWeek;
-                                            $isWe = in_array($dow,[0,6]);
+                                            $dow  = \Carbon\Carbon::parse($date)->dayOfWeek;
+                                            $isWe = in_array($dow, [0, 6]);
                                         @endphp
                                         <th class="{{ $isWe ? 'text-danger' : '' }}"
                                             style="min-width:36px; text-align:center">
@@ -340,19 +373,24 @@
                                     <th>Present</th>
                                     <th>Absent</th>
                                     <th>Rides</th>
+                                    {{-- Detail column only for view-attendance --}}
+                                    @can('view-attendance')
+                                    <th></th>
+                                    @endcan
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($gridData as $row)
                                     @php
-                                        $presentCount = collect($row['days'])->where('status','present')->count();
-                                        $absentCount  = collect($row['days'])->where('status','absent')->count();
+                                        $presentCount = collect($row['days'])->where('status', 'present')->count();
+                                        $absentCount  = collect($row['days'])->where('status', 'absent')->count();
                                         $totalRides   = collect($row['days'])->sum('rides');
                                     @endphp
                                     <tr>
                                         <td>
                                             <div class="d-flex align-items-center gap-2">
-                                                <div class="driver-avatar" style="width:30px;height:30px;font-size:.65rem">
+                                                <div class="driver-avatar"
+                                                     style="width:30px;height:30px;font-size:.65rem">
                                                     {{ strtoupper(substr($row['driver_name'], 0, 2)) }}
                                                 </div>
                                                 <div class="fw-semibold" style="font-size:.8rem">
@@ -363,8 +401,9 @@
                                         @foreach($row['days'] as $day)
                                             <td style="padding:4px">
                                                 @if($day['status'] === 'present')
-                                                    <div class="grid-cell-present" title="{{ $day['rides'] }} rides">
-                                                        ✓{{ $day['rides'] > 0 ? ' '.$day['rides'] : '' }}
+                                                    <div class="grid-cell-present"
+                                                         title="{{ $day['rides'] }} rides">
+                                                        ✓{{ $day['rides'] > 0 ? ' ' . $day['rides'] : '' }}
                                                     </div>
                                                 @elseif($day['status'] === 'absent')
                                                     <div class="grid-cell-absent">✗</div>
@@ -376,6 +415,15 @@
                                         <td class="text-success fw-bold">{{ $presentCount }}</td>
                                         <td class="text-danger fw-bold">{{ $absentCount }}</td>
                                         <td class="text-primary fw-bold">{{ $totalRides }}</td>
+                                        @can('view-attendance')
+                                        <td>
+                                            <a href="{{ route('admin.attendance.driver', ['id' => $row['driver_id'], 'month' => request('month')]) }}"
+                                               class="btn btn-xs btn-outline-primary"
+                                               style="font-size:.72rem; padding:2px 8px; white-space:nowrap">
+                                                Details →
+                                            </a>
+                                        </td>
+                                        @endcan
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -384,6 +432,9 @@
                 </div>
             </div>
         @endif
+
+        @endcannot
+        {{-- end @cannot('list-attendance') --}}
 
     </div>
 </div>

@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             PickupTypeSeeder::class,
             SubscriptionSeeder::class,
             UserSeeder::class,
+            VehicleTypeSeeder::class
         ]);
         $this->command->info('Static data seeded.');
         $this->command->info('Database seeding completed successfully!');

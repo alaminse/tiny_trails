@@ -10,13 +10,17 @@ use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
-    // ──────────────────────────────────────────────────────
-    // Attendance = Present যদি সেই দিন face_verified_at set থাকে
-    // drivers.face_verified_at → date check
-    // ──────────────────────────────────────────────────────
+    // ──────────────────────────────────────────────────────────────────
+    // Attendance = Present if driver has face_verified_at on that date
+    // Source: driver_shifts + shift_drivers + drivers.face_verified_at
+    // No Attendance model — derived data only.
+    // ──────────────────────────────────────────────────────────────────
 
     public function index(Request $request)
     {
+        // ── Permission gate ─────────────────────────────────────────
+        $this->authorize('list-attendance');
+
         $month    = $request->input('month', Carbon::now()->format('Y-m'));
         $start    = Carbon::parse($month . '-01')->startOfMonth()->toDateString();
         $end      = Carbon::parse($month . '-01')->endOfMonth()->toDateString();
@@ -49,7 +53,9 @@ class AttendanceController extends Controller
             ->orderBy('ds.date')
             ->orderBy('u.first_name');
 
-        if ($driverId) $shiftsQuery->where('sd.driver_id', $driverId);
+        if ($driverId) {
+            $shiftsQuery->where('sd.driver_id', $driverId);
+        }
 
         $allShifts = $shiftsQuery->get();
 
@@ -63,8 +69,6 @@ class AttendanceController extends Controller
             ->groupBy('driver_shift_id');
 
         // ── Face verification log per driver per date ─────
-        // Check drivers.face_verified_at for each driver+date
-        // Also check timesheets for historical face_verified_at
         $faceVerifyLog = DB::table('timesheets')
             ->whereIn('driver_id', $allShifts->pluck('driver_id')->unique())
             ->whereBetween('date', [$start, $end])
@@ -76,16 +80,13 @@ class AttendanceController extends Controller
         $attendanceRecords = $allShifts
             ->groupBy(fn($s) => $s->date . '_' . $s->driver_id)
             ->map(function ($dayShifts) use ($ridesByShift, $faceVerifyLog) {
-                $first      = $dayShifts->first();
-                $driverId   = $first->driver_id;
-                $date       = Carbon::parse($first->date)->toDateString();
+                $first    = $dayShifts->first();
+                $driverId = $first->driver_id;
+                $date     = Carbon::parse($first->date)->toDateString();
 
-                // ── Present check: face_verified_at on this date ──
-                // Check timesheets table for this driver on this date
                 $tsForDay = collect($faceVerifyLog->get($driverId, collect()))
                     ->first(fn($t) => Carbon::parse($t->date)->toDateString() === $date);
 
-                // Also check current driver face_verified_at
                 $driverFaceVerifiedAt = $first->face_verified_at;
                 $faceVerifiedOnDate   = false;
 
@@ -98,10 +99,8 @@ class AttendanceController extends Controller
 
                 $attendanceStatus = $faceVerifiedOnDate ? 'present' : 'absent';
 
-                // ── Shifts data ───────────────────────────
                 $shiftsData = $dayShifts->map(function ($shift) use ($ridesByShift, $driverId) {
-                    $rides     = $ridesByShift->get($shift->shift_id, collect())
-                                     ->where('driver_id', $driverId);
+                    $rides     = $ridesByShift->get($shift->shift_id, collect())->where('driver_id', $driverId);
                     $total     = $rides->count();
                     $completed = $rides->where('status', 'completed')->count();
                     $cancelled = $rides->where('status', 'cancelled')->count();
@@ -121,14 +120,15 @@ class AttendanceController extends Controller
                 $totalRides     = collect($shiftsData)->sum('total_rides');
                 $completedRides = collect($shiftsData)->sum('completed_rides');
 
-                // Hours worked from shifts
                 $hoursWorked = $dayShifts->sum(function ($shift) {
                     try {
                         $s = Carbon::parse('2000-01-01 ' . $shift->start_time);
                         $e = Carbon::parse('2000-01-01 ' . $shift->end_time);
                         if ($e->lessThan($s)) $e->addDay();
                         return $s->diffInMinutes($e) / 60;
-                    } catch (\Exception $ex) { return 0; }
+                    } catch (\Exception $ex) {
+                        return 0;
+                    }
                 });
 
                 return [
@@ -174,6 +174,7 @@ class AttendanceController extends Controller
             $driverRecords = $attendanceRecords
                 ->where('driver_id', $driver->id)
                 ->keyBy('date');
+
             return [
                 'driver_id'   => $driver->id,
                 'driver_name' => ($driver->user?->first_name ?? '') . ' ' . ($driver->user?->last_name ?? ''),
@@ -191,11 +192,15 @@ class AttendanceController extends Controller
         ));
     }
 
-    // ──────────────────────────────────────────────────────
-    // GET /admin/attendance/driver/{id}
-    // ──────────────────────────────────────────────────────
+    // ──────────────────────────────────────────────────────────────────
+    // Driver detail — requires view-attendance
+    // ──────────────────────────────────────────────────────────────────
+
     public function driverDetail(Request $request, $driverId)
     {
+        // ── Permission gate ─────────────────────────────────────────
+        $this->authorize('view-attendance');
+
         $month  = $request->input('month', Carbon::now()->format('Y-m'));
         $start  = Carbon::parse($month . '-01')->startOfMonth()->toDateString();
         $end    = Carbon::parse($month . '-01')->endOfMonth()->toDateString();
@@ -221,21 +226,18 @@ class AttendanceController extends Controller
             ->get()
             ->groupBy('driver_shift_id');
 
-        // Face verification history from timesheets
         $timesheets = DB::table('timesheets')
             ->where('driver_id', $driverId)
             ->whereBetween('date', [$start, $end])
             ->get()
             ->keyBy(fn($t) => Carbon::parse($t->date)->toDateString());
 
-        // Current driver face_verified_at
         $driverFaceVerifiedAt = $driver->face_verified_at;
 
         $dailyData = $shifts
             ->groupBy(fn($s) => Carbon::parse($s->date)->toDateString())
             ->map(function ($dayShifts, $date) use ($ridesByShift, $driverFaceVerifiedAt, $timesheets) {
 
-                // Present = face verified on this date
                 $ts = $timesheets->get($date);
                 $faceVerifiedOnDate = false;
 
@@ -247,7 +249,8 @@ class AttendanceController extends Controller
                 }
 
                 $shiftsData = $dayShifts->map(function ($shift) use ($ridesByShift) {
-                    $rides    = $ridesByShift->get($shift->id, collect());
+                    $rides = $ridesByShift->get($shift->id, collect());
+
                     return [
                         'shift_label'     => $shift->shift_label,
                         'start_time'      => $shift->start_time,
@@ -258,16 +261,13 @@ class AttendanceController extends Controller
                     ];
                 })->values();
 
-                $completed = $shiftsData->sum('completed_rides');
-                $total     = $shiftsData->sum('total_rides');
-
                 return [
                     'date'              => $date,
                     'day_name'          => Carbon::parse($date)->format('D, d M'),
                     'attendance_status' => $faceVerifiedOnDate ? 'present' : 'absent',
                     'face_verified'     => $faceVerifiedOnDate,
-                    'total_rides'       => $total,
-                    'completed_rides'   => $completed,
+                    'total_rides'       => $shiftsData->sum('total_rides'),
+                    'completed_rides'   => $shiftsData->sum('completed_rides'),
                     'shifts'            => $shiftsData,
                 ];
             })->values();
@@ -283,16 +283,19 @@ class AttendanceController extends Controller
             compact('driver', 'dailyData', 'summary', 'month'));
     }
 
-    // ──────────────────────────────────────────────────────
-    // GET /admin/attendance/export
-    // ──────────────────────────────────────────────────────
+    // ──────────────────────────────────────────────────────────────────
+    // CSV Export — requires list-attendance
+    // ──────────────────────────────────────────────────────────────────
+
     public function export(Request $request)
     {
+        // ── Permission gate ─────────────────────────────────────────
+        $this->authorize('list-attendance');
+
         $month = $request->input('month', Carbon::now()->format('Y-m'));
         $start = Carbon::parse($month . '-01')->startOfMonth()->toDateString();
         $end   = Carbon::parse($month . '-01')->endOfMonth()->toDateString();
 
-        // Re-use index logic but export as CSV
         $records = DB::table('driver_shifts as ds')
             ->join('shift_drivers as sd', 'sd.driver_shift_id', '=', 'ds.id')
             ->join('drivers as d', 'd.id', '=', 'sd.driver_id')
@@ -323,6 +326,7 @@ class AttendanceController extends Controller
             foreach ($records as $r) {
                 $faceVerified = $r->face_verified_at
                     && Carbon::parse($r->face_verified_at)->toDateString() === $r->date;
+
                 fputcsv($handle, [
                     $r->first_name . ' ' . $r->last_name,
                     $r->phone,

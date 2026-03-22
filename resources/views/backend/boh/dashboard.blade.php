@@ -67,6 +67,7 @@
     @include('backend.includes.header', ['mainTitle' => 'BoH Live Dashboard'])
 
     <div class="app-content">
+        @can('view-boh-dashboard')
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12">
@@ -86,6 +87,7 @@
                         <div class="card-body">
 
                             {{-- ── ALERT BANNER ── --}}
+                            @if($delayedAlert)
                             <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
                                 <i class="bi bi-exclamation-triangle-fill"></i>
                                 <div>
@@ -94,6 +96,7 @@
                                     <a href="#" class="alert-link ms-2">Manual check →</a>
                                 </div>
                             </div>
+                            @endif
 
                             {{-- ── STAT CARDS ── --}}
                             <div class="row g-3 mb-4">
@@ -128,7 +131,7 @@
                                     <div class="card bg-danger text-white shadow-sm border-0">
                                         <div class="card-body">
                                             <div class="text-uppercase small fw-semibold opacity-75 mb-1">Delayed Drivers</div>
-                                            <div class="fs-2 fw-bold">{{ $delayedDrivers ?? 2 }}</div>
+                                            <div class="fs-2 fw-bold">{{ $delayedCount ?? 0 }}</div>
                                             <div class="small opacity-75">Manual check needed</div>
                                         </div>
                                     </div>
@@ -192,8 +195,10 @@
                                                     @if(in_array($driver->availability_status, ['on_trip','delayed']))
                                                         <button class="btn btn-sm btn-danger">📞 Call</button>
                                                     @else
+                                                        @can('create-rideassign')
                                                         <a href="{{ route('admin.ride.assign.create', ['driver' => $driver->id]) }}"
                                                            class="btn btn-sm btn-primary">📋 Assign</a>
+                                                        @endcan
                                                     @endif
                                                 </div>
                                             </div>
@@ -330,6 +335,7 @@
                 </div>
             </div>
         </div>
+        @endcan
     </div>
 
     @push('scripts')

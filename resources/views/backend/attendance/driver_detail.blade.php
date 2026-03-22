@@ -1,6 +1,14 @@
 @extends('backend.app')
 @section('title', 'Driver Attendance Detail')
 
+{{-- ──────────────────────────────────────────────────────────────────
+     Permission required: view-attendance
+     Gate enforced in AttendanceController::driverDetail() via
+       $this->authorize('view-attendance');
+     The @can wrapper below is an extra UI-level guard.
+────────────────────────────────────────────────────────────────── --}}
+@can('view-attendance')
+
 @section('css')
 <style>
     .stat-box { border-radius:12px; padding:1rem 1.25rem; text-align:center; }
@@ -22,10 +30,12 @@
         {{-- Back --}}
         <div class="mb-3">
             <a href="{{ route('admin.attendance.index', ['month' => $month]) }}"
-               class="btn btn-sm btn-outline-secondary">← Back to Attendance</a>
+               class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Attendance
+            </a>
         </div>
 
-        {{-- ── Driver Info Card ── --}}
+        {{-- ── Driver Info Card ─────────────────────────────────────── --}}
         <div class="card border-0 shadow-sm rounded-3 mb-4">
             <div class="card-body">
                 <div class="d-flex align-items-center gap-3">
@@ -36,10 +46,14 @@
                         {{ strtoupper(substr($driver->user?->first_name ?? 'D', 0, 1)) }}{{ strtoupper(substr($driver->user?->last_name ?? '', 0, 1)) }}
                     </div>
                     <div>
-                        <h5 class="mb-0 fw-bold">{{ $driver->user?->first_name }} {{ $driver->user?->last_name }}</h5>
+                        <h5 class="mb-0 fw-bold">
+                            {{ $driver->user?->first_name }} {{ $driver->user?->last_name }}
+                        </h5>
                         <div class="text-muted">{{ $driver->user?->phone }}</div>
                         <div class="text-muted small">{{ $driver->user?->email }}</div>
                     </div>
+
+                    {{-- Month picker — visible to anyone who can see this page --}}
                     <div class="ms-auto">
                         <form method="GET">
                             <input type="hidden" name="driver_id" value="{{ $driver->id }}">
@@ -51,7 +65,7 @@
             </div>
         </div>
 
-        {{-- ── Monthly Summary ── --}}
+        {{-- ── Monthly Summary ──────────────────────────────────────── --}}
         <div class="row g-3 mb-4">
             <div class="col-6 col-md-3">
                 <div class="stat-box bg-success bg-opacity-10">
@@ -79,8 +93,10 @@
             </div>
         </div>
 
-        {{-- ── Daily Records ── --}}
-        <h6 class="fw-bold mb-3">Daily Attendance — {{ \Carbon\Carbon::parse($month.'-01')->format('F Y') }}</h6>
+        {{-- ── Daily Records ─────────────────────────────────────────── --}}
+        <h6 class="fw-bold mb-3">
+            Daily Attendance — {{ \Carbon\Carbon::parse($month . '-01')->format('F Y') }}
+        </h6>
 
         @forelse($dailyData as $day)
             <div class="day-card">
@@ -97,13 +113,15 @@
                         </div>
                     </div>
                 </div>
+
                 @foreach($day['shifts'] as $shift)
                     <div class="shift-item d-flex justify-content-between align-items-center">
                         <div>
                             <strong>{{ $shift['shift_label'] }}</strong>
                             <span class="text-muted ms-2">
-                                {{ \Carbon\Carbon::parse('2000-01-01 '.$shift['start_time'])->format('h:i A') }}
-                                – {{ \Carbon\Carbon::parse('2000-01-01 '.$shift['end_time'])->format('h:i A') }}
+                                {{ \Carbon\Carbon::parse('2000-01-01 ' . $shift['start_time'])->format('h:i A') }}
+                                –
+                                {{ \Carbon\Carbon::parse('2000-01-01 ' . $shift['end_time'])->format('h:i A') }}
                             </span>
                         </div>
                         <div class="d-flex gap-3 small">
@@ -123,3 +141,22 @@
     </div>
 </div>
 @endsection
+
+@else
+{{-- ── Access Denied ─────────────────────────────────────────────── --}}
+@section('content')
+@include('backend.includes.header', ['mainTitle' => 'Access Denied'])
+<div class="app-content">
+    <div class="container-fluid">
+        <div class="text-center py-5">
+            <div style="font-size:4rem">🔒</div>
+            <h4 class="mt-3 fw-bold">Access Denied</h4>
+            <p class="text-muted">You do not have permission to view driver attendance details.</p>
+            <a href="{{ route('admin.dashboard') }}" class="btn btn-primary btn-sm mt-2">
+                <i class="bi bi-house"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+@endsection
+@endcan
