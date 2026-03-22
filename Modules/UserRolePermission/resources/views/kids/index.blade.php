@@ -8,49 +8,57 @@
 
 @section('content')
     @include('backend.includes.header', ['mainTitle' => 'Kid', 'subTitle' => 'Kid Management'])
-    <div class="app-content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card card-primary card-outline mb-4">
-                        <div class="d-flex">
-                            <div class="p-2 flex-grow-1 card-title">Kid</div>
-                            <div class="p-2">
-                                <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
+    @can('list-kids')
+        <div class="app-content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card card-primary card-outline mb-4">
+                            <div class="d-flex">
+                                <div class="p-2 flex-grow-1 card-title">Kid</div>
+                                @can('restore-kids')
+                                    <div class="p-2">
+                                        <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
+                                    </div>
+                                @endcan
+                                @can('create-kids')
+                                    <div class="p-2">
+                                        <a href="#" class="btn btn-sm btn-gradient-success" id="addKidBtn">Add Kid</a>
+                                    </div>
+                                @endcan
                             </div>
-
-                            <div class="p-2">
-                                <a href="#" class="btn btn-sm btn-gradient-success" id="addKidBtn">Add Kid</a>
+                            <div class="table-responsive pt-3">
+                                <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap"
+                                    cellspacing="0" width="100%">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Parent Name</th>
+                                            <th>Name</th>
+                                            <th>DOB</th>
+                                            <th>Gender</th>
+                                            <th width="25%">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
                             </div>
-                        </div>
-                        <div class="table-responsive pt-3">
-                            <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap"
-                                cellspacing="0" width="100%">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Parent Name</th>
-                                        <th>Name</th>
-                                        <th>DOB</th>
-                                        <th>Gender</th>
-                                        <th width="25%">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
+    @endcan
 
     <!-- Modal -->
-    @include('userrolepermission::kids.modal')
-    @include('userrolepermission::kids.show_modal')
+    @canany(['create-kids', 'edit-kids'])
+        @include('userrolepermission::kids.modal')
+    @endcanany
 
+    @can('view-kids')
+        @include('userrolepermission::kids.show_modal')
+    @endcan
     @push('scripts')
         <script src="{{ asset('backend/js/jquery.dataTables.min.js') }}"></script>
         <script src="{{ asset('backend/js/dataTables.bootstrap.min.js') }}"></script>
@@ -97,7 +105,7 @@
                     ]
                 });
             });
-            $(document).on("click", `.editBtn`, function (e) {
+            $(document).on("click", `.editBtn`, function(e) {
                 console.log('clicked');
                 modalOpen();
             })
@@ -106,6 +114,7 @@
 
                 modalOpen();
             });
+
             function modalOpen() {
                 const $select = $('#user_id');
                 $select.empty().append('<option value="">Loading...</option>');
@@ -122,10 +131,10 @@
 
                             parents.forEach(parent => {
                                 let selected = (parentId && parent.id == parentId) ? 'selected' :
-                                '';
+                                    '';
                                 $('#user_id').append(
                                     `<option value="${parent.id}" ${selected}>${parent.first_name}</option>`
-                                    );
+                                );
                             });
 
                             if (parentId) {
@@ -136,7 +145,7 @@
                                 if ($('#hidden_user_id').length === 0) {
                                     $('#user_id').after(
                                         `<input type="hidden" id="hidden_user_id" name="user_id" value="${parentId}">`
-                                        );
+                                    );
                                 } else {
                                     $('#hidden_user_id').val(parentId);
                                 }

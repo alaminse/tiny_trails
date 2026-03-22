@@ -114,6 +114,7 @@
     <!-- PayWay Connection Status (Fixed Position) -->
     <div id="payway-connection-status" class="payway-connection-status" style="display: none;"></div>
 
+@can('list-subscription')
     <div class="app-content">
         <div class="container-fluid">
 
@@ -133,9 +134,11 @@
                                 <button class="btn btn-light btn-sm" id="refreshDataBtn" title="Refresh All Data">
                                     <i class="fas fa-sync-alt me-1"></i>Refresh
                                 </button>
+@can('create-subscription')
                                 <a href="{{ route('admin.subscriptions.create') }}" class="btn btn-warning btn-sm">
                                     <i class="fas fa-plus me-1"></i>New Subscription
                                 </a>
+                                @endcan
                             </div>
                         </div>
                     </div>
@@ -311,12 +314,16 @@
                                 <button class="btn btn-gradient-info btn-sm" id="exportBtn">
                                     <i class="fas fa-download me-1"></i>Export
                                 </button>
+@can('delete-subscription')
                                 <button class="btn btn-gradient-warning btn-sm" id="showTrashed">
                                     <i class="fas fa-trash-restore me-1"></i>View Trashed
                                 </button>
+@endcan
+@can('create-subscription')
                                 <a href="{{ route('admin.subscriptions.create') }}" class="btn btn-gradient-success btn-sm">
                                     <i class="fas fa-plus me-1"></i>Add Subscription
                                 </a>
+@endcan
                             </div>
                         </div>
 
@@ -434,6 +441,7 @@
 
         </div>
     </div>
+    @endcan
 
     @push('scripts')
         <script src="{{ asset('backend/js/jquery.dataTables.min.js') }}"></script>
@@ -447,10 +455,11 @@
         <script>
             $(document).ready(function() {
                 // API Routes Configuration
-                let canDelete = {{ auth()->user()->can('delete-roles') }};
-                let canView = {{ auth()->user()->can('view-subscription') }};
-                let canEdit = {{ auth()->user()->can('edit-subscription') }};
-
+                let canDelete = {{ auth()->user()->can('delete-subscription') ? 'true' : 'false' }};
+                let canView   = {{ auth()->user()->can('view-subscription')   ? 'true' : 'false' }};
+                let canEdit   = {{ auth()->user()->can('edit-subscription')   ? 'true' : 'false' }};
+                let canCancel = {{ auth()->user()->can('delete-subscription') ? 'true' : 'false' }};
+                let canUnassign = {{ auth()->user()->can('unassign-subscription') ? 'true' : 'false' }};
 
                 const routes = {
                     data: '/admin/subscriptions/data/get',
@@ -607,21 +616,13 @@
                                     }
 
                                     // Action buttons based on status
-                                    if (row.status === 'active' && !row.canceled_at) {
-                                        buttons += `<button class="btn btn-sm btn-danger cancelBtn me-1" data-id="${row.id}" title="Cancel">
-                                            <i class="fas fa-ban"></i>
-                                        </button>`;
-
-                                        buttons += `<button class="btn btn-sm btn-success processPaymentBtn me-1" data-id="${row.id}" title="Process Payment">
-                                            <i class="fas fa-credit-card"></i>
-                                        </button>`;
+                                    if (canCancel && row.status === 'active' && !row.canceled_at) {
+                                        buttons += `<button class="btn btn-sm btn-danger cancelBtn ...">`;
+                                        buttons += `<button class="btn btn-sm btn-success processPaymentBtn ...">`;
                                     }
-
-                                    if (row.canceled_at) {
-                                        buttons += `<button class="btn btn-sm btn-success reactivateBtn me-1" data-id="${row.id}" title="Reactivate">
-                                            <i class="fas fa-undo"></i>
-                                        </button>`;
-                                    }
+                                    if (canCancel && row.canceled_at) {
+                                        buttons += `<button class="btn btn-sm btn-success reactivateBtn ...">`;
+                                    }   
 
                                     if (canDelete) {
                                         buttons += `<button class="btn btn-sm btn-danger deleteBtn" data-id="'.$row->id.'" title="Delete">

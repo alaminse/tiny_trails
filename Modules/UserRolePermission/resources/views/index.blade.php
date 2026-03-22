@@ -8,49 +8,57 @@
 
 @section('content')
     @include('backend.includes.header', ['mainTitle' => ucfirst($roleName) ?? 'User'])
-    <div class="app-content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card card-primary card-outline mb-4">
-                        <div class="d-flex">
-                            <div class="p-2 flex-grow-1 card-title">{{ ucfirst($roleName) ?? 'User' }}</div>
-                            <div class="p-2">
-                                <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
+    @can('list-users')
+        <div class="app-content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card card-primary card-outline mb-4">
+                            <div class="d-flex">
+                                <div class="p-2 flex-grow-1 card-title">{{ ucfirst($roleName) ?? 'User' }}</div>
+                                @can('restore-users')
+                                    <div class="p-2">
+                                        <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
+                                    </div>
+                                @endcan
+                                @can('create-users')
+                                    <div class="p-2">
+                                        <a href="#" class="btn btn-sm btn-gradient-success" id="addUserBtn">Add
+                                            {{ ucfirst($roleName) ?? 'User' }}</a>
+                                    </div>
+                                @endcan
                             </div>
-
-                            <div class="p-2">
-                                <a href="#" class="btn btn-sm btn-gradient-success" id="addUserBtn">Add {{ ucfirst($roleName) ?? 'User' }}</a>
+                            <div class="table-responsive pt-3">
+                                <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap"
+                                    cellspacing="0" width="100%">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Role</th>
+                                            <th>Status</th>
+                                            <th width="15%">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
                             </div>
-                        </div>
-                        <div class="table-responsive pt-3">
-                            <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap"
-                                cellspacing="0" width="100%">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Role</th>
-                                        <th>Status</th>
-                                        <th width="15%">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-
+    @endcan
     <!-- Modal -->
-    @include('userrolepermission::components.user_modal', ['role_name' => ucfirst($roleName)])
-    @include('userrolepermission::components.user_show_modal', ['role_name' => ucfirst($roleName)])
+    @canany(['create-users', 'edit-users'])
+        @include('userrolepermission::components.user_modal', ['role_name' => ucfirst($roleName)])
+    @endcanany
 
+    @can('view-users')
+        @include('userrolepermission::components.user_show_modal', ['role_name' => ucfirst($roleName)])
+    @endcan
     @push('scripts')
         <script src="{{ asset('backend/js/jquery.dataTables.min.js') }}"></script>
         <script src="{{ asset('backend/js/dataTables.bootstrap.min.js') }}"></script>
@@ -171,83 +179,83 @@
 
             $(document).ready(function() {
 
-    window.loadStates = function(country_id, callback = null) {
-      $('#state_id').html('<option value="">Loading...</option>');
-      $('#city_id').html('<option value="">Select City</option>');
+                window.loadStates = function(country_id, callback = null) {
+                    $('#state_id').html('<option value="">Loading...</option>');
+                    $('#city_id').html('<option value="">Select City</option>');
 
-      $.ajax({
-        url: `/users/states/by-country/${country_id}`,
-        type: 'GET',
-        success: function(states) {
-          let options = '<option value="">Select State</option>';
-          states.forEach(state => {
-            options += `<option value="${state.id}">${state.name}</option>`;
-          });
-          $('#state_id').html(options);
+                    $.ajax({
+                        url: `/users/states/by-country/${country_id}`,
+                        type: 'GET',
+                        success: function(states) {
+                            let options = '<option value="">Select State</option>';
+                            states.forEach(state => {
+                                options += `<option value="${state.id}">${state.name}</option>`;
+                            });
+                            $('#state_id').html(options);
 
-          if (callback) callback();
-        }
-      });
-    };
+                            if (callback) callback();
+                        }
+                    });
+                };
 
-    window.loadCities = function(state_d, callback = null) {
-      $('#city_id').html('<option value="">Loading...</option>');
+                window.loadCities = function(state_d, callback = null) {
+                    $('#city_id').html('<option value="">Loading...</option>');
 
-      $.ajax({
-        url: `/users/cities/by-state/${state_d}`,
-        type: 'GET',
-        success: function(cities) {
-          let options = '<option value="">Select City</option>';
-          cities.forEach(city => {
-            options += `<option value="${city.id}">${city.name}</option>`;
-          });
-          $('#city_id').html(options);
+                    $.ajax({
+                        url: `/users/cities/by-state/${state_d}`,
+                        type: 'GET',
+                        success: function(cities) {
+                            let options = '<option value="">Select City</option>';
+                            cities.forEach(city => {
+                                options += `<option value="${city.id}">${city.name}</option>`;
+                            });
+                            $('#city_id').html(options);
 
-          if (callback) callback();
-        }
-      });
-    };
+                            if (callback) callback();
+                        }
+                    });
+                };
 
-    // You can also expose selected IDs globally if needed
-    window.selectedCountry_id = $('#country_id').data('selected');
-    window.selectedState_id = $('#state_id').data('selected');
-    window.selectedCity_id = $('#city_id').data('selected');
+                // You can also expose selected IDs globally if needed
+                window.selectedCountry_id = $('#country_id').data('selected');
+                window.selectedState_id = $('#state_id').data('selected');
+                window.selectedCity_id = $('#city_id').data('selected');
 
-    // Attach event handlers (they can remain here)
-    $('#country_id').on('change', function() {
-      const countryId = $(this).val();
-      if (countryId) {
-        window.loadStates(countryId);
-      } else {
-        $('#state_id').html('<option value="">Select State</option>');
-        $('#city_id').html('<option value="">Select City</option>');
-      }
-    });
+                // Attach event handlers (they can remain here)
+                $('#country_id').on('change', function() {
+                    const countryId = $(this).val();
+                    if (countryId) {
+                        window.loadStates(countryId);
+                    } else {
+                        $('#state_id').html('<option value="">Select State</option>');
+                        $('#city_id').html('<option value="">Select City</option>');
+                    }
+                });
 
-    $('#state_id').on('change', function() {
-      const state_d = $(this).val();
-      if (state_d) {
-        window.loadCities(state_d);
-      } else {
-        $('#city_id').html('<option value="">Select City</option>');
-      }
-    });
+                $('#state_id').on('change', function() {
+                    const state_d = $(this).val();
+                    if (state_d) {
+                        window.loadCities(state_d);
+                    } else {
+                        $('#city_id').html('<option value="">Select City</option>');
+                    }
+                });
 
-    // Auto-select for edit mode
-    if (window.selectedCountry_id) {
-      $('#country_id').val(window.selectedCountry_id);
-      window.loadStates(window.selectedCountry_id, function() {
-        if (window.selectedState_id) {
-          $('#state_id').val(window.selectedState_id);
-          window.loadCities(window.selectedState_id, function() {
-            if (window.selectedCity_id) {
-              $('#city_id').val(window.selectedCity_id);
-            }
-          });
-        }
-      });
-    }
-  });
+                // Auto-select for edit mode
+                if (window.selectedCountry_id) {
+                    $('#country_id').val(window.selectedCountry_id);
+                    window.loadStates(window.selectedCountry_id, function() {
+                        if (window.selectedState_id) {
+                            $('#state_id').val(window.selectedState_id);
+                            window.loadCities(window.selectedState_id, function() {
+                                if (window.selectedCity_id) {
+                                    $('#city_id').val(window.selectedCity_id);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
         </script>
     @endpush
 @endsection
