@@ -16,6 +16,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/schedule/date', 'getDateSchedule');
               // Get available dates for calendar
             Route::get('/available-dates', 'getAvailableDates');
+            Route::get('/details/{id}', 'getRideDetails');
         });
 
 

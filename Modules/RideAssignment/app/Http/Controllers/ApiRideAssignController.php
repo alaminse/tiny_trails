@@ -128,4 +128,48 @@ class ApiRideAssignController extends Controller
             'data' => $availableDates
         ]);
     }
+
+    public function getRideDetails($id)
+    {
+        $user = Auth::user();
+
+        $ride = Ride::with([
+                'driver',
+                'rideAssign.subscription.kid'
+            ])
+            ->where('id', $id)
+            ->where('parent_id', $user->id) // security check
+            ->first();
+
+        if (!$ride) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ride not found.'
+            ], 404);
+        }
+
+        $kid    = $ride->rideAssign?->subscription?->kid;
+        $driver = $ride->driver;
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id'           => $ride->id,
+                'ride_type'    => $ride->ride_type,
+                'status'       => $ride->status,
+                'pickup_time'  => \Carbon\Carbon::parse($ride->pickup)->format('h:i A'),
+                'drop_off_time'=> \Carbon\Carbon::parse($ride->drop_off)->format('h:i A'),
+                'kid_name'     => $kid
+                    ? trim(($kid->first_name ?? '') . ' ' . ($kid->last_name ?? ''))
+                    : 'N/A',
+                'driver_name'  => $driver
+                    ? trim(($driver->first_name ?? '') . ' ' . ($driver->last_name ?? ''))
+                    : 'N/A',
+                'driver_phone' => $driver?->phone ?? null,
+                'vehicle_info' => $driver?->vehicle_number ?? null,
+                'commission'   => $ride->commission ?? '0.00',
+                'updated_at'   => $ride->updated_at,
+            ]
+        ]);
+    }
 }
