@@ -54,35 +54,48 @@ class ApiRideAssignController extends Controller
     {
         $user = Auth::user();
         $date = $request->get('date', now()->format('Y-m-d'));
-    
-        $rides = Ride::with(['driver', 'kid']) // Eager load relationships
+
+        $rides = Ride::with([
+                'driver',
+                'rideAssign.subscription.kid' // ← সঠিক relationship chain
+            ])
             ->where('parent_id', $user->id)
             ->whereDate('date', $date)
-            ->where('date', '>=', now()->format('Y-m-d')) // Only future dates
             ->orderBy('pickup')
             ->get()
             ->map(function ($ride) {
+                $kid    = $ride->rideAssign?->subscription?->kid;
+                $driver = $ride->driver;
+
                 return [
-                    'id' => $ride->id,
-                    'ride_type' => $ride->ride_type,
-                    'pickup_time' => \Carbon\Carbon::parse($ride->pickup)->format('h:i A'),
+                    'id'            => $ride->id,
+                    'ride_type'     => $ride->ride_type,
+                    'pickup_time'   => \Carbon\Carbon::parse($ride->pickup)->format('h:i A'),
                     'drop_off_time' => \Carbon\Carbon::parse($ride->drop_off)->format('h:i A'),
-                    'kid_name' => $ride->kid_name ?? 'N/A',
-                    'driver_name' => $ride->driver_name ?? 'N/A',
-                    'driver_phone' => $ride->driver->phone ?? null,
-                    'status' => $ride->status
+
+                    // ← এখানেই fix
+                    'kid_name'      => $kid
+                        ? trim(($kid->first_name ?? '') . ' ' . ($kid->last_name ?? ''))
+                        : 'N/A',
+
+                    'driver_name'   => $driver
+                        ? trim(($driver->first_name ?? '') . ' ' . ($driver->last_name ?? ''))
+                        : 'N/A',
+
+                    'driver_phone'  => $driver?->phone ?? null,
+                    'status'        => $ride->status,
                 ];
             });
-    
+
         return response()->json([
             'success' => true,
             'data' => [
-                'date' => $date,
-                'day_name' => \Carbon\Carbon::parse($date)->format('l'),
+                'date'           => $date,
+                'day_name'       => \Carbon\Carbon::parse($date)->format('l'),
                 'formatted_date' => \Carbon\Carbon::parse($date)->format('M d, Y'),
-                'is_today' => \Carbon\Carbon::parse($date)->isToday(),
-                'rides' => $rides,
-                'total_rides' => $rides->count()
+                'is_today'       => \Carbon\Carbon::parse($date)->isToday(),
+                'rides'          => $rides,
+                'total_rides'    => $rides->count(),
             ]
         ]);
     }
