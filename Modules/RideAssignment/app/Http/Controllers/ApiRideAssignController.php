@@ -172,4 +172,31 @@ class ApiRideAssignController extends Controller
             ]
         ]);
     }
+
+    public function getDriverLocation($id)
+    {
+        $user = Auth::user();
+
+        // Latest location for this ride
+        $location = \Modules\RideAssignment\app\Models\RideLocation::where('ride_id', $id)
+            ->where('parent_id', $user->id)
+            ->latest()
+            ->first();
+
+        if (!$location) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Driver location not available yet.'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'lat'        => $location->latitude,
+                'lng'        => $location->longitude,
+                'updated_at' => $location->updated_at,
+            ]
+        ]);
+    }
 }

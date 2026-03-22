@@ -17,6 +17,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
               // Get available dates for calendar
             Route::get('/available-dates', 'getAvailableDates');
             Route::get('/details/{id}', 'getRideDetails');
+            // routes/api.php
+            Route::get('/driver-location/{id}', 'getDriverLocation');
         });
 
 
