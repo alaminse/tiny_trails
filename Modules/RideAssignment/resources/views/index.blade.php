@@ -21,14 +21,14 @@
                                         <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
                                     </div>
                                 @endcan
-                                <div class="p-2">
-                                    @can('unassigned-subscription')
+                                @can('unassign-subscription')
+                                    <div class="p-2">
                                         <a href="{{ route('admin.ride.assign.subscriptions') }}"
                                             class="btn btn-sm btn-gradient-success">
                                             Unassigned Subscription
                                         </a>
-                                    @endcan
-                                </div>
+                                    </div>
+                                @endcan
                             </div>
 
                             <div class="table-responsive pt-3">
