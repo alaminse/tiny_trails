@@ -13,12 +13,14 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="card card-primary card-outline mb-4">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h3 class="card-title">Driver Wage Management</h3>
+                            <div class="card-header d-flex align-items-center">
+                                <h3 class="card-title mb-0">Driver Wage Management</h3>
                                 @can('create-driver-wages')
-                                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalWage">
-                                        <i class="bi bi-plus-circle"></i> Set Wage
-                                    </button>
+                                    <div class="ms-auto">
+                                        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalWage">
+                                            <i class="bi bi-plus-circle"></i> Set Wage
+                                        </button>
+                                    </div>
                                 @endcan
                             </div>
 
@@ -115,42 +117,11 @@
                                                             </td>
                                                         </tr>
                                                     @empty
-                                                        {{-- Demo rows --}}
-                                                        <tr>
-                                                            <td><strong>James O.</strong></td>
-                                                            <td><span class="badge bg-primary">Daily</span></td>
-                                                            <td><span class="fs-5 fw-bold text-success">$180.00</span> <small
-                                                                    class="text-muted">/ day</small></td>
-                                                            <td><code>01 Jan 2026</code></td>
-                                                            <td><span class="text-muted">Ongoing</span></td>
-                                                            <td><span class="badge bg-success">Active</span></td>
-                                                            <td class="small text-muted">Super Admin</td>
-                                                            <td><button class="btn btn-sm btn-outline-secondary">✏️
-                                                                    Edit</button></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td><strong>Sarah K.</strong></td>
-                                                            <td><span class="badge bg-info text-dark">Hourly</span></td>
-                                                            <td><span class="fs-5 fw-bold text-success">$32.00</span> <small
-                                                                    class="text-muted">/ hr</small></td>
-                                                            <td><code>15 Jan 2026</code></td>
-                                                            <td><span class="text-muted">Ongoing</span></td>
-                                                            <td><span class="badge bg-success">Active</span></td>
-                                                            <td class="small text-muted">Super Admin</td>
-                                                            <td><button class="btn btn-sm btn-outline-secondary">✏️
-                                                                    Edit</button></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td><strong>Mike R.</strong></td>
-                                                            <td><span class="badge bg-primary">Daily</span></td>
-                                                            <td><span class="fs-5 fw-bold text-muted">$165.00</span> <small
-                                                                    class="text-muted">/ day</small></td>
-                                                            <td><code>01 Dec 2025</code></td>
-                                                            <td><code>31 Jan 2026</code></td>
-                                                            <td><span class="badge bg-secondary">Inactive</span></td>
-                                                            <td class="small text-muted">Super Admin</td>
-                                                            <td><button class="btn btn-sm btn-primary">Renew</button></td>
-                                                        </tr>
+                                                        <div class="text-center py-5">
+                                                            <div class="mb-3" style="font-size:40px;">😕</div>
+                                                            <h6 class="fw-bold">No Driver Wages Found</h6>
+                                                            <p class="text-muted mb-0">No active Driver Wages available.</p>
+                                                        </div>
                                                     @endforelse
                                                 </tbody>
                                             </table>

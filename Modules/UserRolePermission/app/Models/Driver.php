@@ -7,6 +7,7 @@ use App\Models\VehicleType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\RideAssignment\app\Models\Ride;
 use Modules\UserRolePermission\database\factories\DriverFactory;
 
@@ -142,5 +143,31 @@ class Driver extends Model
             ->count();
 
         return $activeRidesCount >= $this->vehicleType->max_capacity;
+    }
+
+    public function getFaceVerificationStatusAttribute()
+    {
+        if (!$this->is_verified) {
+            return 'unverified';
+        }
+
+        if (!$this->face_verified_until) {
+            return 'expired';
+        }
+
+        if (now()->gt($this->face_verified_until)) {
+            return 'expired';
+        }
+
+        if (now()->diffInMinutes($this->face_verified_until, false) <= 30) {
+            return 'expiring';
+        }
+
+        return 'verified';
+    }
+
+    public function rides(): HasMany
+    {
+        return $this->hasMany(Ride::class, 'driver_id');
     }
 }

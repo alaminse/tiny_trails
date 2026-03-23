@@ -133,53 +133,11 @@
                                                         </div>
                                                     </div>
                                                 @empty
-                                                    {{-- Demo --}}
-                                                    <div class="card broadcast-card shadow-sm mb-3">
-                                                        <div
-                                                            class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
-                                                            <div class="flex-grow-1">
-                                                                <div class="fw-bold mb-1">📍 Ghan NT → Sunshine Primary School
-                                                                </div>
-                                                                <div class="d-flex flex-wrap gap-3 text-muted small">
-                                                                    <span>📅 Mon 24 Feb</span>
-                                                                    <span>⏰ 7:00 AM</span>
-                                                                    <span>👦 3 kids</span>
-                                                                    <span>🚐 7-Seater required</span>
-                                                                </div>
-                                                            </div>
-                                                            <div class="text-center">
-                                                                <div class="timer text-warning">⏱ 42 min left</div>
-                                                                <div class="small text-muted">remaining</div>
-                                                            </div>
-                                                            <div class="d-flex flex-column align-items-end gap-2">
-                                                                <span class="badge bg-warning text-dark">🟡 Open</span>
-                                                                <button class="btn btn-sm btn-outline-danger">Cancel</button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="card broadcast-card shadow-sm mb-3">
-                                                        <div
-                                                            class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
-                                                            <div class="flex-grow-1">
-                                                                <div class="fw-bold mb-1">📍 Clayton VIC → St. Joseph's College
-                                                                </div>
-                                                                <div class="d-flex flex-wrap gap-3 text-muted small">
-                                                                    <span>📅 Mon 24 Feb</span>
-                                                                    <span>⏰ 7:30 AM</span>
-                                                                    <span>👦 2 kids</span>
-                                                                    <span>🚗 4-Seater OK</span>
-                                                                </div>
-                                                            </div>
-                                                            <div class="text-center">
-                                                                <div class="timer text-danger">⏱ 18 min left</div>
-                                                                <div class="small text-muted">expiring soon!</div>
-                                                            </div>
-                                                            <div class="d-flex flex-column align-items-end gap-2">
-                                                                <span class="badge bg-danger">🔴 Expiring</span>
-                                                                <button class="btn btn-sm btn-warning">Extend</button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                <div class="text-center py-5">
+                                                    <div class="mb-3" style="font-size:40px;">😕</div>
+                                                    <h6 class="fw-bold">No Shift Broadcast Found</h6>
+                                                    <p class="text-muted mb-0">No active Shift Broadcast available.</p>
+                                                </div>
                                                 @endforelse
                                             </div>
 

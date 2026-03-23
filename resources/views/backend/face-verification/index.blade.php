@@ -111,7 +111,7 @@
                                                 <div class="card bg-primary text-white border-0 shadow-sm">
                                                     <div class="card-body py-3">
                                                         <div class="text-uppercase small fw-semibold mb-1">Window</div>
-                                                        <div class="fs-2 fw-bold">5h</div>
+                                                        <div class="fs-2 fw-bold">8h</div>
                                                         <div class="small">Per shift session</div>
                                                     </div>
                                                 </div>
@@ -251,96 +251,14 @@
                                             </div>
 
                                         @empty
-                                            {{-- Demo cards --}}
-                                            <div class="card face-card verified shadow-sm mb-3">
-                                                <div class="card-body">
-                                                    <div class="d-flex align-items-center gap-3 flex-wrap">
-                                                        <div class="driver-avatar verified">👨</div>
-                                                        <div class="flex-grow-1">
-                                                            <div class="fw-bold">James O.</div>
-                                                            <div class="small text-muted">✅ Verified · Valid until 11:58 AM (3h
-                                                                16m remaining)</div>
-                                                        </div>
-                                                        <div style="min-width:160px;">
-                                                            <div class="d-flex justify-content-between small text-muted mb-1">
-                                                                <span>Session</span><span>35% used</span></div>
-                                                            <div class="session-bar">
-                                                                <div class="session-fill" style="background:#198754;width:35%">
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <span class="badge bg-success">Active</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="card face-card expiring shadow-sm mb-3">
-                                                <div class="card-body">
-                                                    <div class="d-flex align-items-center gap-3 flex-wrap">
-                                                        <div class="driver-avatar expiring">👩</div>
-                                                        <div class="flex-grow-1">
-                                                            <div class="fw-bold">Priya M.</div>
-                                                            <div class="small text-muted">⚠️ Expiring soon · Valid until 09:05
-                                                                AM (28m remaining)</div>
-                                                        </div>
-                                                        <div style="min-width:160px;">
-                                                            <div class="d-flex justify-content-between small text-muted mb-1">
-                                                                <span>Session</span><span>91% used</span></div>
-                                                            <div class="session-bar">
-                                                                <div class="session-fill" style="background:#ffc107;width:91%">
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <span class="badge bg-warning text-dark">Expiring</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="card face-card expired shadow-sm mb-3">
-                                                <div class="card-body">
-                                                    <div class="d-flex align-items-center gap-3 flex-wrap">
-                                                        <div class="driver-avatar expired">👨</div>
-                                                        <div class="flex-grow-1">
-                                                            <div class="fw-bold">Mike R.</div>
-                                                            <div class="small text-muted">❌ Expired · Session ended at 08:00 AM
-                                                            </div>
-                                                        </div>
-                                                        <div style="min-width:160px;">
-                                                            <div class="d-flex justify-content-between small text-muted mb-1">
-                                                                <span>Session</span><span>100% used</span></div>
-                                                            <div class="session-bar">
-                                                                <div class="session-fill" style="background:#dc3545;width:100%">
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <span class="badge bg-danger">Expired</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="card face-card none shadow-sm mb-3">
-                                                <div class="card-body">
-                                                    <div class="d-flex align-items-center gap-3 flex-wrap">
-                                                        <div class="driver-avatar">👨</div>
-                                                        <div class="flex-grow-1">
-                                                            <div class="fw-bold">Tom W.</div>
-                                                            <div class="small text-muted">❌ Never verified today · Cannot
-                                                                accept shifts</div>
-                                                        </div>
-                                                        <div style="min-width:160px;">
-                                                            <div class="d-flex justify-content-between small text-muted mb-1">
-                                                                <span>Session</span><span>None</span></div>
-                                                            <div class="session-bar">
-                                                                <div class="session-fill" style="background:#adb5bd;width:0%">
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <span class="badge bg-secondary">None</span>
-                                                    </div>
-                                                </div>
+                                            <div class="text-center py-5">
+                                                <div class="mb-3" style="font-size:40px;">😕</div>
+                                                <h6 class="fw-bold">No Drivers Found</h6>
+                                                <p class="text-muted mb-0">No active drivers available for face verification.</p>
                                             </div>
                                         @endforelse
-
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>

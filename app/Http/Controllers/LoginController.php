@@ -26,6 +26,30 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->remember)) {
             $request->session()->regenerate();
+
+            $user = Auth::user();
+
+            // Roles allowed into the admin panel
+            $bohRoles   = ['BOH-IT', 'BOH-Marketing', 'BOH-Sales', 'BOH-Support'];
+            $adminRoles = ['Super-Admin', 'Admin', ...$bohRoles];
+
+            // Block roles that have no business in the admin panel
+            if (! $user->hasAnyRole($adminRoles)) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()->withErrors([
+                    'email' => 'You do not have permission to access this area.',
+                ])->withInput();
+            }
+
+            // BOH roles → BoH dashboard
+            if ($user->hasAnyRole($bohRoles)) {
+                return redirect()->route('admin.boh.dashboard');
+            }
+
+            // Super-Admin / Admin → main dashboard
             return redirect()->route('admin.dashboard');
         }
 

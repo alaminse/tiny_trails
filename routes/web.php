@@ -38,7 +38,7 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
     // ── BoH Live Dashboard ──────────────────────────────────────────────
     Route::get('boh/dashboard', [BohDashboardController::class, 'index'])
         ->name('boh.dashboard')
-        ->middleware('can:boh-dashboard');
+        ->middleware('can:view-boh-dashboard');
 
     // ── Shift Broadcasts ────────────────────────────────────────────────
     Route::middleware('can:list-shift-broadcast')->group(function () {

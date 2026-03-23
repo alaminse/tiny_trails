@@ -258,112 +258,96 @@ class SubscriptionController extends Controller
         try {
             $trashed = $request->boolean('trashed', false);
 
-            // Get DataTable parameters
-            $draw = $request->input('draw', 1);
-            $start = $request->input('start', 0);
-            $length = $request->input('length', 25);
-            $searchValue = $request->input('search.value', '');
-            $orderColumn = $request->input('order.0.column', 0);
-            $orderDirection = $request->input('order.0.dir', 'desc');
+            // 1. Setup Base Query
+            $query = $trashed ? Subscription::onlyTrashed() : Subscription::query();
 
-            // Define column mapping
-            $columns = [
-                0 => 'id',
-                1 => 'user.name',
-                2 => 'plan.name',
-                3 => 'status',
-                4 => 'payway_status',
-                6 => 'ends_at',
-                7 => 'payment_method',
-                8 => 'actions'
-            ];
-
-            // Build query
-            $query = $trashed
-                ? Subscription::onlyTrashed()
-                : Subscription::whereNull('deleted_at');
-
+            // Use Eager Loading to avoid N+1 issues
             $query->with(['user', 'plan']);
 
-            // Apply search
+            // 2. Global Search
+            $searchValue = $request->input('search.value');
             if (!empty($searchValue)) {
                 $query->where(function($q) use ($searchValue) {
                     $q->where('name', 'like', "%{$searchValue}%")
                     ->orWhere('status', 'like', "%{$searchValue}%")
                     ->orWhere('payway_status', 'like', "%{$searchValue}%")
-                    ->orWhereHas('user', function($q) use ($searchValue) {
-                        $q->where('name', 'like', "%{$searchValue}%")
+                    ->orWhereHas('user', function($uq) use ($searchValue) {
+                        $uq->where('name', 'like', "%{$searchValue}%")
                             ->orWhere('email', 'like', "%{$searchValue}%");
                     })
-                    ->orWhereHas('plan', function($q) use ($searchValue) {
-                        $q->where('name', 'like', "%{$searchValue}%");
+                    ->orWhereHas('plan', function($pq) use ($searchValue) {
+                        $pq->where('name', 'like', "%{$searchValue}%");
                     });
                 });
             }
 
-            // Get total count before pagination
-            $totalRecords = Subscription::count();
-            $filteredRecords = $query->count();
-
-            // Apply ordering
-            $orderColumnName = $columns[$orderColumn] ?? 'id';
-            if (str_contains($orderColumnName, '.')) {
-                $parts = explode('.', $orderColumnName);
-                $query->orderBy($parts[0] . 's.' . $parts[1], $orderDirection);
-            } else {
-                $query->orderBy($orderColumnName, $orderDirection);
+            // 3. Advanced Filters (Matching your Blade UI)
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+            if ($request->filled('payway_status')) {
+                $query->where('payway_status', $request->payway_status);
             }
 
-            // Apply pagination
+            // 4. Calculate Totals
+            // Use a clone for filtered count to avoid polluting the pagination query
+            $totalRecords = Subscription::count();
+            $filteredRecords = (clone $query)->count();
+
+            // 5. Ordering
+            $orderColumnIndex = $request->input('order.0.column', 0);
+            $orderDirection = $request->input('order.0.dir', 'desc');
+
+            $columns = [
+                0 => 'id',
+                3 => 'status',
+                4 => 'payway_status',
+                5 => 'ends_at',
+                // Note: Ordering by user.name or plan.name manually requires Joins.
+                // For now, we default to ID if a complex relation is picked.
+            ];
+
+            $sortColumn = $columns[$orderColumnIndex] ?? 'id';
+            $query->orderBy($sortColumn, $orderDirection);
+
+            // 6. Pagination
+            $start = $request->input('start', 0);
+            $length = $request->input('length', 25);
             $subscriptions = $query->skip($start)->take($length)->get();
 
-            // Format data for DataTable
-            $data = [];
-            foreach ($subscriptions as $index => $subscription) {
-                $data[] = [
+            // 7. Map Data
+            $data = $subscriptions->map(function ($subscription, $index) use ($start, $trashed) {
+                return [
                     'DT_RowIndex' => $start + $index + 1,
                     'id' => $subscription->id,
                     'user' => [
                         'name' => $subscription->user->name ?? 'N/A',
-                        'email' => $subscription->user->email ?? 'N/A'
+                        'email' => $subscription->user->email ?? 'N/A',
                     ],
                     'plan' => [
                         'name' => $subscription->plan->name ?? 'N/A',
-                        'price' => $subscription->plan->price ?? 0
+                        'price' => $subscription->plan->price ?? 0,
                     ],
-                    'name' => $subscription->name,
-                    'status' => ucfirst($subscription->status),
-                    'payway_status' => ucfirst($subscription->payway_status ?? 'N/A'),
-                    'ends_at' => $subscription->ends_at
-                        ? $subscription->ends_at->format('Y-m-d H:i:s')
-                        : 'N/A',
-                    'payment_method' => $this->formatPaymentMethod($subscription),
-                    'actions' => $this->generateActionButtons($subscription, $trashed),
-                    'created_at' => $subscription->created_at->format('Y-m-d H:i:s'),
-                    'updated_at' => $subscription->updated_at->format('Y-m-d H:i:s'),
+                    'status' => strtolower($subscription->status), // Blade handles styling
+                    'payway_status' => strtolower($subscription->payway_status ?? 'pending'),
+                    'ends_at' => $subscription->ends_at ? $subscription->ends_at->toISOString() : null,
+                    'card_brand' => $subscription->card_brand,
+                    'card_last_four' => $subscription->card_last_four,
+                    'card_expiration' => $subscription->card_expiration,
+                    'actions' => '' // Leave empty if your JS renders the buttons
                 ];
-            }
+            });
 
             return response()->json([
-                'draw' => intval($draw),
+                'draw' => intval($request->input('draw')),
                 'recordsTotal' => $totalRecords,
                 'recordsFiltered' => $filteredRecords,
                 'data' => $data
             ]);
 
         } catch (\Exception $e) {
-            Log::error('DataTable error:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'draw' => intval($request->input('draw', 1)),
-                'recordsTotal' => 0,
-                'recordsFiltered' => 0,
-                'data' => [],
-                'error' => 'Failed to fetch subscriptions: ' . $e->getMessage()
-            ], 500);
+            Log::error('Subscription DataTable Error: ' . $e->getMessage());
+            return response()->json(['error' => 'Internal Server Error'], 500);
         }
     }
 

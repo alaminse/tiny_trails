@@ -10,6 +10,7 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
+
         // ─────────────────────────────────────────────────────────────
         // Permission map per role
         // ─────────────────────────────────────────────────────────────
@@ -118,6 +119,8 @@ class RoleSeeder extends Seeder
                 // PickUp — read only
                 'list-pickup', 'view-pickup',
             ],
+            'driver' => [],
+            'parent' => [],
         ];
 
         // ─────────────────────────────────────────────────────────────
