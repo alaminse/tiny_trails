@@ -7,6 +7,8 @@
 
 @section('content')
     @include('backend.includes.header', ['mainTitle' => 'City', 'subTitle' => 'City Management'])
+
+@can('list-city')
     <div class="app-content">
         <div class="container-fluid">
             <div class="row">
@@ -14,11 +16,13 @@
                     <div class="card card-primary card-outline mb-4">
                         <div class="d-flex">
                             <div class="p-2 flex-grow-1 card-title">City</div>
+@can('delete-city')
                             <div class="p-2">
                                 <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
                             </div>
+@endcan
 
-                            @canany('create-city')
+@can('create-city')
                             <div class="p-2">
                                 <a href="#" class="btn btn-sm btn-gradient-success" id="addCityBtn">Add City</a>
                             </div>
@@ -45,9 +49,10 @@
             </div>
         </div>
     </div>
-
+@endcan
 
     <!-- Modal -->
+@canany(['create-city', 'edit-city'])
    <div class="modal fade" id="cityModal" tabindex="-1" aria-labelledby="cityModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content border border-primary">
@@ -93,6 +98,7 @@
         </div>
     </div>
 </div>
+@endcanany
 
     @push('scripts')
         <script src="{{ asset('backend/js/jquery.dataTables.min.js') }}"></script>

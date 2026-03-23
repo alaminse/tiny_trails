@@ -12,18 +12,22 @@
             padding: 20px;
             margin-bottom: 20px;
         }
+
         .stats-number {
             font-size: 2rem;
             font-weight: bold;
         }
+
         .plan-features {
             max-width: 200px;
         }
+
         .plan-features ul {
             list-style: none;
             padding: 0;
             margin: 0;
         }
+
         .plan-features li {
             background: #f8f9fa;
             padding: 2px 8px;
@@ -35,117 +39,131 @@
 @endsection
 
 @section('content')
-    @include('backend.includes.header', ['mainTitle' => 'Plans', 'subTitle' => 'Subscription Plans Management'])
+    @include('backend.includes.header', [
+        'mainTitle' => 'Plans',
+        'subTitle' => 'Subscription Plans Management',
+    ])
+    @can('list-plan')
+        <div class="app-content">
+            <div class="container-fluid">
 
-    <div class="app-content">
-        <div class="container-fluid">
-
-            <!-- Statistics Cards -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="stats-card">
-                        <div class="d-flex align-items-center">
-                            <div class="flex-grow-1">
-                                <div class="stats-number" id="total-plans">{{ $stats['total'] ?? 0 }}</div>
-                                <div>Total Plans</div>
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="stats-number" id="total-plans">{{ $stats['total'] ?? 0 }}</div>
+                                    <div>Total Plans</div>
+                                </div>
+                                <div class="ms-3">
+                                    <i class="fas fa-layer-group fa-2x opacity-75"></i>
+                                </div>
                             </div>
-                            <div class="ms-3">
-                                <i class="fas fa-layer-group fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card bg-success">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="stats-number" id="active-plans">{{ $stats['active'] ?? 0 }}</div>
+                                    <div>Active Plans</div>
+                                </div>
+                                <div class="ms-3">
+                                    <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card bg-warning">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="stats-number" id="inactive-plans">{{ $stats['inactive'] ?? 0 }}</div>
+                                    <div>Inactive Plans</div>
+                                </div>
+                                <div class="ms-3">
+                                    <i class="fas fa-pause-circle fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card bg-info">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="stats-number" id="total-subscriptions">{{ $stats['subscriptions'] ?? 0 }}</div>
+                                    <div>Total Subscriptions</div>
+                                </div>
+                                <div class="ms-3">
+                                    <i class="fas fa-users fa-2x opacity-75"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="stats-card bg-success">
-                        <div class="d-flex align-items-center">
-                            <div class="flex-grow-1">
-                                <div class="stats-number" id="active-plans">{{ $stats['active'] ?? 0 }}</div>
-                                <div>Active Plans</div>
-                            </div>
-                            <div class="ms-3">
-                                <i class="fas fa-check-circle fa-2x opacity-75"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-card bg-warning">
-                        <div class="d-flex align-items-center">
-                            <div class="flex-grow-1">
-                                <div class="stats-number" id="inactive-plans">{{ $stats['inactive'] ?? 0 }}</div>
-                                <div>Inactive Plans</div>
-                            </div>
-                            <div class="ms-3">
-                                <i class="fas fa-pause-circle fa-2x opacity-75"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-card bg-info">
-                        <div class="d-flex align-items-center">
-                            <div class="flex-grow-1">
-                                <div class="stats-number" id="total-subscriptions">{{ $stats['subscriptions'] ?? 0 }}</div>
-                                <div>Total Subscriptions</div>
-                            </div>
-                            <div class="ms-3">
-                                <i class="fas fa-users fa-2x opacity-75"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col-12">
-                    <div class="card card-primary card-outline mb-4">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <div class="card-title">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-layer-group me-2"></i>Subscription Plans
-                                </h5>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card card-primary card-outline mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div class="card-title">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-layer-group me-2"></i>Subscription Plans
+                                    </h5>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    @can('delete-plan')
+                                        <button class="btn btn-gradient-warning btn-sm" id="showTrashed">
+                                            <i class="fas fa-trash-restore me-1"></i>View Trashed
+                                        </button>
+                                    @endcan
+                                    @can('create-plan')
+                                        <button class="btn btn-gradient-success btn-sm" id="addPlanBtn">
+                                            <i class="fas fa-plus me-1"></i>Add New Plan
+                                        </button>
+                                    @endcan
+                                </div>
                             </div>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-gradient-warning btn-sm" id="showTrashed">
-                                    <i class="fas fa-trash-restore me-1"></i>View Trashed
-                                </button>
-                                <button class="btn btn-gradient-success btn-sm" id="addPlanBtn">
-                                    <i class="fas fa-plus me-1"></i>Add New Plan
-                                </button>
-                            </div>
-                        </div>
 
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table id="datatable-responsive" class="table table-striped table-bordered dt-responsive nowrap"
-                                    cellspacing="0" width="100%">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th width="5%">No</th>
-                                            <th width="20%">Plan Name</th>
-                                            <th width="15%">Price</th>
-                                            <th width="8%">Currency</th>
-                                            <th width="12%">Billing Cycle</th>
-                                            <th width="15%">Pickup Type</th>
-                                            <th width="10%">Status</th>
-                                            <th width="15%">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Data will be loaded via AJAX -->
-                                    </tbody>
-                                </table>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="datatable-responsive"
+                                        class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0"
+                                        width="100%">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th width="5%">No</th>
+                                                <th width="20%">Plan Name</th>
+                                                <th width="15%">Price</th>
+                                                <th width="8%">Currency</th>
+                                                <th width="12%">Billing Cycle</th>
+                                                <th width="15%">Pickup Type</th>
+                                                <th width="10%">Status</th>
+                                                <th width="15%">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Data will be loaded via AJAX -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
+    @endcan
     <!-- Modals -->
-    @include('subscription::plan.modal')
-    @include('subscription::plan.show_modal')
+    @canany(['create-plan', 'edit-plan'])
+        @include('subscription::plan.modal')
+    @endcanany
+
+    @can('view-plan')
+        @include('subscription::plan.show_modal')
+    @endcan
 
     @push('scripts')
         <script src="{{ asset('backend/js/jquery.dataTables.min.js') }}"></script>
@@ -158,7 +176,7 @@
         <script>
             $(document).ready(function() {
                 // Initialize the module CRUD
-                 const plansCrud = initModuleCrud({
+                const plansCrud = initModuleCrud({
                     moduleName: 'plan',
                     tableId: 'datatable-responsive',
                     modalId: 'planModal',
@@ -196,21 +214,49 @@
                             d.trashed = $('#showTrashed').hasClass('active');
                         }
                     },
-                    columns: [
-                        { data: null, name: 'id', orderable: false, searchable: false,
-                          render: function(data, type, row, meta) {
-                              return meta.row + meta.settings._iDisplayStart + 1;
-                          }
+                    columns: [{
+                            data: null,
+                            name: 'id',
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, row, meta) {
+                                return meta.row + meta.settings._iDisplayStart + 1;
+                            }
                         },
-                        { data: 'name', name: 'name' },
-                        { data: 'price', name: 'price' },
-                        { data: 'currency', name: 'currency' },
-                        { data: 'interval', name: 'interval' },
-                        { data: 'pickup_type.name', name: 'pickup_type.name' },
-                        { data: 'status', name: 'status' },
-                        { data: 'actions', name: 'actions', orderable: false, searchable: false }
+                        {
+                            data: 'name',
+                            name: 'name'
+                        },
+                        {
+                            data: 'price',
+                            name: 'price'
+                        },
+                        {
+                            data: 'currency',
+                            name: 'currency'
+                        },
+                        {
+                            data: 'interval',
+                            name: 'interval'
+                        },
+                        {
+                            data: 'pickup_type.name',
+                            name: 'pickup_type.name'
+                        },
+                        {
+                            data: 'status',
+                            name: 'status'
+                        },
+                        {
+                            data: 'actions',
+                            name: 'actions',
+                            orderable: false,
+                            searchable: false
+                        }
                     ],
-                    order: [[0, 'asc']]
+                    order: [
+                        [0, 'asc']
+                    ]
                 });
 
                 // Handle show modal data population
@@ -226,19 +272,22 @@
                             // Populate basic info
                             $('#planShowModal #name').text(plan.name || '-');
                             $('#planShowModal #slug').text(plan.slug || '-');
-                            $('#planShowModal #description').text(plan.description || 'No description provided');
-                            $('#planShowModal #pickup_type_name').text(plan.pickup_type?.name || 'N/A');
+                            $('#planShowModal #description').text(plan.description ||
+                                'No description provided');
+                            $('#planShowModal #pickup_type_name').text(plan.pickup_type?.name ||
+                                'N/A');
 
                             // Populate pricing info
                             $('#planShowModal #price').text(plan.formatted_price || '-');
                             $('#planShowModal #sell_price').text(plan.formatted_sell_price || '-');
                             $('#planShowModal #currency').text(plan.currency || '-');
-                            $('#planShowModal #interval_display').text(plan.interval_display || '-');
+                            $('#planShowModal #interval_display').text(plan.interval_display ||
+                            '-');
 
                             // Status badge
-                            const statusBadge = plan.status === 'active'
-                                ? '<span class="badge bg-success">Active</span>'
-                                : '<span class="badge bg-secondary">Inactive</span>';
+                            const statusBadge = plan.status === 'active' ?
+                                '<span class="badge bg-success">Active</span>' :
+                                '<span class="badge bg-secondary">Inactive</span>';
                             $('#planShowModal #status_badge').html(statusBadge);
 
                             // Features
@@ -246,7 +295,8 @@
                             if (plan.features && plan.features.length > 0) {
                                 featuresHtml = '<ul class="list-unstyled">';
                                 plan.features.forEach(feature => {
-                                    featuresHtml += `<li><i class="fas fa-check text-success me-2"></i>${feature}</li>`;
+                                    featuresHtml +=
+                                        `<li><i class="fas fa-check text-success me-2"></i>${feature}</li>`;
                                 });
                                 featuresHtml += '</ul>';
                             } else {
@@ -255,8 +305,10 @@
                             $('#planShowModal #features_list').html(featuresHtml);
 
                             // Statistics
-                            $('#planShowModal #total_subscriptions').text(plan.subscriptions_count || '0');
-                            $('#planShowModal #active_subscriptions').text(plan.active_subscriptions_count || '0');
+                            $('#planShowModal #total_subscriptions').text(plan
+                                .subscriptions_count || '0');
+                            $('#planShowModal #active_subscriptions').text(plan
+                                .active_subscriptions_count || '0');
                             $('#planShowModal #sort_order').text(plan.sort_order || '0');
 
                             $('#planShowModal').modal('show');
@@ -293,7 +345,8 @@
                                     dataTable.ajax.reload();
                                 },
                                 error: function() {
-                                    Swal.fire('Error!', 'Failed to duplicate the plan.', 'error');
+                                    Swal.fire('Error!', 'Failed to duplicate the plan.',
+                                        'error');
                                 }
                             });
                         }

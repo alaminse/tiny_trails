@@ -7,9 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\UserRolePermission\app\Models\Driver;
 use Carbon\Carbon;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class AttendanceController extends Controller
 {
+    use AuthorizesRequests;
     // ──────────────────────────────────────────────────────────────────
     // Attendance = Present if driver has face_verified_at on that date
     // Source: driver_shifts + shift_drivers + drivers.face_verified_at

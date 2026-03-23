@@ -8,52 +8,55 @@
 
 @section('content')
     @include('backend.includes.header', ['mainTitle' => 'Ride Assign Management'])
-
-    <div class="app-content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card card-primary card-outline mb-4">
-                        <div class="d-flex">
-                            <div class="p-2 flex-grow-1 card-title">Ride Assign Management</div>
-                            <div class="p-2">
-                                <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
-                            </div>
-                            <div class="p-2">
-                                @can('unassigned-subscription')
-                                <a href="{{ route('admin.ride.assign.subscriptions') }}" class="btn btn-sm btn-gradient-success">
-                                    Unassigned Subscription
-                                </a>
+    @can('list-rideassign')
+        <div class="app-content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card card-primary card-outline mb-4">
+                            <div class="d-flex">
+                                <div class="p-2 flex-grow-1 card-title">Ride Assign Management</div>
+                                @can('delete-rideassign')
+                                    <div class="p-2">
+                                        <a href="#" class="btn btn-gradient-warning btn-sm" id="showTrashed">Trashed</a>
+                                    </div>
                                 @endcan
+                                <div class="p-2">
+                                    @can('unassigned-subscription')
+                                        <a href="{{ route('admin.ride.assign.subscriptions') }}"
+                                            class="btn btn-sm btn-gradient-success">
+                                            Unassigned Subscription
+                                        </a>
+                                    @endcan
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="table-responsive pt-3">
-                            <table id="rideAssignTable" class="table table-striped table-bordered dt-responsive nowrap"
-                                   cellspacing="0" width="100%">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Subscription</th>
-                                        <th>Service Type</th>
-                                        <th>Fare</th>
-                                        <th>Driver Commission</th>
-                                        <th>Platform Commission</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {{-- AJAX loaded --}}
-                                </tbody>
-                            </table>
+                            <div class="table-responsive pt-3">
+                                <table id="rideAssignTable" class="table table-striped table-bordered dt-responsive nowrap"
+                                    cellspacing="0" width="100%">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Subscription</th>
+                                            <th>Service Type</th>
+                                            <th>Fare</th>
+                                            <th>Driver Commission</th>
+                                            <th>Platform Commission</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{-- AJAX loaded --}}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
+    @endcan
     @push('scripts')
         <script src="{{ asset('backend/js/jquery.dataTables.min.js') }}"></script>
         <script src="{{ asset('backend/js/dataTables.bootstrap.min.js') }}"></script>
@@ -61,7 +64,7 @@
         <script src="{{ asset('backend/js/responsive.bootstrap.js') }}"></script>
 
         <script>
-            $(document).ready(function () {
+            $(document).ready(function() {
                 let tableId = 'rideAssignTable';
                 let $table = $(`#${tableId}`);
                 let finalUrl = "{{ route('admin.ride.assign.data') }}";
@@ -69,7 +72,7 @@
                 $.ajax({
                     url: finalUrl,
                     method: "GET",
-                    success: function (response) {
+                    success: function(response) {
 
                         console.log(response);
 
@@ -77,19 +80,21 @@
                             $table.DataTable().destroy();
                         }
                         $table.find("tbody").html(response.html);
-                        $table.DataTable({ responsive: true });
+                        $table.DataTable({
+                            responsive: true
+                        });
                     },
-                    error: function (xhr) {
+                    error: function(xhr) {
                         console.error(`Error fetching Ride Assign data`, xhr);
                     }
                 });
             });
 
-            @if(session('success'))
+            @if (session('success'))
                 toastr.success("{{ session('success') }}");
             @endif
 
-            @if(session('error'))
+            @if (session('error'))
                 toastr.error("{{ session('error') }}");
             @endif
         </script>

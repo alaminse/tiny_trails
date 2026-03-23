@@ -14,8 +14,10 @@
             @endif
         </td>
         <td>
+    @can('create-rideassign')
             <a href="{{ route('admin.ride.assign.create', ['subscription' => $subscription->id]) }}"
                class="btn btn-sm btn-gradient-success">Assign Ride</a>
+                 @endcan
         </td>
     </tr>
 @empty
