@@ -93,7 +93,6 @@ class ParentApiController extends Controller
                 'subscription.kid',
                 'subscription.pickupLocation',
                 'subscription.dropoffLocation',
-                'rides.driver.driverProfile',
             ])
             ->get();
 
@@ -117,7 +116,6 @@ class ParentApiController extends Controller
             $firstRide = $nextRideAssign->rides->first();
             $kid = $nextRideAssign->subscription?->kid;
             $driver = $firstRide?->driver;
-            $driverProfile = $driver?->driverProfile;
 
             $nextRide = [
                 'date' => $nextDate->format('Y-m-d'),
@@ -133,10 +131,6 @@ class ParentApiController extends Controller
                 'driver' => $driver ? [
                     'name' => $driver->first_name.' '.$driver->last_name,
                     'phone' => $driver->phone,
-                    'car_make' => $driverProfile?->car_make,
-                    'car_model' => $driverProfile?->car_model,
-                    'car_color' => $driverProfile?->car_color,
-                    'plate_number' => $driverProfile?->car_plate_number,
                 ] : null,
             ];
         }
@@ -173,7 +167,6 @@ class ParentApiController extends Controller
                 'subscription.kid',
                 'subscription.pickupLocation',
                 'subscription.dropoffLocation',
-                'rides.driver.driverProfile',
             ])
             ->orderBy('created_at', 'desc')
             ->limit(10)
@@ -212,12 +205,6 @@ class ParentApiController extends Controller
                 'today_rides' => $todayRides->map(function ($ride) {
                     $firstRide  = $ride->rides->first();
                     $driverUser = $firstRide?->driver; // User model
-
-                    // Driver table থেকে car info — user_id দিয়ে
-                    $driverProfile = $driverUser
-                        ? Driver::where('user_id', $driverUser->id)->first()
-                        : null;
-
                     $kid = $ride->subscription?->kid;
 
                     return [
@@ -235,10 +222,6 @@ class ParentApiController extends Controller
                         'driver' => $driverUser ? [
                             'name'         => $driverUser->first_name . ' ' . $driverUser->last_name,
                             'phone'        => $driverUser->phone,
-                            'car_make'     => $driverProfile?->car_make,
-                            'car_model'    => $driverProfile?->car_model,
-                            'car_color'    => $driverProfile?->car_color,
-                            'plate_number' => $driverProfile?->car_plate_number,
                         ] : null,
                     ];
                 }),
