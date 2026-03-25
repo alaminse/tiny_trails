@@ -99,14 +99,6 @@ class Driver extends Model
         return DriverFactory::new();
     }
 
-    /**
-     * Get the user that owns the Driver
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
     public function driver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -169,5 +161,11 @@ class Driver extends Model
     public function rides(): HasMany
     {
         return $this->hasMany(Ride::class, 'driver_id');
+    }
+
+    // Driver model এ user() relation
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }
