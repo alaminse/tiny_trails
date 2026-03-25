@@ -182,7 +182,7 @@ class TimesheetController extends Controller
                 ];
             });
 
-        return view('backend.timesheets.partials.detail',
+        return view('backend.timesheets.partial',
             compact('timesheet', 'shifts'));
     }
 
