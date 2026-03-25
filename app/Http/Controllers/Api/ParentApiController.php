@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\RideAssignment\app\Models\RideAssign;
 use Modules\Subscription\app\Models\Subscription;
+use Modules\UserRolePermission\app\Models\Driver;
 use Modules\UserRolePermission\app\Models\Kid;
 
 class ParentApiController extends Controller
@@ -42,10 +43,10 @@ class ParentApiController extends Controller
             ->whereNull('deleted_at')
             ->with([
                 'subscription.user',
-                'subscription.kid',                    // kid info
-                'subscription.pickupLocation',         // pickup location
-                'subscription.dropoffLocation',        // dropoff location
-                'rides.driver.driverProfile',          // driver + car details
+                'subscription.kid',
+                'subscription.pickupLocation',
+                'subscription.dropoffLocation',
+                'rides.driver',  // শুধু driver পর্যন্ত
             ])
             ->get();
 
@@ -207,35 +208,36 @@ class ParentApiController extends Controller
                 ] : null,
 
                 'kids' => $kids,
-
                 'next_ride' => $nextRide,
-
                 'today_rides' => $todayRides->map(function ($ride) {
-                    $firstRide = $ride->rides->first();
-                    $driver = $firstRide?->driver;
-                    $driverProfile = $driver?->driverProfile;
+                    $firstRide  = $ride->rides->first();
+                    $driverUser = $firstRide?->driver; // User model
+
+                    // Driver table থেকে car info — user_id দিয়ে
+                    $driverProfile = $driverUser
+                        ? Driver::where('user_id', $driverUser->id)->first()
+                        : null;
+
                     $kid = $ride->subscription?->kid;
 
                     return [
-                        'id' => $ride->id,
-                        'service_type' => $ride->service_type,
-                        'status' => $ride->status,
-                        'fare' => $ride->fare,
-                        'total_days' => $ride->total_days,
-                        'pickup_location' => $ride->subscription
-                            ?->pickupLocation?->address,
-                        'dropoff_location' => $ride->subscription
-                            ?->dropoffLocation?->address,
+                        'id'               => $ride->id,
+                        'service_type'     => $ride->service_type,
+                        'status'           => $ride->status,
+                        'fare'             => $ride->fare,
+                        'total_days'       => $ride->total_days,
+                        'pickup_location'  => $ride->subscription?->pickupLocation?->address,
+                        'dropoff_location' => $ride->subscription?->dropoffLocation?->address,
                         'kid' => $kid ? [
-                            'name' => $kid->first_name.' '.$kid->last_name,
+                            'name'   => $kid->first_name . ' ' . $kid->last_name,
                             'school' => $kid->school_name,
                         ] : null,
-                        'driver' => $driver ? [
-                            'name' => $driver->first_name.' '.$driver->last_name,
-                            'phone' => $driver->phone,
-                            'car_make' => $driverProfile?->car_make,
-                            'car_model' => $driverProfile?->car_model,
-                            'car_color' => $driverProfile?->car_color,
+                        'driver' => $driverUser ? [
+                            'name'         => $driverUser->first_name . ' ' . $driverUser->last_name,
+                            'phone'        => $driverUser->phone,
+                            'car_make'     => $driverProfile?->car_make,
+                            'car_model'    => $driverProfile?->car_model,
+                            'car_color'    => $driverProfile?->car_color,
                             'plate_number' => $driverProfile?->car_plate_number,
                         ] : null,
                     ];
