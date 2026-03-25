@@ -157,7 +157,7 @@ class User  extends Authenticatable implements CanResetPasswordContract
      */
     public function parent()
     {
-        return $this->hasOne(Parent::class);
+        return $this->hasOne(User::class);
     }
 
     /**
@@ -213,5 +213,12 @@ class User  extends Authenticatable implements CanResetPasswordContract
     public function driverCommissions()
     {
         return $this->hasMany(DriverCommission::class, 'driver_id');
+    }
+
+
+    // User model এ driverProfile relation
+    public function driverProfile()
+    {
+        return $this->hasOne(Driver::class, 'user_id');
     }
 }
