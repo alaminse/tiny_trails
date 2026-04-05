@@ -21,21 +21,7 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
                 Route::delete('/destroy/{subscription}', 'destroy')->name('destroy');
                 Route::get('/api/kids/{id}', 'getKidInfo');
                 Route::get('/api/locations/{id}', 'getLocationInfo');
-
-
-
                 Route::post('ride-assign/{subscription}/store', 'rideAssignStore')
                     ->name('store');
-
-                // ✅ AJAX capacity check
-                Route::post('ride-assign/check-capacity', 'checkCapacity')
-                    ->name('check-capacity');
-
-                // Route::post('ride-assign/{subscription}/store', [RideAssignController::class, 'store'])
-                //     ->name('admin.ride.assign.store');
-
-                // // ✅ AJAX capacity check
-                // Route::post('ride-assign/check-capacity', [RideAssignController::class, 'checkCapacity'])
-                //     ->name('admin.ride.assign.check-capacity');
             });
 });
