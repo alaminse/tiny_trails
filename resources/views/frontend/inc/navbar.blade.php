@@ -18,7 +18,7 @@
       </ul>
 
       <div class="nav__actions">
-        <a href="{{ route('frontend.contact') }}" class="btn btn--outline btn--sm">Log In</a>
+        <a href="{{ route('login') }}" class="btn btn--outline btn--sm">Log In</a>
         <a href="{{ route('frontend.pricing') }}" class="btn btn--primary btn--sm">Get Started</a>
       </div>
     </div>
