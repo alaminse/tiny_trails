@@ -66,7 +66,7 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
             Route::delete('/force-delete/{permission}','forceDelete')->name('forceDelete');
             Route::get('/get/data', 'getData')->name('data');
             Route::get('/assign/{role}', 'assignPermission')->name('assign');
-            Route::post('assign/{role}', 'storePermissions')->name('assign');
+            Route::post('assign/{role}', 'storePermissions')->name('store.assign');
         });
 
     Route::controller(KidController::class)

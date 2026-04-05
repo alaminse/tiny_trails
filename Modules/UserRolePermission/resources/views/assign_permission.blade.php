@@ -486,7 +486,7 @@
                             <div class="card-body">
                                 @include('backend.includes.error')
 
-                                <form action="{{ route('admin.permissions.assign', $role->id) }}" method="POST"
+                                <form action="{{ route('admin.permissions.store.assign', $role->id) }}" method="POST"
                                     id="permissionsForm">
                                     @csrf
 
