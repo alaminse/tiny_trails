@@ -1,0 +1,231 @@
+/* ============================================
+   TinyTrails — Pricing Page Styles
+   ============================================ */
+
+/* --- Pricing Hero --- */
+.pricing-hero {
+  padding-top: calc(var(--nav-height) + var(--space-16));
+  padding-bottom: var(--space-16);
+  background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-primary-light) 50%, var(--color-teal-light) 100%);
+}
+
+.pricing-hero__title {
+  font-size: var(--font-size-5xl);
+  font-weight: 800;
+  margin-bottom: var(--space-4);
+}
+
+.pricing-hero__subtitle {
+  font-size: var(--font-size-xl);
+  color: var(--color-text-light);
+  max-width: 680px;
+  margin: 0 auto var(--space-8);
+  line-height: 1.7;
+}
+
+.pricing-hero__value-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--color-border);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  backdrop-filter: blur(8px);
+  max-width: 680px;
+}
+
+/* --- Plans section spacing --- */
+.pricing-plans {
+  padding: var(--space-16) 0;
+  background: var(--color-bg-alt);
+}
+
+/* --- Disabled features --- */
+.pricing-card__feature--disabled {
+  opacity: 0.45;
+}
+
+/* --- Ideal for box --- */
+.pricing-card__ideal {
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.pricing-card__ideal p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  margin-bottom: 0;
+  line-height: 1.6;
+}
+
+/* --- IoT Explainer Section --- */
+.pricing-iot-explainer {
+  padding: var(--space-24) 0;
+  background: var(--color-bg);
+}
+
+.pricing-iot-explainer__inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-16);
+  align-items: start;
+}
+
+.pricing-iot-explainer__content h2 {
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--space-6);
+}
+
+.pricing-iot-explainer__content p {
+  font-size: var(--font-size-lg);
+  line-height: 1.7;
+  color: var(--color-text-light);
+}
+
+.pricing-iot-explainer__tiers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.pricing-iot-tier {
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  transition: all var(--transition-base);
+}
+
+.pricing-iot-tier:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.pricing-iot-tier--mid {
+  border-left: 4px solid var(--color-primary);
+}
+
+.pricing-iot-tier--top {
+  border-left: 4px solid var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.pricing-iot-tier__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.pricing-iot-tier__icon {
+  font-size: var(--font-size-2xl);
+}
+
+.pricing-iot-tier__header h3 {
+  font-size: var(--font-size-lg);
+  margin: 0;
+}
+
+.pricing-iot-tier p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* --- Comparison Table --- */
+.pricing-comparison {
+  padding: var(--space-24) 0;
+  background: var(--color-bg-alt);
+}
+
+.pricing-comparison__table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: var(--space-12);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.pricing-comparison__table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: var(--font-size-sm);
+  min-width: 720px;
+}
+
+.pricing-comparison__table th,
+.pricing-comparison__table td {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.pricing-comparison__table thead th {
+  background: var(--color-bg-alt);
+  font-weight: 700;
+  font-size: var(--font-size-base);
+  position: sticky;
+  top: 0;
+}
+
+.pricing-comparison__table th:first-child,
+.pricing-comparison__table td:first-child {
+  text-align: left;
+  font-weight: 500;
+  min-width: 200px;
+}
+
+.pricing-comparison__highlight {
+  background: rgba(37, 99, 235, 0.04);
+}
+
+.pricing-comparison__group-header td {
+  background: var(--color-bg-alt);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-light);
+  padding: var(--space-3) var(--space-5);
+}
+
+.pricing-comparison__table tfoot td {
+  padding: var(--space-6) var(--space-5);
+  border-bottom: none;
+}
+
+.table-check {
+  color: var(--color-success);
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+}
+
+.table-cross {
+  color: var(--color-border-dark);
+  font-size: var(--font-size-lg);
+}
+
+/* --- Responsive for pricing page --- */
+@media (max-width: 1024px) {
+  .pricing-iot-explainer__inner {
+    grid-template-columns: 1fr;
+    gap: var(--space-10);
+  }
+}
+
+@media (max-width: 768px) {
+  .pricing-hero__title {
+    font-size: var(--font-size-4xl);
+  }
+
+  .pricing-hero__value-note {
+    flex-direction: column;
+    text-align: left;
+  }
+}

@@ -9,13 +9,12 @@ use App\Http\Controllers\Admin\ShiftBroadcastController;
 use App\Http\Controllers\Admin\TimesheetController;
 use App\Http\Controllers\Admin\VehicleTypeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
 use Modules\RideAssignment\app\Http\Controllers\RideAssignController;
 
-Route::get('/', function () {
-    return view('home');
-});
+
 
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -122,14 +121,16 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
         Route::get('/export',     [AttendanceController::class, 'export'])->name('export');
     });
 });
-// ── API Routes (Driver App) ─────────────────────────────────────────
-// Add these in routes/api.php inside sanctum middleware:
-//
-// Route::middleware('auth:sanctum')->group(function () {
-//     Route::post('driver/face-verify',       [App\Http\Controllers\Api\FaceVerificationController::class, 'verify']);
-//     Route::get ('driver/face-verify/status',[App\Http\Controllers\Api\FaceVerificationController::class, 'status']);
-//     Route::middleware('face.verified')->group(function () {
-//         Route::post('shift/accept',          [App\Http\Controllers\Api\ShiftBroadcastController::class, 'accept']);
-//         Route::post('ride/{ride}/complete',  [App\Http\Controllers\Api\RideController::class, 'complete']);
-//     });
-// });
+
+
+
+    Route::name('frontend.')->group(function () {
+        Route::get('/',           [FrontendController::class, 'home'])->name('home');
+        Route::get('/how-it-works',           [FrontendController::class, 'how_it_works'])->name('how_it_works');
+        Route::get('/pricing',           [FrontendController::class, 'pricing'])->name('pricing');
+        Route::get('/safety',           [FrontendController::class, 'safety'])->name('safety');
+        Route::get('/contact',           [FrontendController::class, 'contact'])->name('contact');
+
+        // Route::get('/', function () {
+        //     return view('home');
+    });
