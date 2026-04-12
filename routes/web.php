@@ -64,7 +64,7 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
         Route::post('/approve-all',   [TimesheetController::class, 'approveAll'])->name('approve-all');
     });
 
-    Route::prefix('twilio')->name('.twilio.')->group(function () {
+    Route::prefix('twilio')->name('twilio.')->group(function () {
         Route::get('/',                             [TwilioCredentialController::class, 'index'])               ->name('index');
         Route::post('/',                            [TwilioCredentialController::class, 'store'])               ->name('store');
         Route::put('/{twilioCredential}',           [TwilioCredentialController::class, 'update'])              ->name('update');
