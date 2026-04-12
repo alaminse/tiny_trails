@@ -303,6 +303,17 @@
                 </li> --}}
                 @endcan
 
+                {{-- ── TWILIO CREDENTIALS ──────────────────────────────── --}}
+                @canany(['view-twilio-credentials', 'manage-twilio-credentials'])
+                <li class="nav-item">
+                    <a href="{{ route('admin.twilio.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.twilio.*') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-phone"></i>
+                        <p>Twilio Credentials</p>
+                    </a>
+                </li>
+                @endcanany
+
             </ul>
         </nav>
     </div>

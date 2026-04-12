@@ -33,7 +33,9 @@ class DatabaseSeeder extends Seeder
             PickupTypeSeeder::class,
             SubscriptionSeeder::class,
             UserSeeder::class,
-            VehicleTypeSeeder::class
+            VehicleTypeSeeder::class,
+            TwilioPermissionSeeder::class,
+            TwilioCredentialSeeder::class,
         ]);
         $this->command->info('Static data seeded.');
         $this->command->info('Database seeding completed successfully!');

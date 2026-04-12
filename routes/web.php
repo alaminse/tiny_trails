@@ -7,14 +7,13 @@ use App\Http\Controllers\Admin\DriverWageController;
 use App\Http\Controllers\Admin\FaceVerificationController;
 use App\Http\Controllers\Admin\ShiftBroadcastController;
 use App\Http\Controllers\Admin\TimesheetController;
+use App\Http\Controllers\Admin\TwilioCredentialController;
 use App\Http\Controllers\Admin\VehicleTypeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
 use Modules\RideAssignment\app\Http\Controllers\RideAssignController;
-
-
 
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -40,52 +39,62 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
         ->middleware('can:view-boh-dashboard');
 
     // ── Shift Broadcasts ────────────────────────────────────────────────
-    Route::middleware('can:list-shift-broadcast')->group(function () {
-        Route::get('shift-broadcast', [ShiftBroadcastController::class, 'index'])
+    Route::controller(ShiftBroadcastController::class)->middleware('can:list-shift-broadcast')->group(function () {
+        Route::get('shift-broadcast', 'index')
             ->name('shift.broadcast.index');
-        Route::post('shift-broadcast', [ShiftBroadcastController::class, 'store'])
+        Route::post('shift-broadcast', 'store')
             ->name('shift.broadcast.store');
-        Route::patch('shift-broadcast/{broadcast}/cancel', [ShiftBroadcastController::class, 'cancel'])
+        Route::patch('shift-broadcast/{broadcast}/cancel', 'cancel')
             ->name('shift.broadcast.cancel');
-        Route::patch('shift-broadcast/{broadcast}/extend', [ShiftBroadcastController::class, 'extend'])
+        Route::patch('shift-broadcast/{broadcast}/extend', 'extend')
             ->name('shift.broadcast.extend');
     });
 
     // Capacity check (AJAX — used in Ride Assign form)
     Route::post('ride-assign/check-capacity', [RideAssignController::class, 'checkCapacity'])
         ->name('ride.assign.check-capacity');
-        // ── Timesheet ─────────────────────────────────────────
-    Route::prefix('timesheets')->name('timesheets.')->group(function () {
-        Route::get('/',               [TimesheetController::class, 'index'])->name('index');
-        Route::get('/export',         [TimesheetController::class, 'export'])->name('export');
-        Route::get('/{id}/detail',    [TimesheetController::class, 'detail'])->name('detail');
-        Route::patch('/{id}/status',  [TimesheetController::class, 'updateStatus'])->name('status');
-        Route::post('/approve-all',   [TimesheetController::class, 'approveAll'])->name('approve-all');
+    // ── Timesheet ─────────────────────────────────────────
+    Route::controller(TimesheetController::class)->prefix('timesheets')->name('timesheets.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/export', 'export')->name('export');
+        Route::get('/{id}/detail', 'detail')->name('detail');
+        Route::patch('/{id}/status', 'updateStatus')->name('status');
+        Route::post('/approve-all', 'approveAll')->name('approve-all');
+    });
+
+    Route::controller(TwilioCredentialController::class)->prefix('twilio')->name('twilio.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/', 'store')->name('store');
+        Route::put('/{twilioCredential}', 'update')->name('update');
+        Route::post('/{twilioCredential}/activate', 'activate')->name('activate');
+        Route::delete('/{twilioCredential}', 'destroy')->name('destroy');
+        Route::post('/test-send', 'testSend')->name('test');
+        Route::post('/validate', 'validateCredentials')->name('validate');
     });
 
     // ── Driver Wages ────────────────────────────────────────────────────
-    Route::middleware('can:list-driver-wages')->group(function () {
-        Route::get('driver-wages', [DriverWageController::class, 'index'])
+    Route::controller(DriverWageController::class)->middleware('can:list-driver-wages')->group(function () {
+        Route::get('driver-wages', 'index')
             ->name('driver.wages.index');
-        Route::post('driver-wages', [DriverWageController::class, 'store'])
+        Route::post('driver-wages', 'store')
             ->name('driver.wages.store');
-        Route::put('driver-wages/{wage}', [DriverWageController::class, 'update'])
+        Route::put('driver-wages/{wage}', 'update')
             ->name('driver.wages.update');
-        Route::delete('driver-wages/{wage}', [DriverWageController::class, 'destroy'])
+        Route::delete('driver-wages/{wage}', 'destroy')
             ->name('driver.wages.destroy');
     });
 
     // ── Vehicle Types ───────────────────────────────────────────────────
-    Route::middleware('can:list-vehicle-types')->group(function () {
-        Route::get('vehicle-types', [VehicleTypeController::class, 'index'])
+    Route::controller(VehicleTypeController::class)->middleware('can:list-vehicle-types')->group(function () {
+        Route::get('vehicle-types',  'index')
             ->name('vehicle.types.index');
-        Route::post('vehicle-types', [VehicleTypeController::class, 'store'])
+        Route::post('vehicle-types',  'store')
             ->name('vehicle.types.store');
-        Route::put('vehicle-types/{vehicleType}', [VehicleTypeController::class, 'update'])
+        Route::put('vehicle-types/{vehicleType}',  'update')
             ->name('vehicle.types.update');
-        Route::patch('vehicle-types/assign', [VehicleTypeController::class, 'assignToDriver'])
+        Route::patch('vehicle-types/assign',  'assignToDriver')
             ->name('vehicle.types.assign');
-        Route::delete('vehicle-types/{vehicleType}', [VehicleTypeController::class, 'destroy'])
+        Route::delete('vehicle-types/{vehicleType}',  'destroy')
             ->name('vehicle.types.destroy');
     });
 
@@ -95,42 +104,38 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
             ->name('face.verification.index');
     });
 
+    Route::controller(DriverShiftController::class)->prefix('driver-shifts')->name('driver.shifts.')->group(function () {
 
-    Route::prefix('driver-shifts')->name('driver.shifts.')->group(function () {
-
-        Route::get('/',                             [DriverShiftController::class, 'index'])        ->name('index');
-        Route::get('/create',                       [DriverShiftController::class, 'create'])       ->name('create');
-        Route::post('/',                            [DriverShiftController::class, 'store'])        ->name('store');
-        Route::get('/{shift}',                      [DriverShiftController::class, 'show'])         ->name('show');
-        Route::post('/{shift}/confirm',             [DriverShiftController::class, 'confirm'])      ->name('confirm');
-        Route::delete('/{shift}',                   [DriverShiftController::class, 'destroy'])      ->name('destroy');
+        Route::get('/', 'index')->name('index');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{shift}', 'show')->name('show');
+        Route::post('/{shift}/confirm', 'confirm')->name('confirm');
+        Route::delete('/{shift}', 'destroy')->name('destroy');
 
         // Ride assignment
-        Route::post('/{shift}/assign-ride',         [DriverShiftController::class, 'assignRide'])   ->name('assignRide');
-        Route::delete('/{shift}/remove-ride/{ride}',[DriverShiftController::class, 'removeRide'])   ->name('removeRide');
+        Route::post('/{shift}/assign-ride', 'assignRide')->name('assignRide');
+        Route::delete('/{shift}/remove-ride/{ride}', 'removeRide')->name('removeRide');
 
         // Driver management on shift
-        Route::post('/{shift}/add-driver',          [DriverShiftController::class, 'addDriver'])    ->name('addDriver');
-        Route::delete('/{shift}/remove-driver/{driver}', [DriverShiftController::class, 'removeDriver'])->name('removeDriver');
+        Route::post('/{shift}/add-driver', 'addDriver')->name('addDriver');
+        Route::delete('/{shift}/remove-driver/{driver}', 'removeDriver')->name('removeDriver');
     });
 
-
-    Route::prefix('attendance')->name('attendance.')->group(function () {
-        Route::get('/',           [AttendanceController::class, 'index'])->name('index');
-        Route::get('/driver/{id}',[AttendanceController::class, 'driverDetail'])->name('driver');
-        Route::get('/export',     [AttendanceController::class, 'export'])->name('export');
+    Route::controller(AttendanceController::class)->prefix('attendance')->name('attendance.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/driver/{id}', 'driverDetail')->name('driver');
+        Route::get('/export', 'export')->name('export');
     });
 });
 
+Route::controller(FrontendController::class)->name('frontend.')->group(function () {
+    Route::get('/', 'home')->name('home');
+    Route::get('/how-it-works', 'how_it_works')->name('how_it_works');
+    Route::get('/pricing', 'pricing')->name('pricing');
+    Route::get('/safety', 'safety')->name('safety');
+    Route::get('/contact', 'contact')->name('contact');
 
-
-    Route::name('frontend.')->group(function () {
-        Route::get('/',           [FrontendController::class, 'home'])->name('home');
-        Route::get('/how-it-works',           [FrontendController::class, 'how_it_works'])->name('how_it_works');
-        Route::get('/pricing',           [FrontendController::class, 'pricing'])->name('pricing');
-        Route::get('/safety',           [FrontendController::class, 'safety'])->name('safety');
-        Route::get('/contact',           [FrontendController::class, 'contact'])->name('contact');
-
-        // Route::get('/', function () {
-        //     return view('home');
-    });
+    // Route::get('/', function () {
+    //     return view('home');
+});
