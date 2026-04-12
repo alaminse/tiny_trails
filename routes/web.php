@@ -70,6 +70,7 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
         Route::delete('/{twilioCredential}', 'destroy')->name('destroy');
         Route::post('/test-send', 'testSend')->name('test');
         Route::post('/validate', 'validateCredentials')->name('validate');
+        
     });
 
     // ── Driver Wages ────────────────────────────────────────────────────
@@ -86,15 +87,15 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
 
     // ── Vehicle Types ───────────────────────────────────────────────────
     Route::controller(VehicleTypeController::class)->middleware('can:list-vehicle-types')->group(function () {
-        Route::get('vehicle-types',  'index')
+        Route::get('vehicle-types', 'index')
             ->name('vehicle.types.index');
-        Route::post('vehicle-types',  'store')
+        Route::post('vehicle-types', 'store')
             ->name('vehicle.types.store');
-        Route::put('vehicle-types/{vehicleType}',  'update')
+        Route::put('vehicle-types/{vehicleType}', 'update')
             ->name('vehicle.types.update');
-        Route::patch('vehicle-types/assign',  'assignToDriver')
+        Route::patch('vehicle-types/assign', 'assignToDriver')
             ->name('vehicle.types.assign');
-        Route::delete('vehicle-types/{vehicleType}',  'destroy')
+        Route::delete('vehicle-types/{vehicleType}', 'destroy')
             ->name('vehicle.types.destroy');
     });
 
