@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use Carbon\Carbon;
-use App\Models\User;
-use Illuminate\Http\Request;
-use App\Mail\VerificationCodeMail;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Mail\VerificationCodeMail;
+use App\Models\User;
+use App\Services\TwilioService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
@@ -21,36 +22,56 @@ class VerificationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => 'Validation errors', 'errors' => $validator->errors()], 422);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation errors',
+                'errors'  => $validator->errors()
+            ], 422);
         }
 
         $user = User::where('phone', $request->phone)->first();
-        if (!$user) {
-            return response()->json(['success' => false, 'message' => 'User not found with this phone number.'], 404);
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found with this phone number.'
+            ], 404);
         }
 
+        // Delete old codes
         $user->verificationCodes()->where('type', 'phone')->delete();
 
+        // Generate code
         $code = random_int(100000, 999999);
 
         $user->verificationCodes()->create([
-            'type' => 'phone',
-            'code' => $code,
+            'type'       => 'phone',
+            'code'       => $code,
             'expires_at' => Carbon::now()->addMinutes(15),
         ]);
 
+        // ── Send SMS via Twilio ────────────────────────────────
         try {
-            Mail::to($user->email)->send(new VerificationCodeMail($user, $code, 'phone'));
-        } catch (\Exception $e) {
-            Log::error('Failed to send phone verification email: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Could not send verification email.'], 500);
-        }
+            $twilio = new TwilioService();
+            $twilio->sendSms(
+                $user->phone,
+                "Your Tiny Trails verification code is: {$code}. Valid for 15 minutes. Do not share this code."
+            );
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Verification code sent to your phone.',
-            'code' => $code
-        ]);
+            Log::info('Verification SMS sent', ['phone' => $user->phone]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Verification code sent to your phone.',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to send verification SMS: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Could not send verification code. Please try again.',
+            ], 500);
+        }
     }
 
     public function verifyPhone(Request $request)
@@ -61,12 +82,19 @@ class VerificationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => 'Validation errors', 'errors' => $validator->errors()], 422);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation errors',
+                'errors'  => $validator->errors()
+            ], 422);
         }
 
         $user = User::where('phone', $request->phone)->first();
-        if (!$user) {
-            return response()->json(['success' => false, 'message' => 'User not found.'], 404);
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found.'
+            ], 404);
         }
 
         $verificationCode = $user->verificationCodes()
@@ -75,17 +103,24 @@ class VerificationController extends Controller
             ->where('expires_at', '>', Carbon::now())
             ->first();
 
-        if (!$verificationCode) {
-            return response()->json(['success' => false, 'message' => 'Invalid or expired verification code.'], 400);
+        if (! $verificationCode) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or expired verification code.'
+            ], 400);
         }
 
         $user->update([
-            'phone_verified_at' => now(),
+            'phone_verified_at'   => now(),
             'verification_status' => 'phone_verified',
         ]);
+
         $verificationCode->delete();
 
-        return response()->json(['success' => true, 'message' => 'Phone number verified successfully.']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Phone number verified successfully.'
+        ]);
     }
 
     public function sendEmailVerification(Request $request)
