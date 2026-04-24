@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Mail\VerificationCodeMail;
 use App\Models\User;
-use App\Services\TwilioService;
+use App\Services\SmsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -37,10 +37,8 @@ class VerificationController extends Controller
             ], 404);
         }
 
-        // Delete old codes
         $user->verificationCodes()->where('type', 'phone')->delete();
 
-        // Generate code
         $code = random_int(100000, 999999);
 
         $user->verificationCodes()->create([
@@ -49,15 +47,17 @@ class VerificationController extends Controller
             'expires_at' => Carbon::now()->addMinutes(15),
         ]);
 
-        // ── Send SMS via Twilio ────────────────────────────────
         try {
-            $twilio = new TwilioService();
-            $twilio->sendSms(
+            $sms = new SmsService();
+            $sms->sendSms(
                 $user->phone,
                 "Your Tiny Trails verification code is: {$code}. Valid for 15 minutes. Do not share this code."
             );
 
-            Log::info('Verification SMS sent', ['phone' => $user->phone]);
+            Log::info('Verification SMS sent', [
+                'phone'    => $user->phone,
+                'provider' => $sms->getProvider(),
+            ]);
 
             return response()->json([
                 'success' => true,

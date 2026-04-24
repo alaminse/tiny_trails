@@ -12,19 +12,13 @@ class TwilioService
     protected TwilioCredential $cred;
     protected string $baseUrl;
 
-    public function __construct()
+    public function __construct(TwilioCredential $cred)
     {
-        $cred = TwilioCredential::active();
-
-        if (! $cred) {
-            throw new \RuntimeException('No active Twilio credential configured.');
-        }
-
         $this->cred    = $cred;
         $this->baseUrl = "https://api.twilio.com/2010-04-01/Accounts/{$cred->account_sid}";
     }
 
-    // ── Send SMS ──────────────────────────────────────────────────
+    // ── Send SMS ──────────────────────────────────────────────
     public function sendSms(string $to, string $body): array
     {
         $params = [
@@ -60,7 +54,7 @@ class TwilioService
         return $data;
     }
 
-    // ── Validate credentials (no SMS sent) ───────────────────────
+    // ── Validate Credentials ──────────────────────────────────
     public function validateCredentials(): bool
     {
         $response = Http::withBasicAuth(
@@ -70,27 +64,5 @@ class TwilioService
             ->get("https://api.twilio.com/2010-04-01/Accounts/{$this->cred->account_sid}.json");
 
         return $response->successful();
-    }
-
-    // ── Get account balance ───────────────────────────────────────
-    public function getBalance(): array
-    {
-        $response = Http::withBasicAuth(
-                $this->cred->account_sid,
-                $this->cred->auth_token
-            )
-            ->get("{$this->baseUrl}/Balance.json");
-
-        return $response->json();
-    }
-
-    public function getMode(): string
-    {
-        return $this->cred->mode;
-    }
-
-    public function getActiveCred(): TwilioCredential
-    {
-        return $this->cred;
     }
 }
