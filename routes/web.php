@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\TimesheetController;
 use App\Http\Controllers\Admin\TwilioCredentialController;
 use App\Http\Controllers\Admin\VehicleTypeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeleteAccountController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
@@ -144,4 +145,10 @@ Route::middleware(['auth', 'verified'])->as('admin.')->group(function () {
 
         // Route::get('/', function () {
         //     return view('home');
+        Route::get('/delete-account', [DeleteAccountController::class, 'index'])
+        ->name('delete-account');
+
+        Route::post('/delete-account', [DeleteAccountController::class, 'store'])
+            ->name('delete-account.store');
+
     });
