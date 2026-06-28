@@ -88,7 +88,7 @@ class TwilioCredentialController extends Controller
             $sms    = new SmsService();
             $result = $sms->sendSms(
                 $request->to,
-                '🧪 Tiny Trails test message. SMS provider is connected!'
+                '🧪 TinyTrails test message. SMS provider is connected!'
             );
 
             return back()->with('success',

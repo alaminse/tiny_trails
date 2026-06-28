@@ -25,7 +25,7 @@ class VerificationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validation errors',
-                'errors'  => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -33,7 +33,7 @@ class VerificationController extends Controller
         if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'User not found with this phone number.'
+                'message' => 'User not found with this phone number.',
             ], 404);
         }
 
@@ -42,20 +42,20 @@ class VerificationController extends Controller
         $code = random_int(100000, 999999);
 
         $user->verificationCodes()->create([
-            'type'       => 'phone',
-            'code'       => $code,
+            'type' => 'phone',
+            'code' => $code,
             'expires_at' => Carbon::now()->addMinutes(15),
         ]);
 
         try {
-            $sms = new SmsService();
+            $sms = new SmsService;
             $sms->sendSms(
                 $user->phone,
-                "Your Tiny Trails verification code is: {$code}. Valid for 15 minutes. Do not share this code."
+                "Your TinyTrails verification code is: {$code}. Valid for 15 minutes. Do not share this code.\n\nLet's use TinyTrails."
             );
 
             Log::info('Verification SMS sent', [
-                'phone'    => $user->phone,
+                'phone' => $user->phone,
                 'provider' => $sms->getProvider(),
             ]);
 
@@ -65,7 +65,7 @@ class VerificationController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Failed to send verification SMS: ' . $e->getMessage());
+            Log::error('Failed to send verification SMS: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
@@ -78,14 +78,14 @@ class VerificationController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'phone' => 'required|string|max:20',
-            'code'  => 'required|integer|digits:6',
+            'code' => 'required|integer|digits:6',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation errors',
-                'errors'  => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -93,7 +93,7 @@ class VerificationController extends Controller
         if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'User not found.'
+                'message' => 'User not found.',
             ], 404);
         }
 
@@ -106,12 +106,12 @@ class VerificationController extends Controller
         if (! $verificationCode) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid or expired verification code.'
+                'message' => 'Invalid or expired verification code.',
             ], 400);
         }
 
         $user->update([
-            'phone_verified_at'   => now(),
+            'phone_verified_at' => now(),
             'verification_status' => 'phone_verified',
         ]);
 
@@ -119,7 +119,7 @@ class VerificationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Phone number verified successfully.'
+            'message' => 'Phone number verified successfully.',
         ]);
     }
 
@@ -136,22 +136,23 @@ class VerificationController extends Controller
         $code = random_int(100000, 999999);
 
         $user->verificationCodes()->create([
-            'type'          => 'email',
-            'code'          => $code,
-            'expires_at'    => Carbon::now()->addMinutes(15),
+            'type' => 'email',
+            'code' => $code,
+            'expires_at' => Carbon::now()->addMinutes(15),
         ]);
 
         try {
             Mail::to($user->email)->send(new VerificationCodeMail($user, $code, 'email'));
         } catch (\Exception $e) {
-            Log::error('Failed to send email verification email: ' . $e->getMessage());
+            Log::error('Failed to send email verification email: '.$e->getMessage());
+
             return response()->json(['success' => false, 'message' => 'Could not send verification email.'], 500);
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Verification code sent to your email.',
-            'code' => $code
+            'code' => $code,
         ]);
     }
 
@@ -173,13 +174,13 @@ class VerificationController extends Controller
             ->where('expires_at', '>', Carbon::now())
             ->first();
 
-        if (!$verificationCode) {
+        if (! $verificationCode) {
             return response()->json(['success' => false, 'message' => 'Invalid or expired verification code.'], 400);
         }
 
         $user->update([
-            'email_verified_at'     => now(),
-            'verification_status'   => 'email_verified',
+            'email_verified_at' => now(),
+            'verification_status' => 'email_verified',
         ]);
         $verificationCode->delete();
 
