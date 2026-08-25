@@ -108,7 +108,6 @@ class DriverShiftController extends Controller
                 ]);
             }
         });
-
         return redirect()
             ->route('admin.driver.shifts.index', ['date' => $request->input('date')])
             ->with('success', '3 shifts created for ' . Carbon::parse($request->input('date'))->format('d M Y'));
