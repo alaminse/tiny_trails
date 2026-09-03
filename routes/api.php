@@ -50,6 +50,8 @@ Route::prefix('auth')->group(function () {
         Route::get('user', [AuthController::class, 'user']);
         Route::get('profile', [AuthController::class, 'profile']);
         Route::post('profile', [AuthController::class, 'updateProfile']);
+        Route::delete('/account', [AuthController::class, 'destroy']);
+
 
 
 

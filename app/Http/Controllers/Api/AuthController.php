@@ -593,4 +593,34 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Email verified successfully.']);
     }
+
+
+    public function destroy(Request $request)
+    {
+        $user = $request->user();
+
+        DB::beginTransaction();
+        try {
+            $user->kids()->delete();
+            $user->subscriptions()->delete();
+            $user->tokens()->delete();
+
+            $user->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Account deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Account deletion failed:', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete account: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
