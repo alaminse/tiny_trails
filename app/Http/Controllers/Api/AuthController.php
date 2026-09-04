@@ -597,44 +597,30 @@ class AuthController extends Controller
     public function destroy(Request $request)
     {
         $user = $request->user();
+        $currentToken = $user->currentAccessToken();
 
         DB::beginTransaction();
         try {
-            $subscriptionIds = DB::table('subscriptions')
-                ->where('user_id', $user->id)
-                ->pluck('id');
+            $user->kids()->delete();
+            $user->subscriptions()->delete();
 
-            if ($subscriptionIds->isNotEmpty()) {
-                DB::table('payway_transactions')
-                    ->whereIn('subscription_id', $subscriptionIds)
-                    ->delete();
-            }
+            // বর্তমান token বাদ দিয়ে বাকি সব token মুছুন
+            $user->tokens()->where('id', '!=', $currentToken->id)->delete();
 
-
-            $kidIds = DB::table('kids')->where('user_id', $user->id)->pluck('id');
-            if ($kidIds->isNotEmpty()) {
-                DB::table('kid_wages')->whereIn('kid_id', $kidIds)->delete();
-                DB::table('kids')->where('user_id', $user->id)->delete();
-            }
-
-
-            DB::table('subscriptions')->where('user_id', $user->id)->delete();
-
-
-            DB::table('personal_access_tokens')
-                ->where('tokenable_id', $user->id)
-                ->where('tokenable_type', get_class($user))
-                ->delete();
-
-            
-            $user->forceDelete();
+            $user->delete();
 
             DB::commit();
 
-            return response()->json([
+            // এখন response তৈরি করার পর বর্তমান token মুছুন
+            $response = response()->json([
                 'success' => true,
                 'message' => 'Account deleted successfully',
             ]);
+
+            $currentToken->delete();
+
+            return $response;
+
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Account deletion failed:', ['error' => $e->getMessage()]);
