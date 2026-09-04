@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,12 +15,10 @@ use Modules\LocationManagement\app\Models\City;
 use Modules\LocationManagement\app\Models\Country;
 use Modules\LocationManagement\app\Models\State;
 use Modules\RideAssignment\app\Models\DriverCommission;
+use Modules\Subscription\app\Models\Subscription;
 use Modules\UserRolePermission\app\Models\Driver;
 use Modules\UserRolePermission\app\Models\Kid;
 use Spatie\Permission\Traits\HasRoles;
-
-use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
-use Illuminate\Auth\Passwords\CanResetPassword;
 
 class User  extends Authenticatable implements CanResetPasswordContract
 {
@@ -220,5 +220,10 @@ class User  extends Authenticatable implements CanResetPasswordContract
     public function driverProfile()
     {
         return $this->hasOne(Driver::class, 'user_id');
+    }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class, 'user_id');
     }
 }
