@@ -270,9 +270,9 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email'         => 'required|email',
-            'password'      => 'required',
-            'fcm_token'     => 'nullable|string',
+            'email' => 'required|email',
+            'password' => 'required',
+            'fcm_token' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -309,11 +309,11 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Login successful',
             'data' => [
-                'user'                  => $user,
-                'token'                 => $token,
-                'role'                  => $user->getRoleNames(),
-                'token_type'            => 'Bearer',
-                'verification_status'   => $user->verification_status,
+                'user' => $user,
+                'token' => $token,
+                'role' => $user->getRoleNames(),
+                'token_type' => 'Bearer',
+                'verification_status' => $user->verification_status,
             ],
         ]);
     }
@@ -493,9 +493,9 @@ class AuthController extends Controller
     public function resetPassword(Request $request)
     {
         $request->validate([
-            'token'     => 'required',
-            'email'     => 'required|email',
-            'password'  => 'required|min:8|confirmed',
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
         ]);
 
         $status = Password::reset(
@@ -553,8 +553,8 @@ class AuthController extends Controller
     public function verifyPhone(Request $request)
     {
         $request->validate([
-            'user_id'   => 'required|integer',
-            'code'      => 'required|string|digits:6',
+            'user_id' => 'required|integer',
+            'code' => 'required|string|digits:6',
         ]);
 
         $user = User::findOrFail($request->user_id);
@@ -575,8 +575,8 @@ class AuthController extends Controller
     public function verifyEmail(Request $request)
     {
         $request->validate([
-            'user_id'   => 'required|integer',
-            'code'      => 'required|string|digits:6',
+            'user_id' => 'required|integer',
+            'code' => 'required|string|digits:6',
         ]);
 
         $user = User::findOrFail($request->user_id);
@@ -594,18 +594,40 @@ class AuthController extends Controller
         return response()->json(['message' => 'Email verified successfully.']);
     }
 
-
     public function destroy(Request $request)
     {
         $user = $request->user();
 
         DB::beginTransaction();
         try {
-            $user->kids()->delete();
-            $user->subscriptions()->delete();
-            $user->tokens()->delete();
+            $subscriptionIds = DB::table('subscriptions')
+                ->where('user_id', $user->id)
+                ->pluck('id');
 
-            $user->delete();
+            if ($subscriptionIds->isNotEmpty()) {
+                DB::table('payway_transactions')
+                    ->whereIn('subscription_id', $subscriptionIds)
+                    ->delete();
+            }
+
+
+            $kidIds = DB::table('kids')->where('user_id', $user->id)->pluck('id');
+            if ($kidIds->isNotEmpty()) {
+                DB::table('kid_wages')->whereIn('kid_id', $kidIds)->delete();
+                DB::table('kids')->where('user_id', $user->id)->delete();
+            }
+
+
+            DB::table('subscriptions')->where('user_id', $user->id)->delete();
+
+
+            DB::table('personal_access_tokens')
+                ->where('tokenable_id', $user->id)
+                ->where('tokenable_type', get_class($user))
+                ->delete();
+
+            
+            $user->forceDelete();
 
             DB::commit();
 
@@ -619,7 +641,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete account: ' . $e->getMessage(),
+                'message' => 'Failed to delete account: '.$e->getMessage(),
             ], 500);
         }
     }
