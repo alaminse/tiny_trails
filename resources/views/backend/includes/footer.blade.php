@@ -4,7 +4,7 @@
         <!--end::To the end-->
         <!--begin::Copyright-->
         <strong>
-          Copyright &copy; 2014-2025&nbsp;
+          Copyright &copy; 2025-2026&nbsp;
           <a href="#" class="text-decoration-none">Tiny Trails</a>.
         </strong>
         All rights reserved.
